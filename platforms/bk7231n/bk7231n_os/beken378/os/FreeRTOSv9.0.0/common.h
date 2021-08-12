@@ -11,6 +11,10 @@
 #define UNUSED_VARIABLE(x) ( (void)(x) )
 #endif
 
+#ifndef ETH_ALEN
+#define ETH_ALEN 6
+#endif
+
 #endif // _COMMON_H_
 // eof
 

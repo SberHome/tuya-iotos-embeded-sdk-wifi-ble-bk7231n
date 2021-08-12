@@ -190,5 +190,6 @@ extern void rl_sta_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion);
 extern void rl_ap_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion);
 extern uint32_t rl_sta_cache_request_enter(void);
 extern uint32_t rl_sta_req_is_null(void);
+void rl_clear_bssid_info(void);
+void rl_read_bssid_info(RL_BSSID_INFO_PTR bssid_info);
 #endif //_ROLE_LAUNCH_H_ 
-

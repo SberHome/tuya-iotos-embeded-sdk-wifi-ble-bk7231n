@@ -738,7 +738,7 @@ void ble_send_msg(UINT32 data)
     	ret = rtos_push_to_queue(&ble_msg_que, &msg, BEKEN_NO_WAIT);
     	if(0 != ret)
     	{
-    		//os_printf("ble_send_msg failed\r\n");
+    		os_printf("ble_send_msg failed\r\n");
     	}
     }
 }

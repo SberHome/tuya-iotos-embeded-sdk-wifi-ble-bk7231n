@@ -1,7 +1,7 @@
 #ifndef _SA_AP_H_
 #define _SA_AP_H_
 
-#define SAAP_DEBUG
+//#define SAAP_DEBUG
 
 #ifdef SAAP_DEBUG
 #define SAAP_PRT                 os_printf

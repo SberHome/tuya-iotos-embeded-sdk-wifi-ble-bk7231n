@@ -40,6 +40,7 @@
 #include "uart_pub.h"
 #include "intc_pub.h"
 #include "power_save_pub.h"
+#include "bk7011_cal_pub.h"
 
 /*
  * STRUCTURES

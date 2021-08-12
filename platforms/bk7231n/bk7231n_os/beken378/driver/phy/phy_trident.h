@@ -461,6 +461,9 @@ void phy_open_cca(void);
 void phy_close_cca(void);
 void phy_show_cca(void);
 
+void phy_wakeup_rf_reinit(void);
+void phy_wakeup_wifi_reinit(void);
+
 /// @}
 #endif /* PHY_TRIDENT_H_ */
 

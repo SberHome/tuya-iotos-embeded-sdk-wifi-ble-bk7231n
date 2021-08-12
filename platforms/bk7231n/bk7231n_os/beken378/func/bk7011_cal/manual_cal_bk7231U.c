@@ -27,6 +27,7 @@
 #endif
 #include "power_save_pub.h"
 #include "cmd_evm.h"
+#include "ate_app.h"
 
 #define TXPWR_DEFAULT_TAB                 1
 

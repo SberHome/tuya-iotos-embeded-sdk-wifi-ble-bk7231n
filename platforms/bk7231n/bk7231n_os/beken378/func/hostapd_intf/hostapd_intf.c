@@ -21,10 +21,16 @@
 #include "sm_task.h"
 #include "rw_msg_rx.h"
 #include "mm_bcn.h"
+#include "common.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "errno.h"
+
 
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
 #endif
+
 #include "mcu_ps_pub.h"
 #include "power_save_pub.h"
 #include "fake_clock_pub.h"

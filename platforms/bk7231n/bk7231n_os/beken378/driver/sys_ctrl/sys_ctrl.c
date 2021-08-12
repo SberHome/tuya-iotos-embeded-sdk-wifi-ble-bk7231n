@@ -22,6 +22,7 @@
 #include "ble_pub.h"
 #include "start_type_pub.h"
 #include "bk7011_cal_pub.h"
+#include "phy_trident.h"
 
 #define DPLL_DIV                0x0
 #define DCO_CALIB_26M           0x1

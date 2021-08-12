@@ -28,6 +28,8 @@
 #include "saradc_pub.h"
 #include "sys_ctrl.h"
 
+#include "param_config.h"
+
 #define CAL_RESULT_TO_FLASH		0
 #define CAL_RESULT_FLASH_ADDR		0x000F1000UL
 
@@ -2365,7 +2367,7 @@ cali_saradc_desc_t *bk7011_cal_saradc_open()
     }
 
     param = PWD_SARADC_CLK_BIT;
-    sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);//REG_0x2£º00FFFD7C
+    sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);//REG_0x2ï¿½ï¿½00FFFD7C
 
     //param = (1 << 30); //the default value is 0 in bk7231n
     //sddev_control(SCTRL_DEV_NAME, CMD_SCTRL_ANALOG_CTRL4_CLEAN, &param);

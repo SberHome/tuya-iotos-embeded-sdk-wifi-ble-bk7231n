@@ -4,7 +4,7 @@
 #include "schedule_pub.h"
 #include "rw_msg_tx.h"
 
-#define SASTA_DEBUG
+//#define SASTA_DEBUG
 
 #ifdef SASTA_DEBUG
 #define SASTA_PRT                 os_printf

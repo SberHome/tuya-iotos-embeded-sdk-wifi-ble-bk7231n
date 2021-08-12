@@ -43,42 +43,42 @@
  * DEFINES
  ****************************************************************************************
  */
-#define KEY_ENTRY_MIN_ID		 24
-#define KEY_ENTRY_MAX_ID		 63
+#define KEY_ENTRY_MIN_ID 24
+#define KEY_ENTRY_MAX_ID 63
 
-#define MONITOR_FAILURE         ((UINT32)-1)
-#define MONITOR_SUCCESS         (0)
+#define MONITOR_FAILURE ((UINT32)-1)
+#define MONITOR_SUCCESS (0)
 
 /// Duration between AP TBTT and Beacon Transmission (in us, should be a multiple of 128us)
-#define HAL_MACHW_BCN_TX_DELAY_US       (2048)
+#define HAL_MACHW_BCN_TX_DELAY_US (2048)
 
 #if RW_MUMIMO_TX_EN
 #define MU_MIMO_MASTER_TX_IRQ NXMAC_SEC_USER_TX_TRIGGER_BIT
 /// Bits indicating activity on secondary users (separated trigger and buffer)
-#define TX_SEC_IRQ_BITS  ( NXMAC_SEC_U_3AC_3_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_3AC_2_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_3AC_1_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_3AC_0_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_3AC_3_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_3AC_2_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_3AC_1_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_3AC_0_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_2AC_3_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_2AC_2_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_2AC_1_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_2AC_0_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_2AC_3_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_2AC_2_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_2AC_1_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_2AC_0_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_1AC_3_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_1AC_2_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_1AC_1_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_1AC_0_TX_BUF_TRIGGER_BIT |             \
-                           NXMAC_SEC_U_1AC_3_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_1AC_2_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_1AC_1_TX_TRIGGER_BIT     |             \
-                           NXMAC_SEC_U_1AC_0_TX_TRIGGER_BIT )
+#define TX_SEC_IRQ_BITS (NXMAC_SEC_U_3AC_3_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_3AC_2_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_3AC_1_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_3AC_0_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_3AC_3_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_3AC_2_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_3AC_1_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_3AC_0_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_2AC_3_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_2AC_2_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_2AC_1_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_2AC_0_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_2AC_3_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_2AC_2_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_2AC_1_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_2AC_0_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_1AC_3_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_1AC_2_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_1AC_1_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_1AC_0_TX_BUF_TRIGGER_BIT | \
+                         NXMAC_SEC_U_1AC_3_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_1AC_2_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_1AC_1_TX_TRIGGER_BIT |     \
+                         NXMAC_SEC_U_1AC_0_TX_TRIGGER_BIT)
 #else
 #define MU_MIMO_MASTER_TX_IRQ 0
 #endif
@@ -136,10 +136,10 @@ enum
     HAL_IDLE_TIMER,
     /// RX interrupt mitigation timeout
     HAL_RX_TIMER,
-    #if NX_MM_TIMER
+#if NX_MM_TIMER
     /// MM timeout
     HAL_MM_TIMER,
-    #endif
+#endif
     /// Kernel timer
     HAL_KE_TIMER,
 
@@ -164,20 +164,20 @@ enum
     HAL_IDLE_TIMER_BIT = CO_BIT(HAL_IDLE_TIMER),
     /// RX interrupt mitigation timeout bit
     HAL_RX_TIMER_BIT = CO_BIT(HAL_RX_TIMER),
-    #if NX_MM_TIMER
+#if NX_MM_TIMER
     /// MM timeout bit
     HAL_MM_TIMER_BIT = CO_BIT(HAL_MM_TIMER),
-    #endif
+#endif
     /// Kernel timer bit
     HAL_KE_TIMER_BIT = CO_BIT(HAL_KE_TIMER),
 };
 
 typedef struct
 {
-	uint32_t  count;
-	uint32_t  group_cipher_type;
-	uint64_t  mac_addr;
-}MONITOR_PTH_T;
+    uint32_t count;
+    uint32_t group_cipher_type;
+    uint64_t mac_addr;
+} MONITOR_PTH_T;
 
 /*
  * FUNCTION DECLARATIONS
@@ -197,13 +197,13 @@ extern UINT32 last_rw_time;
  */
 __INLINE uint32_t hal_machw_time(void)
 {
-	uint32_t time = nxmac_monotonic_counter_2_lo_get();
-	if ((time == 0xdead5555) && (last_rw_time != 0xdead5555))
-		time = last_rw_time;
-    else if(time != 0xdead5555)
+    uint32_t time = nxmac_monotonic_counter_2_lo_get();
+    if ((time == 0xdead5555) && (last_rw_time != 0xdead5555))
+        time = last_rw_time;
+    else if (time != 0xdead5555)
         last_rw_time = time;
-	if (time == 0xdead5555)
-		bk_printf("XXXXXXXXXX time dead 2\r\n");
+    if (time == 0xdead5555)
+        bk_printf("XXXXXXXXXX time dead 2\r\n");
     return time;
 }
 
@@ -248,7 +248,8 @@ __INLINE bool hal_machw_time_past(uint32_t time)
 __INLINE void hal_machw_udelay(uint32_t us)
 {
     uint32_t e = hal_machw_time() + us;
-    while (!hal_machw_time_past(e));
+    while (!hal_machw_time_past(e))
+        ;
 }
 
 #if NX_MULTI_ROLE
@@ -262,12 +263,13 @@ __INLINE uint32_t hal_machw_rx_duration(struct rx_hd *rhd, uint16_t len)
 
     // Compute the duration
     nxmac_compute_duration_setf(1);
-    #ifdef CFG_RWTL
+#ifdef CFG_RWTL
     // Add a fake read to ensure previous write is performed
     hal_machw_time();
-    #endif
-    while(nxmac_time_on_air_valid_getf() == 0);
-	
+#endif
+    while (nxmac_time_on_air_valid_getf() == 0)
+        ;
+
     ASSERT_REC_VAL(nxmac_time_on_air_valid_getf() != 0, 500);
 
     // Retrieve the duration
@@ -277,22 +279,25 @@ __INLINE uint32_t hal_machw_rx_duration(struct rx_hd *rhd, uint16_t len)
 
 __INLINE uint32_t hal_machw_frame_duration(uint8_t bw, uint8_t modf, uint8_t rate, uint8_t long_preamble, uint8_t short_gi, uint16_t len)
 {
-    uint8_t         pre_type;
+    uint8_t pre_type;
 
-    if(modf == 0)   pre_type = long_preamble & 0x1;     //non ht
-    else            pre_type = modf;                     //htmm or htgf
-    
+    if (modf == 0)
+        pre_type = long_preamble & 0x1; //non ht
+    else
+        pre_type = modf; //htmm or htgf
+
     // Fill-in the TimeOnAir parameter registers
     nxmac_ppdu_mcs_index_setf(rate);
     nxmac_time_on_air_param_1_pack(0, 0, short_gi, pre_type, bw, len);
 
     // Compute the duration
     nxmac_compute_duration_setf(1);
-    #ifdef CFG_RWTL
+#ifdef CFG_RWTL
     // Add a fake read to ensure previous write is performed
     hal_machw_time();
-    #endif
-    while(nxmac_time_on_air_valid_getf() == 0);
+#endif
+    while (nxmac_time_on_air_valid_getf() == 0)
+        ;
     ASSERT_REC_VAL(nxmac_time_on_air_valid_getf() != 0, 500);
 
     // Retrieve the duration
@@ -385,7 +390,6 @@ uint8_t hal_machw_search_addr(struct mac_addr *addr);
  */
 void hal_machw_disable_int(void);
 
-
 /**
  ****************************************************************************************
  * @brief Stop the operation of the MAC HW.
@@ -437,12 +441,14 @@ extern uint32_t hal_machw_exit_ez_of_sta(void);
 void hal_machw_idle_req(void);
 
 void hal_assert_rec(void);
-#define HAL_FATAL_ERROR_RECOVER(cond)    \
-    do {                         \
-        if (!(cond)) {           \
-            hal_assert_rec();    \
-        }                        \
-    } while(0)
+#define HAL_FATAL_ERROR_RECOVER(cond) \
+    do                                \
+    {                                 \
+        if (!(cond))                  \
+        {                             \
+            hal_assert_rec();         \
+        }                             \
+    } while (0)
 
 /// @}  // end of group HAL_MACHW
 /// @}  // end of group HAL

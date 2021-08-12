@@ -10,7 +10,7 @@
 #include "sys_ctrl_pub.h"
 #include "drv_model_pub.h"
 #include "mem_pub.h"
-#include "error.h"
+//#include "error.h"
 #include "rtos_pub.h"
 #include "general_dma_pub.h"
 #include "general_dma.h"
