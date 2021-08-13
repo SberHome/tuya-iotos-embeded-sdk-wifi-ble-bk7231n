@@ -138,7 +138,7 @@ typedef  struct  _ScanResult_adv
  */
 typedef struct _network_InitTypeDef_st
 {
-    char wifi_mode;               /**< DHCP mode: @ref wlanInterfaceTypedef.*/
+    wlanInterfaceTypedef wifi_mode;               /**< DHCP mode: @ref wlanInterfaceTypedef.*/
     char wifi_ssid[33];           /**< SSID of the wlan needs to be connected.*/
     char wifi_key[64];            /**< Security key of the wlan needs to be connected, ignored in an open system.*/
     char local_ip_addr[16];       /**< Static IP configuration, Local IP address. */
@@ -416,7 +416,7 @@ extern int bk_wlan_get_ap_monitor_coexist();
 extern uint32_t bk_sta_cipher_is_open(void);
 extern uint32_t bk_sta_cipher_is_wep(void);
 extern int bk_sta_cipher_type(void);
-extern int bk_wlan_stop(char mode);
+extern int bk_wlan_stop(wlanInterfaceTypedef mode);
 extern void bk_wlan_ap_set_channel_config(uint8_t channel);
 extern uint8_t bk_wlan_ap_get_channel_config(void);
 extern uint32_t bk_wlan_ap_get_frequency(void);
