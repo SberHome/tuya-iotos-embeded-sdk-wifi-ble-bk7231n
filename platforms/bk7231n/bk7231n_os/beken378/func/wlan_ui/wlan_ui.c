@@ -569,13 +569,20 @@ void bk_wlan_sta_init(network_InitTypeDef_st *inNetworkInitPara)
 
 OSStatus bk_wlan_start_sta(network_InitTypeDef_st *inNetworkInitPara)
 {
+    OSStatus ret = kNoErr;
+    os_printf("bk_wlan_start_sta\r\n");
     rwnxl_reset_evt(0);
 
-    bk_wlan_stop(STATION);
+    ret = bk_wlan_stop(STATION);
+    if (ret != kNoErr){
+        os_printf("stop failed\r\n");
+        return ret;
+    }
 
     bk_wlan_sta_init(inNetworkInitPara);
 
-    supplicant_main_entry(inNetworkInitPara->wifi_ssid);
+    int exitcode = supplicant_main_entry(inNetworkInitPara->wifi_ssid);
+    os_printf("supplicant_main_entry exit code: %d\r\n", exitcode);
 
     net_wlan_add_netif(&g_sta_param_ptr->own_mac);
 
@@ -586,12 +593,13 @@ OSStatus bk_wlan_start_sta(network_InitTypeDef_st *inNetworkInitPara)
                    inNetworkInitPara->gateway_ip_addr,
                    inNetworkInitPara->dns_server_ip_addr);
 
-    return kNoErr;
+    return ret;
 }
 
 OSStatus bk_wlan_start(network_InitTypeDef_st *inNetworkInitPara)
 {
-    int ret = 0;
+    os_debug("START\n");
+    OSStatus ret = 0;
 #if CFG_ROLE_LAUNCH
     LAUNCH_REQ lreq;
 #endif
@@ -625,7 +633,7 @@ OSStatus bk_wlan_start(network_InitTypeDef_st *inNetworkInitPara)
 #endif
     }
 
-    return 0;
+    return ret;
 }
 
 void bk_wlan_start_scan(void)
@@ -828,6 +836,7 @@ void bk_wlan_ap_init_adv(network_InitTypeDef_ap_st *inNetworkInitParaAP)
 
 OSStatus bk_wlan_start_sta_adv(network_InitTypeDef_adv_st *inNetworkInitParaAdv)
 {
+    os_printf("bk_wlan_start_sta_adv\r\n");
     if (bk_wlan_is_monitor_mode())
     {
         os_printf("airkiss is not finish yet, stop airkiss or waiting it finish!\r\n");
@@ -902,8 +911,9 @@ OSStatus bk_wlan_start_ap_adv(network_InitTypeDef_ap_st *inNetworkInitParaAP)
 }
 #endif
 
-int bk_wlan_stop(char mode)
+int bk_wlan_stop(wlanInterfaceTypedef mode)
 {
+    os_printf("bk_wlan_stop, mode: %d\r\n", mode);
     int ret = kNoErr;
 
     mhdr_set_station_status(RW_EVT_STA_IDLE);
@@ -1049,6 +1059,7 @@ OSStatus bk_wlan_get_link_status(LinkStatusTypeDef *outStatus)
 
     if (!sta_ip_is_start())
     {
+        os_printf("sta_ip not started\r\n");
         return kGeneralErr;
     }
 
@@ -1201,6 +1212,7 @@ int bk_wlan_get_ap_monitor_coexist()
  */
 int bk_wlan_start_monitor(void)
 {
+    os_printf("bk_wlan_start_monitor\r\n");
 #if !CFG_AP_MONITOR_COEXIST
     monitor_data_cb_t cb_bakup = g_monitor_cb;
     g_monitor_cb = NULL;
