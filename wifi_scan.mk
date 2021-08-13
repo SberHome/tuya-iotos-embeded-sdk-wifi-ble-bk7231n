@@ -882,31 +882,28 @@ DEPENDENCY_OS_LIST = $(SRC_OS:%.c=$(OBJ_DIR)/%.d)
 
 # Compile options
 # -------------------------------------------------------------------
-CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
+CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mlittle-endian -Os -std=c99 -ffunction-sections -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Werror -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Wno-unused-function -Wunknown-pragmas -Wl,--gc-sections
-CFLAGS += -DWIFI_BLE_COEXIST
+CFLAGS += $(DEBUG_DEFINES)
 
 ifeq ("${CFG_GIT_VERSION}", "")
 else
 CFLAGS += -DVCS_RELEASE_VERSION=\"$(CFG_GIT_VERSION)\"
 endif
 
-#debug defines
-CFLAGS += $(DEBUG_DEFINES)
-
-OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fsigned-char -fdata-sections -Wunknown-pragmas
+OSFLAGS = 
+OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mlittle-endian -Os -std=c99 -ffunction-sections -fsigned-char -fdata-sections -Wunknown-pragmas
 #OSFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fsigned-char -fdata-sections -Wunknown-pragmas -Wl,--gc-sections
 
 ASMFLAGS = 
-ASMFLAGS += -g -marm -mthumb-interwork -mcpu=arm968e-s -march=armv5te -x assembler-with-cpp
+ASMFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -x assembler-with-cpp
 
 LFLAGS = 
-LFLAGS += -g -Wl,--gc-sections -marm -mcpu=arm968e-s -mthumb-interwork -nostdlib
+#LFLAGS += -g -Wl,--gc-sections -marm -mcpu=arm968e-s -mthumb-interwork -nostdlib
 LFLAGS += -Wl,-wrap,malloc -Wl,-wrap,_malloc_r -Wl,-wrap,free -Wl,-wrap,_free_r -Wl,-wrap,zalloc -Wl,-wrap,calloc -Wl,-wrap,realloc  -Wl,-wrap,_realloc_r
 LFLAGS += -Wl,-wrap,printf -Wl,-wrap,vsnprintf -Wl,-wrap,snprintf -Wl,-wrap,sprintf -Wl,-wrap,puts
-#LFLAGS += -g -Wl,--gc-sections -mthumb -mcpu=arm968e-s -mthumb-interwork -nostdlib
-
+LFLAGS += -g -Wl,--gc-sections -mthumb -mcpu=arm968e-s -nostdlib
 
 LIBFLAGS =
 LIBFLAGS += -L$(BEKEN_DIR)/beken378/lib -lrwnx

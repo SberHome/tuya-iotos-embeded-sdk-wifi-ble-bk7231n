@@ -2,6 +2,9 @@ APP_NAME = mqtt
 APP_VERSION = 1.0.0
 SOC_NAME = bk7231n
 
+INCLUDES =
+SRC_C =
+
 BUILD_DIR = build
 BEKEN_DIR = platforms/bk7231n/bk7231n_os
 
@@ -14,8 +17,10 @@ OUTPUT_FULL_NAME=$(BIN_DIR)/$(APP_NAME)_$(APP_VERSION)
 SOC_NAME_LDS = $(BEKEN_DIR)/beken378/build/bk7231n_ota.ld
 
 DEBUG_DEFINES = 
-#DEBUG_DEFINES += -DSAAP_DEBUG
-#DEBUG_DEFINES += -DSASTA_DEBUG
+DEBUG_DEFINES += -DMQTT_DEBUG=0
+DEBUG_DEFINES += -DJL_DEBUG=1
+#DEBUG_DEFINES += -DSAAP_DEBUG=1
+#DEBUG_DEFINES += -DSASTA_DEBUG=1
 
 
 ENCRYPT = $(BEKEN_DIR)/tools/generate/package_tool/windows/encrypt.exe
@@ -48,8 +53,23 @@ OBJDUMP = "$(CROSS_COMPILE)objdump"
 # Include folder list
 # -------------------------------------------------------------------
 
+
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/client
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/client/src
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/packet/src
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui/ssl_mqtt
+INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui/tcp_mqtt
+
+SRC_C += apps/$(APP_NAME)/paho-mqtt/client/paho_mqtt_udp.c
+SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTPacket.c
+SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTConnectClient.c
+SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTSubscribeClient.c
+SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTDeserializePublish.c
+SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTSerializePublish.c
+
 # Beken SDK include folder and source file list
-INCLUDES =
+
 INCLUDES += -I$(BEKEN_DIR)/beken378/common
 INCLUDES += -I$(BEKEN_DIR)/beken378/app
 INCLUDES += -I$(BEKEN_DIR)/beken378/app/config
@@ -221,7 +241,6 @@ endif
 # -------------------------------------------------------------------
 # Source file list
 # -------------------------------------------------------------------
-SRC_C =
 SRC_OS =
 
 
@@ -882,10 +901,9 @@ DEPENDENCY_OS_LIST = $(SRC_OS:%.c=$(OBJ_DIR)/%.d)
 
 # Compile options
 # -------------------------------------------------------------------
-CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
+CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Werror -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Wno-unused-function -Wunknown-pragmas -Wl,--gc-sections
-CFLAGS += -DWIFI_BLE_COEXIST
 
 ifeq ("${CFG_GIT_VERSION}", "")
 else
@@ -895,7 +913,8 @@ endif
 #debug defines
 CFLAGS += $(DEBUG_DEFINES)
 
-OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fsigned-char -fdata-sections -Wunknown-pragmas
+OSFLAGS =
+OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fsigned-char -fdata-sections -Wunknown-pragmas
 #OSFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fsigned-char -fdata-sections -Wunknown-pragmas -Wl,--gc-sections
 
 ASMFLAGS = 

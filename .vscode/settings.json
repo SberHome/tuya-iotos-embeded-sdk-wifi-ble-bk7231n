@@ -29,6 +29,11 @@
         "sdio_intf.h": "c",
         "mm_bcn.h": "c",
         "bk7011_cal_pub.h": "c",
-        "role_launch.h": "c"
+        "role_launch.h": "c",
+        "ieee802_11_defs.h": "c",
+        "str_pub.h": "c",
+        "mqtt.h": "c",
+        "stdlib.h": "c",
+        "ap_config.h": "c"
     }
 }
