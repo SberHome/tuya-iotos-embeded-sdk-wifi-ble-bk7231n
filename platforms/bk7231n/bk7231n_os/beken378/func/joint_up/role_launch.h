@@ -3,7 +3,7 @@
 
 #include "wlan_ui_pub.h"
 
-#define JL_DEBUG            0
+//#define JL_DEBUG            0
 
 #if JL_DEBUG
 #define JL_PRT              os_printf
