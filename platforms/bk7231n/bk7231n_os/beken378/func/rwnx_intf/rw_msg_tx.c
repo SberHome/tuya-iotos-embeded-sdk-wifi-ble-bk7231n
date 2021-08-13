@@ -643,12 +643,18 @@ int rw_msg_get_bss_info(u8 vif_idx, void *cfm)
     struct sm_get_bss_info_req *req = NULL;
 
     if (vif_idx >= NX_VIRT_DEV_MAX)
+    {
+        os_printf("vif_idx out of range, %d\r\n", vif_idx);
         return -1;
+    }
 
     req = ke_msg_alloc(SM_GET_BSS_INFO_REQ, TASK_SM, TASK_API,
                        sizeof(struct sm_get_bss_info_req));
     if (!req)
+    {
+        os_printf("ke_msg_alloc failed\r\n");
         return -1;
+    }
 
     req->vif_idx = vif_idx;
 
