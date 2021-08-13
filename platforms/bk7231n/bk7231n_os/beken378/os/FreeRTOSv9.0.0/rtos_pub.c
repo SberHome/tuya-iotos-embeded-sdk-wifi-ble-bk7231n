@@ -692,6 +692,11 @@ static void timer_callback1( xTimerHandle handle )
 
 OSStatus rtos_start_oneshot_timer( beken2_timer_t* timer )
 {
+    if (!rtos_is_oneshot_timer_init(timer)) {
+        os_debug("Timer not initialised\n");
+        return kGeneralErr;
+    }
+
     signed portBASE_TYPE result;
 
     if ( platform_is_in_interrupt_context() == RTOS_SUCCESS ) {
@@ -715,6 +720,11 @@ OSStatus rtos_start_oneshot_timer( beken2_timer_t* timer )
 OSStatus rtos_deinit_oneshot_timer( beken2_timer_t* timer )
 {
 	OSStatus ret = kNoErr;
+    if (!rtos_is_oneshot_timer_init(timer)) {
+        os_debug("Timer not initialised\n");
+        return kGeneralErr;
+    }
+
 	GLOBAL_INT_DECLARATION();
 
 	GLOBAL_INT_DISABLE();
@@ -737,6 +747,9 @@ OSStatus rtos_deinit_oneshot_timer( beken2_timer_t* timer )
 
 OSStatus rtos_stop_oneshot_timer( beken2_timer_t* timer )
 {
+    if (!rtos_is_oneshot_timer_init(timer))
+        return kGeneralErr;
+
     signed portBASE_TYPE result;
 
     if ( platform_is_in_interrupt_context() == RTOS_SUCCESS ) {
