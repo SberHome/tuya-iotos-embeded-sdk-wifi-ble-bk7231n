@@ -61,8 +61,7 @@ int wpa_get_psk(char *psk)
 int supplicant_exit_done(void)
 {
 	supplicant_exit_flag = 0;
-	os_printf("supplicant_exit_done\r\n");
-	
+	os_debug("supplicant_exit_done\n");
 	return 0;
 }
 
