@@ -275,6 +275,8 @@ void rwnx_cal_en_rx_filter_offset(void);
 void manual_cal_set_dif_ble(UINT32 diff);
 void rwnx_cal_set_bw_i2v(int enable);
 void rwnx_cal_dis_rx_filter_offset(void);
+void rwnx_cal_set_max_twper(FP32 max_tx_pwr);
+
 UINT32 manual_cal_txpwr_tab_ready_in_flash(void);
 
 #endif // _BK7011_CAL_PUB_H_

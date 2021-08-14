@@ -8,6 +8,7 @@ extern int hapd_intf_set_ap(void *beacon, int bcn_len, int head_len);
 extern void wpa_buffer_scan_results(void);
 extern void wpa_clear_scan_results(void);
 extern void wpa_enable_traffic_port_at_opensystem(void);
+void wpa_hostapd_release_scan_rst(void);
 
 #endif
 // eof

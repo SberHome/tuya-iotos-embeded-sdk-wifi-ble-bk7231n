@@ -33,6 +33,7 @@
 #include "port/net.h"
 #include "txu_cntrl.h"
 #include "rw_msdu.h"
+#include "bk7011_cal_pub.h"
 
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
@@ -53,16 +54,16 @@ uint8_t g_mesh_bssid[6];
 #endif
 FUNC_1PARAM_PTR connection_status_cb = 0;
 
-extern void mm_hw_ap_disable(void);
-extern int hostapd_main_exit(void);
-extern int supplicant_main_exit(void);
-extern void net_wlan_add_netif(void *mac);
-extern void wpa_hostapd_release_scan_rst(void);
-extern int mm_bcn_get_tx_cfm(void);
-extern void wlan_ui_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
-extern void power_save_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
-extern void bk_wlan_register_bcn_cb(monitor_data_cb_t fn);
-extern void mcu_ps_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
+//void mm_hw_ap_disable(void);
+int hostapd_main_exit(void);
+int supplicant_main_exit(void);
+void net_wlan_add_netif(void *mac);
+//void wpa_hostapd_release_scan_rst(void);
+int mm_bcn_get_tx_cfm(void);
+void wlan_ui_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
+void power_save_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
+void bk_wlan_register_bcn_cb(monitor_data_cb_t fn);
+void mcu_ps_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info);
 
 static void rwnx_remove_added_interface(void)
 {
@@ -154,7 +155,6 @@ OSStatus bk_wlan_get_country(wifi_country_t *country)
 
 void bk_wlan_set_max_txpwr(FP32 max_tx_pwr)
 {
-    void rwnx_cal_set_max_twper(FP32 max_tx_pwr);
     rwnx_cal_set_max_twper(max_tx_pwr);
 }
 
@@ -574,7 +574,8 @@ OSStatus bk_wlan_start_sta(network_InitTypeDef_st *inNetworkInitPara)
     rwnxl_reset_evt(0);
 
     ret = bk_wlan_stop(STATION);
-    if (ret != kNoErr){
+    if (ret != kNoErr)
+    {
         os_printf("stop failed\r\n");
         return ret;
     }

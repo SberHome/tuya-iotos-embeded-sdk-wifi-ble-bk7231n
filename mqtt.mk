@@ -914,7 +914,7 @@ endif
 CFLAGS += $(DEBUG_DEFINES)
 
 OSFLAGS =
-OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fsigned-char -fdata-sections -Wunknown-pragmas
+OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -fsigned-char -Wunknown-pragmas -ffunction-sections -fdata-sections
 #OSFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fsigned-char -fdata-sections -Wunknown-pragmas -Wl,--gc-sections
 
 ASMFLAGS = 

@@ -81,7 +81,7 @@ static void mqtt_offline_callback(MQTT_CLIENT_T *c)
  */
 static int mqtt_test_publish(const char *send_str)
 {
-    static counter = 0;
+    static int counter = 0;
     MQTTMessage message;
     const char *msg_str = send_str;
     const char *topic = MQTT_PUBTOPIC;
