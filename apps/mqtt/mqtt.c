@@ -81,13 +81,16 @@ static void mqtt_offline_callback(MQTT_CLIENT_T *c)
  */
 static int mqtt_test_publish(const char *send_str)
 {
+    static counter = 0;
     MQTTMessage message;
     const char *msg_str = send_str;
     const char *topic = MQTT_PUBTOPIC;
 
     message.qos = MQTT_TEST_QOS;
     message.retained = 0;
-    message.payload = (void *)msg_str;
+    char msg[20];
+    snprintf(msg, 20, "Hello: %d", counter++);
+    message.payload = msg;
     message.payloadlen = os_strlen(message.payload);
 
     return mqtt_publish_with_topic(&mqtt_client, topic, &message);
@@ -200,9 +203,6 @@ static void mqtt_pub_handler(void *parameter)
 
     while (1)
     {
-        os_debug("hello %d\n", 1);
-        os_debug("hello %d %d\n", 1, 2);
-        os_debug("hello2\n");
         if (!mqtt_test_publish(test_pub_data))
         {
             ++pub_count;
@@ -219,8 +219,6 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     OSStatus ret = kNoErr;
     network_InitTypeDef_st wNetConfig = {0};
 
-    //os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
-
     int len = os_strlen(oob_ssid);
     if (SSID_MAX_LEN < len)
     {
@@ -235,7 +233,7 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     wNetConfig.dhcp_mode = DHCP_CLIENT;
     wNetConfig.wifi_retry_interval = 100;
 
-    bk_printf("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
+    os_printf("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
     ret = bk_wlan_start(&wNetConfig);
 
     if (ret != kNoErr)
