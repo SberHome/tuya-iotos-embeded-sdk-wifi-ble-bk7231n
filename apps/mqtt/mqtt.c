@@ -9,19 +9,23 @@
 #ifndef APP_DEBUG
 #define APP_DEBUG 0
 #endif
-#define app_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
+#define debug_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
 
 static char *test_pub_data = NULL;
-static MQTT_CLIENT_T mqtt_client;
+static MQTT_CLIENT_T mqtt_client = {0};
 static uint32_t pub_count = 0;
 static uint32_t sub_count = 0;
 static int recon_count = -1;
 static int test_start_tm = 0;
 static uint32_t g_mqtt_wifi_flag = 0;
 
+
+uint8_t mqtt_buf[MQTT_PUB_SUB_BUF_SIZE];
+uint8_t mqtt_read_buf[MQTT_PUB_SUB_BUF_SIZE];
+
 void mqtt_wifi_connect_cb(void)
 {
-    app_print("mqtt_wifi_connect_cb\r\n");
+    debug_print("mqtt_wifi_connect_cb\r\n");
     g_mqtt_wifi_flag = 1;
 }
 
@@ -45,29 +49,29 @@ void mqtt_waiting_for_wifi_connected(void)
 
 static void mqtt_sub_default_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    app_print("mqtt_sub_default_callback\r\n");
+    debug_print("mqtt_sub_default_callback\r\n");
 }
 
 static void mqtt_sub_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    app_print("mqtt_sub_callback\r\n");
+    debug_print("mqtt_sub_callback\r\n");
     sub_count++;
 }
 
 static void mqtt_connect_callback(MQTT_CLIENT_T *c)
 {
-    app_print("mqtt_connect_callback\r\n");
+    debug_print("mqtt_connect_callback\r\n");
 }
 
 static void mqtt_online_callback(MQTT_CLIENT_T *c)
 {
-    app_print("mqtt_online_callback\r\n");
+    debug_print("mqtt_online_callback\r\n");
     recon_count++;
 }
 
 static void mqtt_offline_callback(MQTT_CLIENT_T *c)
 {
-    app_print("mqtt_offline_callback\r\n");
+    debug_print("mqtt_offline_callback\r\n");
 }
 /**
  * This function publish message to specific mqtt topic.
@@ -93,6 +97,10 @@ static int mqtt_test_publish(const char *send_str)
     return mqtt_publish_with_topic(&mqtt_client, topic, &message);
 }
 
+
+
+
+
 /**
  * This function create and config a mqtt client.
  *
@@ -102,12 +110,10 @@ static int mqtt_test_publish(const char *send_str)
  */
 static void mqtt_start(void)
 {
-    app_print("mqtt_start\r\n");
+    debug_print("mqtt_start\r\n");
 
     /* init condata param by using MQTTPacket_connectData_initializer */
     MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
-
-    os_memset(&mqtt_client, 0, sizeof(MQTT_CLIENT_T));
 
     /* config MQTT context param */
     mqtt_client.uri = MQTT_TEST_SERVER_URI;
@@ -129,13 +135,8 @@ static void mqtt_start(void)
 
     /* malloc buffer. */
     mqtt_client.buf_size = mqtt_client.readbuf_size = MQTT_PUB_SUB_BUF_SIZE;
-    mqtt_client.buf = os_malloc(mqtt_client.buf_size);
-    mqtt_client.readbuf = os_malloc(mqtt_client.readbuf_size);
-    if (!(mqtt_client.buf && mqtt_client.readbuf))
-    {
-        app_print("no memory for MQTT mqtt_client buffer!\n");
-        goto _exit;
-    }
+    mqtt_client.buf = mqtt_buf;
+    mqtt_client.readbuf = mqtt_read_buf;
 
     /* set event callback function */
     mqtt_client.connect_callback = mqtt_connect_callback;
@@ -143,7 +144,7 @@ static void mqtt_start(void)
     mqtt_client.offline_callback = mqtt_offline_callback;
 
     /* set subscribe table and event callback */
-    mqtt_client.messageHandlers[0].topicFilter = os_strdup(MQTT_SUBTOPIC);
+    mqtt_client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
     mqtt_client.messageHandlers[0].callback = mqtt_sub_callback;
     mqtt_client.messageHandlers[0].qos = MQTT_TEST_QOS;
 
@@ -151,9 +152,7 @@ static void mqtt_start(void)
     mqtt_client.defaultMessageHandler = mqtt_sub_default_callback;
 
     /* run mqtt client */
-    app_print("paho_mqtt_start\r\n");
     paho_mqtt_start(&mqtt_client);
-
     return;
 
 _exit:
@@ -174,14 +173,14 @@ _exit:
 
 static void test_show_info(void)
 {
-    app_print("==== MQTT Stability test ====\n");
-    app_print("Server: " MQTT_TEST_SERVER_URI "\n");
-    app_print("QoS   : %d\n", MQTT_TEST_QOS);
+    debug_print("==== MQTT Stability test ====\n");
+    debug_print("Server: " MQTT_TEST_SERVER_URI "\n");
+    debug_print("QoS   : %d\n", MQTT_TEST_QOS);
 
-    app_print("Test duration(tick)           : %d\n", rtos_get_time() - test_start_tm);
-    app_print("Number of published  packages : %d\n", pub_count);
-    app_print("Number of subscribed packages : %d\n", sub_count);
-    app_print("Number of reconnections       : %d\n", recon_count);
+    debug_print("Test duration(tick)           : %d\n", rtos_get_time() - test_start_tm);
+    debug_print("Number of published  packages : %d\n", pub_count);
+    debug_print("Number of subscribed packages : %d\n", sub_count);
+    debug_print("Number of reconnections       : %d\n", recon_count);
 }
 
 static void mqtt_pub_handler(void *parameter)
@@ -190,13 +189,13 @@ static void mqtt_pub_handler(void *parameter)
     test_pub_data = os_malloc(TEST_DATA_SIZE * sizeof(char));
     if (!test_pub_data)
     {
-        app_print("no memory for test_pub_data\n");
+        debug_print("no memory for test_pub_data\n");
         return;
     }
     os_memset(test_pub_data, '*', TEST_DATA_SIZE * sizeof(char));
 
     test_start_tm = rtos_get_time();
-    app_print("test start at '%d'\r\n", test_start_tm);
+    debug_print("test start at '%d'\r\n", test_start_tm);
 
     while (1)
     {
@@ -219,7 +218,7 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     int len = os_strlen(oob_ssid);
     if (SSID_MAX_LEN < len)
     {
-        bk_printf("ssid name more than 32 Bytes\r\n");
+        debug_print("ssid name more than 32 Bytes\r\n");
         return kParamErr;
     }
 
@@ -230,11 +229,11 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     wNetConfig.dhcp_mode = DHCP_CLIENT;
     wNetConfig.wifi_retry_interval = 100;
 
-    app_print("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
+    debug_print("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
     ret = bk_wlan_start(&wNetConfig);
 
     if (ret != kNoErr)
-        app_print("bk_wlan_start failed: %d\r\n", ret);
+        debug_print("bk_wlan_start failed: %d\r\n", ret);
 
     return ret;
 }
@@ -253,7 +252,7 @@ OSStatus user_main(void)
 
     while (!mqtt_client.is_connected)
     {
-        app_print("Waiting for mqtt connection...\r\n");
+        debug_print("Waiting for mqtt connection...\r\n");
         rtos_delay_milliseconds(1000);
     }
 
