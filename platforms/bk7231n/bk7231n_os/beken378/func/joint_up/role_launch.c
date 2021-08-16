@@ -14,6 +14,12 @@
 #include "param_config.h"
 #endif
 
+
+#ifndef ROLE_LAUNCH_DEBUG
+#define ROLE_LAUNCH_DEBUG 0
+#endif
+#define debug_print(...)  do { if (ROLE_LAUNCH_DEBUG) os_printf("[RL]"__VA_ARGS__); } while (0);
+
 #if CFG_ROLE_LAUNCH
 RL_T g_role_launch = {{0}};
 RL_SOCKET_T g_rl_socket = {0};
@@ -36,7 +42,7 @@ void rl_read_bssid_info(RL_BSSID_INFO_PTR bssid_info)
 	flash_hdl = ddev_open(FLASH_DEV_NAME,&status,0);
 	if(DD_HANDLE_UNVALID == flash_hdl)
 	{
-		os_null_printf("DD_HANDLE_UNVALID\r\n");
+		os_null_printf("DD_HANDLE_UNVALID\n");
 		return;
 	}
 	
@@ -44,7 +50,7 @@ void rl_read_bssid_info(RL_BSSID_INFO_PTR bssid_info)
 	ret = ddev_read(flash_hdl, (char *)bssid_info, sizeof(RL_BSSID_INFO_T), addr);
 	if(DRV_FAILURE == ret)
 	{
-		os_null_printf("DRV_FAILURE\r\n");
+		os_null_printf("DRV_FAILURE\n");
 	}
 	
 	ddev_close(flash_hdl);
@@ -94,7 +100,7 @@ static void rl_write_bssid_info(void)
 	/*if different, save the latest information about fast connect*/
 	if(0 == os_memcmp(&pre_bssid, &bssid_info, sizeof(bssid_info)))
 	{
-		bk_printf("same_bssid_info\r\n");
+		debug_print("same_bssid_info\n");
 		goto wr_exit;
 	}
 
@@ -332,7 +338,7 @@ uint32_t _sta_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion)
 
         g_role_launch.jl_previous_sta = entity;
         
-        JL_PRT("rl_sta_start\r\n");
+        debug_print("rl_sta_start\n");
         rl_sta_request_start(param);
 
 		ret = 1;
@@ -375,7 +381,7 @@ uint32_t _ap_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion)
         
         g_role_launch.jl_previous_ap = entity;
         
-        JL_PRT("rl_ap_start\r\n");
+        debug_print("rl_ap_start\n");
         rl_ap_request_start(param);
 		
 		ret = 1;
@@ -417,7 +423,6 @@ void rl_enter_handler(void *left, void *right)
 	
     GLOBAL_INT_DECLARATION();
 	
-	JL_PRT("rl_enter_handler\r\n");
 	ptr = (uint8_t *)os_malloc(sizeof(*ap_param) + sizeof(*sta_param));
 	if(0 == ptr)
 	{
@@ -440,7 +445,7 @@ void rl_enter_handler(void *left, void *right)
 
 	if(hit_sta)
 	{
-		JL_PRT("_sta_request_enter:0x%x :0x%x \r\n", g_role_launch.jl_previous_sta, g_role_launch.jl_following_sta);
+		debug_print("_sta_request_enter:0x%x :0x%x\n", g_role_launch.jl_previous_sta, g_role_launch.jl_following_sta);
 		ret = _sta_request_enter(sta_param, sta_completion);
 		if(ret)
 		{
@@ -452,7 +457,7 @@ void rl_enter_handler(void *left, void *right)
 	
 	if(hit_ap)
 	{
-		JL_PRT("_ap_request_enter\r\n");
+		debug_print("_ap_request_enter\n");
 		_ap_request_enter(ap_param, ap_completion);
 	}
 
@@ -466,14 +471,14 @@ uint32_t rl_sta_cache_request_enter(void)
 	uint32_t ret = 0;
     GLOBAL_INT_DECLARATION();
 
-	JL_PRT("sta_cache_request\r\n");
+	debug_print("sta_cache_request\n");
     GLOBAL_INT_DISABLE();
 	
 	do
 	{
 		if(g_sta_param_ptr->retry_cnt)
 		{
-			os_printf("g_sta_param_ptr->retry_cnt:%d\r\n", g_sta_param_ptr->retry_cnt);
+			os_printf("g_sta_param_ptr->retry_cnt:%d\n", g_sta_param_ptr->retry_cnt);
 			g_sta_param_ptr->retry_cnt--;
 		}
 		else
@@ -504,7 +509,7 @@ void rl_launch_handler(void *left, void *right)
     uint32_t ap_ret = LAUNCH_STATUS_OVER;
     uint32_t sta_ret = LAUNCH_STATUS_OVER;
     
-	JL_PRT("rl_launch_handler\r\n");
+	debug_print("rl_launch_handler\n");
     switch(g_role_launch.pre_entity_type)
     {
         case PRE_ENTITY_AP:
@@ -545,7 +550,7 @@ void rl_init(void)
 {
     OSStatus err = kNoErr;
 
-	JL_PRT("rl_init\r\n");
+	debug_print("rl_init\n");
 	err = rtos_init_oneshot_timer(&g_role_launch.rl_timer, 
 									RL_LAUNCH_PERIOD, 
 									(timer_2handler_t)rl_launch_handler, 
@@ -570,7 +575,7 @@ void rl_uninit(void)
 {    
     OSStatus err = kNoErr;
 
-	JL_PRT("rl_uninit\r\n");
+	debug_print("rl_uninit\n");
 
     if(RL_TIMER_START == g_role_launch.rl_timer_flag)
     {
@@ -590,19 +595,19 @@ void rl_start(void)
 {    
     OSStatus err = kNoErr;
 	
-	JL_PRT("rl_timer-stop\r\n");
+	debug_print("rl_timer-stop\n");
 	err = rtos_stop_oneshot_timer(&g_role_launch.rl_timer);
 	if(kNoErr != err)
 	{
-		JL_PRT("ERR:%d\r\n", err);
+		debug_print("ERR:%d\n", err);
 	}
 	g_role_launch.rl_timer_flag = RL_TIMER_STOP;
 	
-	JL_PRT("rl_start_timer\r\n");
+	debug_print("rl_start_timer\n");
     err = rtos_start_oneshot_timer(&g_role_launch.rl_timer);
 	if(kNoErr != err)
 	{
-		JL_PRT("err:%d\r\n", err);
+		debug_print("err:%d\n", err);
 	}
 	
     ASSERT(kNoErr == err);
@@ -617,7 +622,7 @@ void rl_stop(void)
     err = rtos_stop_oneshot_timer(&g_role_launch.rl_timer);
     ASSERT(kNoErr == err);   
 	
-	JL_PRT("rl_stop\r\n");
+	debug_print("rl_stop\n");
     err = rtos_stop_oneshot_timer(&g_role_launch.enter_timer);
     ASSERT(kNoErr == err);   
     
@@ -857,10 +862,10 @@ void rl_sta_request_start(LAUNCH_REQ *req)
 			if(os_memcmp(req->descr.wifi_ssid, bssid_info.ssid, ssid_len) == 0
 				&& os_strcmp((char*)req->descr.wifi_key, (char*)bssid_info.pwd) == 0)
 			{
-				bk_printf("fast_connect\r\n");
+				debug_print("fast_connect\n");
                 if(rl_pre_sta_get_status() == RL_STATUS_STA_SCANNING)
                 {
-                    os_printf("[wzl]It's scanning, terminate scan!\r\n");
+                    debug_print("[wzl]It's scanning, terminate scan!\n");
                     extern  void scan_fast_terminate(void);
                     scan_fast_terminate();
                     while(rl_pre_sta_get_status() == RL_STATUS_STA_SCANNING)
@@ -873,11 +878,11 @@ void rl_sta_request_start(LAUNCH_REQ *req)
 			}
 			else
 			{
-				bk_printf("normal_connect\r\n");
+				debug_print("normal_connect\n");
 				bk_wlan_start_sta(&req->descr);
 			}
 			#else
-			bk_printf("normal_connect\r\n");
+			debug_print("normal_connect\n");
             bk_wlan_start_sta(&req->descr);
 			#endif
             break;
@@ -922,24 +927,24 @@ void rl_sta_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion)
 	
     GLOBAL_INT_DECLARATION();
 
-	JL_PRT("rl_sta_request_enter\r\n");
+	debug_print("rl_sta_request_enter\n");
     GLOBAL_INT_DISABLE();
 	g_rl_socket.sta_completion = completion;
 	g_rl_socket.sta_param = *param;
 	g_rl_socket.sta_req_flag = 1;
 	
-	JL_PRT("enter_timer-Sstop\r\n");
+	debug_print("enter_timer-Sstop\n");
 	err = rtos_stop_oneshot_timer(&g_role_launch.enter_timer);
 	if(kNoErr != err)
 	{
-		JL_PRT("enter_timer-Sstop:0x%x\r\n", err);
+		debug_print("enter_timer-Sstop:0x%x\n", err);
 	}	
 	
-	JL_PRT("enter_timer-Sstart\r\n");
+	debug_print("enter_timer-Sstart\n");
     err = rtos_start_oneshot_timer(&g_role_launch.enter_timer);
 	if(kNoErr != err)
 	{
-		JL_PRT("enter_timer-Sstart:0x%x\r\n", err);
+		debug_print("enter_timer-Sstart:0x%x\n", err);
 	}
 	
     ASSERT(kNoErr == err);
@@ -952,17 +957,17 @@ void rl_ap_request_enter(LAUNCH_REQ *param, FUNC_1PARAM_PTR completion)
 	
     GLOBAL_INT_DECLARATION();
 
-	JL_PRT("rl_ap_request_enter\r\n");
+	debug_print("rl_ap_request_enter\n");
 
     GLOBAL_INT_DISABLE();
 	g_rl_socket.ap_completion = completion;
 	g_rl_socket.ap_param = *param;
 	g_rl_socket.ap_req_flag = 1;
 	
-	JL_PRT("enter_timer-Astop\r\n");
+	debug_print("enter_timer-Astop\n");
 	rtos_stop_oneshot_timer(&g_role_launch.enter_timer);
 	
-	JL_PRT("enter_timer-Astart\r\n");
+	debug_print("enter_timer-Astart\n");
     err = rtos_start_oneshot_timer(&g_role_launch.enter_timer);
     ASSERT(kNoErr == err);
     GLOBAL_INT_RESTORE();
