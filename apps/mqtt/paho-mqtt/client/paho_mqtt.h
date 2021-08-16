@@ -5,6 +5,7 @@
 #include "MQTTPacket.h"
 #include "compiler.h"
 #include "MQTTFreeRTOS.h"
+#include "rtos_pub.h"
 
 #ifdef MQTT_USING_TLS
 #include <tls_client.h>
@@ -121,7 +122,7 @@ typedef void (*subscribe_cb)(MQTT_CLIENT_T *client, MessageData *data);
  *
  * @return the error code, 0 on start successfully.
  */
-int paho_mqtt_start(MQTT_CLIENT_T *client);
+OSStatus paho_mqtt_start(MQTT_CLIENT_T *client);
 
 /**
  * This function publish message to specified mqtt topic.

@@ -41,6 +41,7 @@
         "net.h": "c",
         "lwip_netif_address.h": "c",
         "param_config.h": "c",
-        "assert.h": "c"
+        "assert.h": "c",
+        "system_error": "c"
     }
 }

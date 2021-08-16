@@ -863,7 +863,7 @@ _mqtt_exit:
     return;
 }
 
-int paho_mqtt_start(MQTT_CLIENT_T *client)
+OSStatus paho_mqtt_start(MQTT_CLIENT_T *client)
 {
     OSStatus ret;
     int stack_size = PKG_MQTT_THREAD_STACK_SIZE;
@@ -872,12 +872,10 @@ int paho_mqtt_start(MQTT_CLIENT_T *client)
 	ret = rtos_create_thread(&mqtt_udp_thd_tid,
                              priority,
                              "umqtt_thd",
-                             (beken_thread_function_t)paho_mqtt_thread,
+                             paho_mqtt_thread,
                              (unsigned short)stack_size,
-                             (beken_thread_arg_t)client);
-    ASSERT(kNoErr == ret);
-
-    return 0;
+                             client);
+    return ret;
 }
 
 static int mqtt_local_send(MQTT_CLIENT_T *c, const void *data, int len)

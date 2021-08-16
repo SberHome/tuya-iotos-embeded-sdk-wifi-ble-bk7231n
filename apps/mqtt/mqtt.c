@@ -14,12 +14,13 @@
             os_printf("[APP]"__VA_ARGS__); \
     } while (0);
 
+#define error_print(error_code, message) debug_print("ERROR: %d. " message "\n", error_code)
 
 static uint32_t pub_count = 0;
 static uint32_t sub_count = 0;
 static int recon_count = -1;
 static int test_start_tm = 0;
-static uint32_t g_mqtt_wifi_flag = 0;
+static bool g_mqtt_wifi_flag = false;
 
 static uint8_t mqtt_buf[MQTT_PUB_SUB_BUF_SIZE];
 static uint8_t mqtt_read_buf[MQTT_PUB_SUB_BUF_SIZE];
@@ -75,17 +76,17 @@ static MQTT_CLIENT_T mqtt_client = {
 void mqtt_wifi_connect_cb(void)
 {
     debug_print("mqtt_wifi_connect_cb\n");
-    g_mqtt_wifi_flag = 1;
+    g_mqtt_wifi_flag = true;
 }
 
-uint32_t mqtt_is_wifi_connected(void)
+bool mqtt_is_wifi_connected(void)
 {
-    return (1 == g_mqtt_wifi_flag);
+    return g_mqtt_wifi_flag;
 }
 
 void mqtt_waiting_for_wifi_connected(void)
 {
-    while (0 == mqtt_is_wifi_connected())
+    while (!mqtt_is_wifi_connected())
     {
         rtos_delay_milliseconds(5000);
     }
@@ -136,9 +137,8 @@ static int mqtt_test_publish()
 static void test_show_info(void)
 {
     debug_print("==== MQTT Stability test ====\n");
-    debug_print("Server: " MQTT_TEST_SERVER_URI "\n");
-    debug_print("QoS   : %d\n", MQTT_TEST_QOS);
-
+    debug_print("Server                        : " MQTT_TEST_SERVER_URI "\n");
+    debug_print("QoS                           : %d\n", MQTT_TEST_QOS);
     debug_print("Test duration(tick)           : %d\n", rtos_get_time() - test_start_tm);
     debug_print("Number of published  packages : %d\n", pub_count);
     debug_print("Number of subscribed packages : %d\n", sub_count);
@@ -147,22 +147,24 @@ static void test_show_info(void)
 
 static void mqtt_pub_handler(void *parameter)
 {
+    while (!mqtt_client.is_connected)
+    {
+        debug_print("Waiting for mqtt connection...\n");
+        rtos_delay_milliseconds(1000);
+    }
+
     test_start_tm = rtos_get_time();
     debug_print("test start at %d\n", test_start_tm);
 
     while (true)
     {
         if (!mqtt_test_publish())
-        {
             ++pub_count;
-        }
 
         rtos_delay_milliseconds(PUB_CYCLE_TM);
         test_show_info();
     }
 }
-
-
 
 OSStatus wifi_station_init()
 {
@@ -172,7 +174,7 @@ OSStatus wifi_station_init()
     ret = bk_wlan_start(&wNetConfig);
 
     if (ret != kNoErr)
-        debug_print("bk_wlan_start failed: %d\n", ret);
+        error_print(ret, "bk_wlan_start failed");
 
     return ret;
 }
@@ -187,12 +189,11 @@ OSStatus user_main(void)
     wifi_station_init();
 
     //mqtt_waiting_for_wifi_connected();
-    paho_mqtt_start(&mqtt_client);
-
-    while (!mqtt_client.is_connected)
+    ret = paho_mqtt_start(&mqtt_client);
+    if (ret != kNoErr)
     {
-        debug_print("Waiting for mqtt connection...\n");
-        rtos_delay_milliseconds(1000);
+        error_print(ret, "Cannot start mqtt client");
+        return ret;
     }
 
     ret = rtos_create_thread(NULL,
@@ -201,5 +202,10 @@ OSStatus user_main(void)
                              mqtt_pub_handler,
                              1024 * 4,
                              NULL);
+    if (ret != kNoErr)
+    {
+        error_print(ret, "Cannot create thread");
+        return ret;
+    }
     return ret;
 }
