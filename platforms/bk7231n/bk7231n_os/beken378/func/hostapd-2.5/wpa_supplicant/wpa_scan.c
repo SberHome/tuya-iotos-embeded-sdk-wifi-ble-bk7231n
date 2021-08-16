@@ -29,6 +29,12 @@
 #include "param_config.h"
 #include "mcu_ps_pub.h"
 
+#ifndef WPA_SCAN_DEBUG
+#define WPA_SCAN_DEBUG 0
+#endif
+#define debug_print(...)  do { if (WPA_SCAN_DEBUG) os_printf("[WPA_SCAN]"__VA_ARGS__); } while (0);
+
+
 static void wpa_supplicant_gen_assoc_event(struct wpa_supplicant *wpa_s)
 {
 	struct wpa_ssid *ssid;
@@ -184,7 +190,7 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
 		params->only_new_results = 1;
 	}
 	
-	os_printf("wpa_drv_scan\r\n");
+	debug_print("wpa_drv_scan\r\n");
 	ret = wpa_drv_scan(wpa_s, params);
 	wpa_scan_free_params(params);
 	work->ctx = NULL;
@@ -577,7 +583,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	size_t max_ssids;
 	int connect_without_scan = 0;
 
-	os_printf("wpa_supplicant_scan\r\n");
+	debug_print("wpa_supplicant_scan\r\n");
 	if (wpa_s->pno || wpa_s->pno_sched_pending) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Skip scan - PNO is in progress");
 		return;
@@ -1036,7 +1042,7 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 {
 	int res;
 
-	os_printf("wpa_supplicant_req_scan\r\n");
+	debug_print("wpa_supplicant_req_scan\r\n");
     mcu_prevent_set(MCU_PS_CONNECT);
         
 	if (wpa_s->p2p_mgmt) {
@@ -1053,17 +1059,17 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 								NULL);
 	if (res == 1) 
 	{
-		os_printf("Rescheduling scan request: %d.%06d sec\r\n",
+		debug_print("Rescheduling scan request: %d.%06d sec\r\n",
 					sec, usec);
 	} 
 	else if (res == 0) 
 	{
-		os_printf("Ignore new scan request for %d.%06d sec since an earlier request is scheduled to trigger sooner\r\n",
+		debug_print("Ignore new scan request for %d.%06d sec since an earlier request is scheduled to trigger sooner\r\n",
 					sec, usec);
 	} 
 	else 
 	{
-		os_printf("Setting scan[retry%d] request: %d.%06d sec\r\n", g_sta_param_ptr->retry_cnt, sec, usec);		
+		debug_print("Setting scan[retry%d] request: %d.%06d sec\r\n", g_sta_param_ptr->retry_cnt, sec, usec);		
 
 		if(g_sta_param_ptr->retry_cnt)
 		{
@@ -1376,7 +1382,7 @@ scan:
  */
 void wpa_supplicant_cancel_scan(struct wpa_supplicant *wpa_s)
 {
-	os_printf("Cancelling scan request\r\n");
+	debug_print("Cancelling scan request\r\n");
 	eloop_cancel_timeout(wpa_supplicant_scan, wpa_s, NULL);
 }
 

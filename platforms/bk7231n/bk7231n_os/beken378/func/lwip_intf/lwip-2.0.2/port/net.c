@@ -48,6 +48,12 @@ uint32_t uap_ip_start_flag = 0;
 #define net_e warning_prf
 #define net_d warning_prf
 
+#ifndef NET_DEBUG
+#define NET_DEBUG 0
+#endif
+#define debug_print(...)  do { if (NET_DEBUG) os_printf("[NET]"__VA_ARGS__); } while (0);
+
+
 typedef void (*net_sta_ipup_cb_fn)(void *data);
 
 struct interface
@@ -119,7 +125,7 @@ void net_ipv4stack_init(void)
 	if (tcpip_init_done)
 		return;
 
-	net_d("Initializing TCP/IP stack\r\n");
+	debug_print("Initializing TCP/IP stack\n");
 	tcpip_init(NULL, NULL);
 	tcpip_init_done = true;
 }
@@ -159,7 +165,7 @@ void net_ipv6stack_init(struct netif *netif)
 static void wm_netif_ipv6_status_callback(struct netif *n)
 {
 	/*	TODO: Implement appropriate functionality here*/
-	net_d("Received callback on IPv6 address state change");
+	debug_print("Received callback on IPv6 address state change\n");
 	wlan_wlcmgr_send_msg(WIFI_EVENT_NET_IPV6_CONFIG,
 						 WIFI_EVENT_REASON_SUCCESS, NULL);
 }
@@ -215,7 +221,7 @@ static void wm_netif_status_static_callback(struct netif *n)
 	if (n->flags & NETIF_FLAG_UP)
 	{
 		// static IP success;
-		os_printf("using static ip...\n");
+		debug_print("using static ip...\n");
 		/* dhcp success*/
 		mhdr_set_station_status(RW_EVT_STA_GOT_IP);
 
@@ -249,7 +255,7 @@ static void wm_netif_status_callback(struct netif *n)
 				uint8_t a1 = n->ip_addr.addr >> 8;
 				uint8_t a2 = n->ip_addr.addr >> 16;
 				uint8_t a3 = n->ip_addr.addr >> 24;
-				os_printf("ip_addr: %d.%d.%d.%d\r\n", a0, a1, a2, a3);
+				debug_print("ip_addr: %d.%d.%d.%d\n", a0, a1, a2, a3);
 
 #if CFG_ROLE_LAUNCH
 				rl_pre_sta_set_status(RL_STATUS_STA_LAUNCHED);
@@ -381,7 +387,7 @@ void sta_ip_down(void)
 {
 	if (sta_ip_start_flag)
 	{
-		os_printf("sta_ip_down\r\n");
+		debug_print("sta_ip_down\n");
 
 		sta_ip_start_flag = 0;
 
@@ -399,7 +405,7 @@ void sta_ip_start(void)
 
 	if (!sta_ip_start_flag)
 	{
-		os_printf("sta_ip_start\r\n");
+		debug_print("sta_ip_start\n");
 		sta_ip_start_flag = 1;
 		net_configure_address(&sta_ip_settings, net_get_sta_handle());
 		return;
@@ -450,7 +456,7 @@ void uap_ip_down(void)
 {
 	if (uap_ip_start_flag)
 	{
-		os_printf("uap_ip_down\r\n");
+		debug_print("uap_ip_down\n");
 		uap_ip_start_flag = 0;
 
 		netifapi_netif_set_down(&g_uap.netif);
@@ -463,7 +469,7 @@ void uap_ip_start(void)
 {
 	if (!uap_ip_start_flag)
 	{
-		os_printf("uap_ip_start\r\n");
+		debug_print("uap_ip_start\n");
 		uap_ip_start_flag = 1;
 		net_configure_address(&uap_ip_settings, net_get_uap_handle());
 	}
@@ -549,7 +555,7 @@ int net_configure_address(struct ipv4_config *addr, void *intrfc_handle)
 
 	struct interface *if_handle = (struct interface *)intrfc_handle;
 
-	net_d("\r\nconfiguring interface %s (with %s)",
+	debug_print("configuring interface %s (with %s)\n",
 		  (if_handle == &g_mlan) ? "mlan" : "uap",
 		  (addr->addr_type == ADDR_TYPE_DHCP)
 			  ? "DHCP client"
@@ -630,7 +636,7 @@ int net_configure_address(struct ipv4_config *addr, void *intrfc_handle)
 		// boardcast or not sub net packets, need set ap netif before
 		// send those packets, after finish sending, reset default netif
 		// to sta's netif.
-		os_printf("def netif is no ap's netif, sending boardcast or no-subnet ip packets may failed\r\n");
+		debug_print("def netif is no ap's netif, sending boardcast or no-subnet ip packets may failed\n");
 	}
 
 	return 0;
@@ -782,13 +788,13 @@ void net_wlan_add_netif(void *mac)
 	vif_idx = rwm_mgmt_vif_mac2idx(mac);
 	if (vif_idx == 0xff)
 	{
-		os_printf("net_wlan_add_netif not vif idx found\r\n");
+		debug_print("net_wlan_add_netif not vif idx found\n");
 		return;
 	}
 	vif_entry = rwm_mgmt_vif_idx2ptr(vif_idx);
 	if (!vif_entry)
 	{
-		os_printf("net_wlan_add_netif not vif found, %d\r\n", vif_idx);
+		debug_print("net_wlan_add_netif not vif found, %d\n", vif_idx);
 		return;
 	}
 
@@ -802,13 +808,13 @@ void net_wlan_add_netif(void *mac)
 	}
 	else
 	{
-		os_printf("net_wlan_add_netif with other role\r\n");
+		debug_print("net_wlan_add_netif with other role\n");
 		return;
 	}
 
 	if (netif_is_added((struct netif *)wlan_if))
 	{
-		os_printf("net_wlan_add_netif already added done!, vif_idx:%d\r\n", vif_idx);
+		debug_print("net_wlan_add_netif already added done!, vif_idx:%d\n", vif_idx);
 		return;
 	}
 
@@ -820,14 +826,14 @@ void net_wlan_add_netif(void *mac)
 
 	if (err)
 	{
-		os_printf("net_wlan_add_netif failed\r\n");
+		debug_print("net_wlan_add_netif failed\n");
 	}
 	else
 	{
 		vif_entry->priv = &wlan_if->netif;
 	}
 
-	os_printf("net_wlan_add_netif done!, vif_idx:%d\r\n", vif_idx);
+	debug_print("net_wlan_add_netif done!, vif_idx:%d\n", vif_idx);
 }
 
 void net_wlan_remove_netif(void *mac)
@@ -844,32 +850,32 @@ void net_wlan_remove_netif(void *mac)
 	vif_idx = rwm_mgmt_vif_mac2idx(mac);
 	if (vif_idx == 0xff)
 	{
-		os_printf("net_wlan_add_netif not vif idx found\r\n");
+		debug_print("net_wlan_add_netif not vif idx found\n");
 		return;
 	}
 	vif_entry = rwm_mgmt_vif_idx2ptr(vif_idx);
 	if (!vif_entry)
 	{
-		os_printf("net_wlan_add_netif not vif found, %d\r\n", vif_idx);
+		debug_print("net_wlan_add_netif not vif found, %d\n", vif_idx);
 		return;
 	}
 
 	netif = (struct netif *)vif_entry->priv;
 	if (!netif)
 	{
-		os_printf("net_wlan_remove_netif netif is null\r\n");
+		debug_print("net_wlan_remove_netif netif is null\n");
 		return;
 	}
 
 	err = netifapi_netif_remove(netif);
 	if (err != ERR_OK)
 	{
-		os_printf("net_wlan_remove_netif failed\r\n");
+		debug_print("net_wlan_remove_netif failed\n");
 	}
 	else
 	{
 		netif->state = NULL;
 	}
 
-	os_printf("net_wlan_remove_netif done!, vif_idx:%d\r\n", vif_idx);
+	debug_print("net_wlan_remove_netif done!, vif_idx:%d\n", vif_idx);
 }
