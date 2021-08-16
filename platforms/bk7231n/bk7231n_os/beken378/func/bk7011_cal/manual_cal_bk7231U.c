@@ -3326,14 +3326,14 @@ void manual_cal_temp_pwr_unint(void)
         g_ble_pwr_indx, g_ble_pwr_shift);
 #endif
 
-    bk_printf("stop td-indx:%d, tab:%d,",
+    debug_print("stop td-indx:%d, tab:%d,",
         g_tmp_pwr.indx,
         g_tmp_pwr.temp_tab[g_tmp_pwr.indx]);
 
     debug_print("stop xtal info: init:%d, c_delta:%d\n", 
         g_xcali.init_xtal, g_xcali.xtal_c_delta);
     
-	bk_printf("--0xc:%02x, pidx_b:%d, pidx_g:%d, X:%d\n",
+	debug_print("--0xc:%02x, pidx_b:%d, pidx_g:%d, X:%d\n",
         g_tmp_pwr.pwr_ptr->trx0x0c_12_15,
         g_tmp_pwr.pwr_ptr->p_index_delta,
         g_tmp_pwr.pwr_ptr->p_index_delta_g,
@@ -3625,12 +3625,12 @@ TMP_PWR_PTR manual_cal_set_tmp_pwr(UINT16 cur_val, UINT16 thre, UINT16 *last)
 #ifdef ATE_PRINT_DEBUG
         if (!get_ate_mode_state())
         {
-            bk_printf("do td cur_t:%d--last:idx:%d,t:%d -- new:idx:%d,t:%d \n",
+            debug_print("do td cur_t:%d--last:idx:%d,t:%d -- new:idx:%d,t:%d \n",
                 cur_val,
                 last_idx, g_tmp_pwr.temp_tab[last_idx],
                 g_tmp_pwr.indx, g_tmp_pwr.temp_tab[g_tmp_pwr.indx]);
 
-            bk_printf("--0xc:%02x, shift_b:%d, shift_g:%d, X:%d\n",
+            debug_print("--0xc:%02x, shift_b:%d, shift_g:%d, X:%d\n",
                 g_tmp_pwr.pwr_ptr->trx0x0c_12_15,
                 g_tmp_pwr.pwr_ptr->p_index_delta,
                 g_tmp_pwr.pwr_ptr->p_index_delta_g,
@@ -3762,12 +3762,12 @@ TMP_PWR_PTR manual_cal_set_tmp_pwr(UINT16 cur_val, UINT16 thre, UINT16 *last)
         //    g_tmp_pwr.pwr_ptr->mod, g_tmp_pwr.pwr_ptr->pa, *last); 
         if(ble_in_dut_mode() == 0)
         {
-            bk_printf("do td cur_t:%d--last:idx:%d,t:%d -- new:idx:%d,t:%d \n",
+            debug_print("do td cur_t:%d--last:idx:%d,t:%d -- new:idx:%d,t:%d \n",
                 cur_val,
                 last_idx, g_tmp_pwr.temp_tab[last_idx],
                 g_tmp_pwr.indx, g_tmp_pwr.temp_tab[g_tmp_pwr.indx]);
         
-    		bk_printf("--0xc:%02x, shift_b:%d, shift_g:%d, X:%d\n",
+    		debug_print("--0xc:%02x, shift_b:%d, shift_g:%d, X:%d\n",
                 g_tmp_pwr.pwr_ptr->trx0x0c_12_15,
                 g_tmp_pwr.pwr_ptr->p_index_delta,
                 g_tmp_pwr.pwr_ptr->p_index_delta_g,

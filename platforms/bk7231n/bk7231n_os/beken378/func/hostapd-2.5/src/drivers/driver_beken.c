@@ -30,6 +30,11 @@
 #include "rw_pub.h"
 #include "wlan_ui_pub.h"
 
+#ifndef DRIVER_BEKEN_DEBUG
+#define DRIVER_BEKEN_DEBUG 0
+#endif
+#define debug_print(...)  do { if (DRIVER_BEKEN_DEBUG) os_printf("[DRVBEK]"__VA_ARGS__); } while (0);
+
 static const u8 rfc1042_header[6] = {0xaa, 0xaa, 0x03, 0x00, 0x00, 0x00};
 
 struct hostap_driver_data
@@ -76,7 +81,7 @@ static void handle_data(struct hostap_driver_data *drv, u8 *buf, size_t len,
 
     if ((fc & (WLAN_FC_FROMDS | WLAN_FC_TODS)) != WLAN_FC_TODS)
     {
-        os_printf("Not ToDS data frame (fc=0x%04x)\n", fc);
+        debug_print("Not ToDS data frame (fc=0x%04x)\n", fc);
         return;
     }
 
@@ -91,13 +96,13 @@ static void handle_data(struct hostap_driver_data *drv, u8 *buf, size_t len,
 
     if (left < sizeof(rfc1042_header))
     {
-        os_printf("Too short data frame\n");
+        debug_print("Too short data frame\n");
         return;
     }
 
     if (memcmp(pos, rfc1042_header, sizeof(rfc1042_header)) != 0)
     {
-        os_printf("Data frame with no RFC1042 header\n");
+        debug_print("Data frame with no RFC1042 header\n");
         return;
     }
     pos += sizeof(rfc1042_header);
@@ -105,7 +110,7 @@ static void handle_data(struct hostap_driver_data *drv, u8 *buf, size_t len,
 
     if (left < 2)
     {
-        os_printf("No ethertype in data frame\n");
+        debug_print("No ethertype in data frame\n");
         return;
     }
 
@@ -119,7 +124,7 @@ static void handle_data(struct hostap_driver_data *drv, u8 *buf, size_t len,
         break;
 
     default:
-        os_printf("Unknown ethertype 0x%04x in data frame\n", ethertype);
+        debug_print("Unknown ethertype 0x%04x in data frame\n", ethertype);
         break;
     }
 }
@@ -184,7 +189,7 @@ static void handle_frame(struct hostap_driver_data *drv, u8 *buf, size_t len)
     }
     else if (ver != 0)
     {
-        os_printf("unknown protocol version %d\n", ver);
+        debug_print("unknown protocol version %d\n", ver);
         return;
     }
 
@@ -221,7 +226,7 @@ static void handle_read(int sock, void *eloop_ctx, void *sock_ctx)
     buf = os_malloc(TMP_BUF_LEN);
     if (!buf)
     {
-        os_printf("handle_read no mem\r\n");
+        debug_print("handle_read no mem\n");
         goto read_exit;
     }
 
@@ -450,7 +455,7 @@ static int hostap_get_seqnum(const char *ifname, void *priv, const u8 *addr,
 
     if (hostapd_ioctl(drv, param, blen))
     {
-        os_printf("Failed to get encryption.\n");
+        debug_print("Failed to get encryption.\n");
         ret = -1;
     }
     else
@@ -490,7 +495,7 @@ static int hostap_set_ieee8021x(void *priv, struct wpa_bss_params *params)
     /* enable kernel driver support for IEEE 802.1X */
     if (hostap_ioctl_prism2param(drv, PRISM2_PARAM_IEEE_802_1X, enabled))
     {
-        os_printf("Could not setup IEEE 802.1X support in kernel driver."
+        debug_print("Could not setup IEEE 802.1X support in kernel driver."
                   "\n");
         return -1;
     }
@@ -503,7 +508,7 @@ static int hostap_set_ieee8021x(void *priv, struct wpa_bss_params *params)
     if (hostap_ioctl_prism2param(drv, PRISM2_PARAM_HOST_DECRYPT, 1) ||
         hostap_ioctl_prism2param(drv, PRISM2_PARAM_HOST_ENCRYPT, 1))
     {
-        os_printf("Could not setup host-based encryption in kernel "
+        debug_print("Could not setup host-based encryption in kernel "
                   "driver.\n");
         return -1;
     }
@@ -657,7 +662,7 @@ static int hostap_sta_remove(void *priv, const u8 *addr)
     param.vif_idx = drv->vif_index;
     if (hostapd_ioctl(drv, &param, sizeof(param)))
     {
-        os_printf("Could not remove station from kernel driver.\n");
+        debug_print("Could not remove station from kernel driver.\n");
         return -1;
     }
     return 0;
@@ -969,7 +974,7 @@ static void *hostap_init(struct hostapd_data *hapd,
     drv = os_zalloc(sizeof(struct hostap_driver_data));
     if (drv == NULL)
     {
-        os_printf("Could not allocate memory for hostapd driver data\n");
+        debug_print("Could not allocate memory for hostapd driver data\n");
         return NULL;
     }
 
@@ -982,7 +987,7 @@ static void *hostap_init(struct hostapd_data *hapd,
     ret = wpa_driver_hostap_init_vif(drv, NL80211_IFTYPE_AP);
     if (ret || (drv->vif_index == 0xff))
     {
-        os_printf("Could not found vif indix: %d\n", drv->vif_index);
+        debug_print("Could not found vif indix: %d\n", drv->vif_index);
         os_free(drv);
         return NULL;
     }
@@ -1002,7 +1007,7 @@ static void *hostap_init(struct hostapd_data *hapd,
     ret = wpa_driver_hostap_start_apm(drv);
     if (ret)
     {
-        os_printf("wpa_driver_hostap_start_apm failed\n");
+        debug_print("wpa_driver_hostap_start_apm failed\n");
         return NULL;
     }
 
@@ -1026,10 +1031,10 @@ static void hostap_driver_deinit(void *priv)
     (void)hostap_ioctl_prism2param(drv, PRISM2_PARAM_HOSTAPD_STA, 0);
 
     if (wpa_driver_hostap_stop_apm(drv))
-        os_printf("Could not stop apm vif: %d\n", drv->vif_index);
+        debug_print("Could not stop apm vif: %d\n", drv->vif_index);
 
     if (wpa_driver_hostap_deinit_vif(drv))
-        os_printf("Could not remove vif: %d\n", drv->vif_index);
+        debug_print("Could not remove vif: %d\n", drv->vif_index);
 
     if (drv->ioctl_sock >= 0)
         fsocket_close(drv->ioctl_sock);
@@ -1313,25 +1318,25 @@ void wpa_driver_hostap_poll_client(void *priv, const u8 *own_addr,
 
 void wpa_driver_scan_sig_handler(int sig, void *signal_ctx)
 {
-    os_printf("wpa_driver_scan_cb\r\n");
+    debug_print("wpa_driver_scan_cb\n");
     wpa_supplicant_event_sta(signal_ctx, EVENT_SCAN_RESULTS, NULL);
 }
 
 void wpa_driver_assoc_sig_handler(int sig, void *signal_ctx)
 {
-    os_printf("wpa_driver_assoc_cb\r\n");
+    debug_print("wpa_driver_assoc_cb\n");
     wpa_supplicant_event_sta(signal_ctx, EVENT_ASSOC, NULL);
 }
 
 void wpa_driver_disassoc_sig_handler(int sig, void *signal_ctx)
 {
-    os_printf("wpa_driver_deassoc_cb\r\n");
+    debug_print("wpa_driver_deassoc_cb\n");
     wpa_supplicant_event_sta(signal_ctx, EVENT_DISASSOC, NULL);
 }
 
 void wpa_driver_deauth_sig_handler(int sig, void *signal_ctx)
 {
-    os_printf("wpa_driver_deauth_cb\r\n");
+    debug_print("wpa_driver_deauth_cb\n");
     wpa_supplicant_event_sta(signal_ctx, EVENT_DEAUTH, NULL);
 }
 
@@ -1367,7 +1372,7 @@ static void *wpa_driver_init(void *ctx, const char *ifname)
     ret = wpa_driver_hostap_init_vif(drv, NL80211_IFTYPE_STATION);
     if (ret || (drv->vif_index == 0xff))
     {
-        os_printf("Could not found vif indix: %d\n", drv->vif_index);
+        debug_print("Could not found vif indix: %d\n", drv->vif_index);
         os_free(drv);
         return NULL;
     }
@@ -1386,7 +1391,7 @@ static void wpa_driver_deinit(void *priv)
     (void)hostap_ioctl_prism2param(drv, PRISM2_PARAM_HOSTAPD_STA, 0);
 
     if (wpa_driver_hostap_deinit_vif(drv))
-        os_printf("Could not remove vif: %d\n", drv->vif_index);
+        debug_print("Could not remove vif: %d\n", drv->vif_index);
 
     if (drv->ioctl_sock >= 0)
         fsocket_close(drv->ioctl_sock);
@@ -1407,7 +1412,7 @@ void wpa_handler_signal(void *arg, u8 vif_idx)
 
     if (!eloop_get_signal_count())
     {
-        os_printf("wpa_handler_signal err failed\r\n");
+        debug_print("wpa_handler_signal err failed\n");
         return;
     }
 
@@ -1577,7 +1582,7 @@ int wpa_driver_associate(void *priv, struct wpa_driver_associate_params *params)
         ret = -1;
     }
 
-    os_printf("wpa_driver_associate\r\n");
+    debug_print("wpa_driver_associate\n");
     param = (struct prism2_hostapd_param *)buf;
     param->cmd = PRISM2_HOSTAPD_ASSOC_REQ;
     param->vif_idx = drv->vif_index;
@@ -1805,7 +1810,7 @@ void wpa_dbg(void *ctx, int level, const char *fmt, ...)
     buf = os_malloc(buflen);
     if (buf == NULL)
     {
-        bk_printf("wpa_msg: Failed to allocate message "
+        debug_print("wpa_msg: Failed to allocate message "
                   "buffer");
         return;
     }
@@ -1816,6 +1821,6 @@ void wpa_dbg(void *ctx, int level, const char *fmt, ...)
     bk_send_string(1, buf);
     os_free(buf);
 
-    bk_printf("\r\n");
+    debug_print("\n");
 }
 #endif // CFG_ENABLE_WPA_LOG

@@ -91,6 +91,12 @@
 #define ETH_INTF_FATAL    null_prf
 #endif
 
+
+#ifndef ETHERNETIF_DEBUG
+#define ETHERNETIF_DEBUG 0
+#endif
+#define debug_print(...)  do { if (ETHERNETIF_DEBUG) os_printf("[ETHIF]"__VA_ARGS__); } while (0);
+
 extern int bmsg_tx_sender(struct pbuf *p, uint32_t vif_idx);
     
 /* Forward declarations. */
@@ -124,8 +130,8 @@ static void low_level_init(struct netif *netif)
 	//wifi_get_mac_address((char *)wireless_mac, type);
 	
     /* set MAC hardware address length */
-    ETH_INTF_PRT("enter low level!\r\n");
-    ETH_INTF_PRT("mac %2x:%2x:%2x:%2x:%2x:%2x\r\n", macptr[0], macptr[1], macptr[2],
+    debug_print("enter low level!\n");
+    debug_print("mac %2x:%2x:%2x:%2x:%2x:%2x\n", macptr[0], macptr[1], macptr[2],
                  macptr[3], macptr[4], macptr[5]);
     
     netif->hwaddr_len = ETHARP_HWADDR_LEN;
@@ -135,7 +141,7 @@ static void low_level_init(struct netif *netif)
     /* device capabilities */
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
-    ETH_INTF_PRT("leave low level!\r\n");
+    debug_print("leave low level!\n");
 }
 
 /**
@@ -161,11 +167,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
 	if (vif_idx >= NX_VIRT_DEV_MAX)
 	{
-		os_printf("%s: invalid vif: %d!\r\n", __func__, vif_idx);
+		debug_print("%s: invalid vif: %d!\n", __func__, vif_idx);
 		return ERR_ARG;
 	}
 
-	//os_printf("output:%x\r\n", p);
+	//debug_print("output:%x\n", p);
 	ret = bmsg_tx_sender(p, (uint32_t)vif_idx);
 	if(0 != ret)
 	{
@@ -197,7 +203,7 @@ ethernetif_input(int iface, struct pbuf *p)
 
 	netif = rwm_mgmt_get_vif2netif((uint8_t)iface);
     if(!netif) {
-        //ETH_INTF_PRT("ethernetif_input no netif found %d\r\n", iface);
+        //debug_print("ethernetif_input no netif found %d\n", iface);
         pbuf_free(p);
         p = NULL;
         return;
@@ -219,7 +225,7 @@ ethernetif_input(int iface, struct pbuf *p)
         /* full packet send to tcpip_thread to process */
         if (netif->input(p, netif) != ERR_OK)    // ethernet_input
         {
-            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
+            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
             pbuf_free(p);
             p = NULL;
         }

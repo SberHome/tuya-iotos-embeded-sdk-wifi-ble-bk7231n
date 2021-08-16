@@ -26,6 +26,11 @@
 #include <stdbool.h>
 #include "errno.h"
 
+#ifndef HOSTAPD_INTF_DEBUG
+#define HOSTAPD_INTF_DEBUG 0
+#endif
+#define debug_print(...)  do { if (HOSTAPD_INTF_DEBUG) os_printf("[HAPD]"__VA_ARGS__); } while (0);
+
 
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
@@ -144,7 +149,7 @@ int wpa_intf_channel_switch(struct prism2_hostapd_param *param, int len)
     ieee80211_freq_to_chan(freq, &chann);
     if(chann == bk_wlan_ap_get_channel_config())
     {
-        os_printf("csa_over_same_channel\r\n");
+        debug_print("csa_over_same_channel\n");
         return -1;
     }
 	
@@ -157,7 +162,7 @@ int wpa_intf_channel_switch(struct prism2_hostapd_param *param, int len)
 
     mm_channel_switch_init(vif, freq, csa_count);
 
-    os_printf("[csa]intf_channel_switch:%x:%d:%d\r\n", vif, param->vif_idx, csa_count);
+    debug_print("[csa]intf_channel_switch:%x:%d:%d\n", vif, param->vif_idx, csa_count);
     settings = param->u.chan_switch.settings;
     param_csa = hadp_intf_get_csa_bcn_req(settings, vif_id, &settings->beacon_csa);
     param_csa_after = hadp_intf_get_csa_after_bcn_req(vif_id, &settings->beacon_after);
@@ -175,7 +180,7 @@ int hapd_intf_sta_add(struct prism2_hostapd_param *param, int len)
 
     if(NULL == cfm)
     {
-        WPAS_PRT("sta_add buf_failed\r\n");
+        debug_print("sta_add buf_failed\n");
         return HINTF_FAILURE;
     }
 
@@ -188,7 +193,7 @@ int hapd_intf_sta_add(struct prism2_hostapd_param *param, int len)
     ret = rw_msg_send_me_sta_add(&add_sta, cfm);
     if(!ret && (cfm->status == CO_OK))
     {
-        WPAS_PRT("sta_idx:%d, pm_state:%d\r\n", cfm->sta_idx, cfm->pm_state);
+        debug_print("sta_idx:%d, pm_state:%d\n", cfm->sta_idx, cfm->pm_state);
 
 #if CFG_USE_AP_PS
         rwm_flush_txing_list(cfm->sta_idx);
@@ -213,7 +218,7 @@ int hapd_get_sta_info(struct prism2_hostapd_param *param, int len)
 	param->u.get_info_sta.inactive_sec = 0;
 	
 	entry = sta_mgmt_get_sta(param->sta_addr);
-	os_printf("entry:0x%x entry->pre_rx_timepoint:%d\r\n", entry, entry->pre_rx_timepoint);
+	debug_print("entry:0x%x entry->pre_rx_timepoint:%d\n", entry, entry->pre_rx_timepoint);
 	if(entry && entry->pre_rx_timepoint)
 	{
 		tick_cnt = fclk_get_tick();
@@ -225,7 +230,7 @@ int hapd_get_sta_info(struct prism2_hostapd_param *param, int len)
 		{
 			delta_sec = (0xFFFFFFFF - entry->pre_rx_timepoint + tick_cnt) / TICK_PER_SECOND;
 		}
-		os_printf("delta_sec:%d\r\n", delta_sec);
+		debug_print("delta_sec:%d\n", delta_sec);
 		param->u.get_info_sta.inactive_sec = delta_sec;
 	}
 	
@@ -241,7 +246,7 @@ int hapd_intf_sta_del(struct prism2_hostapd_param *param, int len)
     if(sta_idx == 0xff)
         return 0;
 
-    WPAS_PRT("hapd_intf_sta_del:%d\r\n", sta_idx);
+    debug_print("hapd_intf_sta_del:%d\n", sta_idx);
 
 #if CFG_USE_AP_PS
     rwm_flush_txing_list(sta_idx);
@@ -259,40 +264,40 @@ int hapd_intf_add_key(struct prism2_hostapd_param *param, int len)
 
     if(NULL == cfm)
     {
-        WPAS_PRT("key_add buf_failed\r\n");
+        debug_print("key_add buf_failed\n");
         return HINTF_FAILURE;
     }
 
     if(os_strcmp((char *)param->u.crypt.alg, "WEP40") == 0)
     {
-        WPAS_PRT("add WEP40\r\n");
+        debug_print("add WEP40\n");
         key_param.cipher_suite = MAC_RSNIE_CIPHER_WEP40;
     }
     else if(os_strcmp((char *)param->u.crypt.alg, "WEP104") == 0)
     {
-        WPAS_PRT("add WEP104\r\n");
+        debug_print("add WEP104\n");
         key_param.cipher_suite = MAC_RSNIE_CIPHER_WEP104;
     }
     else if(os_strcmp((char *)param->u.crypt.alg, "TKIP") == 0)
     {
-        WPAS_PRT("add TKIP\r\n");
+        debug_print("add TKIP\n");
         key_param.cipher_suite = MAC_RSNIE_CIPHER_TKIP;
     }
     else if(os_strcmp((char *)param->u.crypt.alg, "CCMP") == 0)
     {
-        WPAS_PRT("hapd_intf_add_key CCMP\r\n");
+        debug_print("hapd_intf_add_key CCMP\n");
         key_param.cipher_suite = MAC_RSNIE_CIPHER_CCMP;
     }
 
     if(is_broadcast_ether_addr(param->sta_addr))
     {
-        WPAS_PRT("add is_broadcast_ether_addr\r\n");
+        debug_print("add is_broadcast_ether_addr\n");
         key_param.sta_idx = 0xFF;
         key_param.inst_nbr = param->vif_idx;
     }
     else
     {
-        WPAS_PRT("add sta_mgmt_get_sta\r\n");
+        debug_print("add sta_mgmt_get_sta\n");
         key_param.sta_idx = rwm_mgmt_sta_mac2idx(param->sta_addr);
         key_param.inst_nbr = param->vif_idx;
     }
@@ -301,7 +306,7 @@ int hapd_intf_add_key(struct prism2_hostapd_param *param, int len)
     key_param.key.length = param->u.crypt.key_len;
     os_memcpy((u8 *) & (key_param.key.array[0]), (u8 *)&param[1], key_param.key.length);
 
-    WPAS_PRT("sta:%d, vif:%d, key:%d\r\n",
+    debug_print("sta:%d, vif:%d, key:%d\n",
              key_param.sta_idx, key_param.inst_nbr, key_param.key_idx);
 
     ps_set_key_prevent();
@@ -313,7 +318,7 @@ int hapd_intf_add_key(struct prism2_hostapd_param *param, int len)
     ret = rw_msg_send_key_add(&key_param, cfm);
     if(!ret && (cfm->status == CO_OK))
     {
-        WPAS_PRT("add hw key idx:%d\r\n", cfm->hw_key_idx);
+        debug_print("add hw key idx:%d\n", cfm->hw_key_idx);
     }
 
     os_free(cfm);
@@ -341,7 +346,7 @@ int hapd_intf_del_key(struct prism2_hostapd_param *param, int len)
     if(hw_key_idx > MM_SEC_MAX_KEY_NBR)
         return 0;
 
-    WPAS_PRT("del hw key idx:%d\r\n", hw_key_idx);
+    debug_print("del hw key idx:%d\n", hw_key_idx);
 
     return rw_msg_send_key_del(hw_key_idx);
 
@@ -355,7 +360,7 @@ int hapd_intf_add_vif(struct prism2_hostapd_param *param, int len)
 
     if(NULL == cfm)
     {
-        WPAS_PRT("vif_add buf_failed\r\n");
+        debug_print("vif_add buf_failed\n");
         return HINTF_FAILURE;
     }
 
@@ -364,11 +369,11 @@ int hapd_intf_add_vif(struct prism2_hostapd_param *param, int len)
 
     if(ret || (cfm->status != CO_OK))
     {
-        SAAP_PRT("MM_ADD_IF_REQ failed!\r\n");
+        SAAP_PRT("MM_ADD_IF_REQ failed!\n");
         os_free(cfm);
         return -1;
     }
-    SAAP_PRT("hapd_intf_add_vif,type:%d, s:%d, id:%d\r\n",
+    SAAP_PRT("hapd_intf_add_vif,type:%d, s:%d, id:%d\n",
              param->u.add_if.type, cfm->status, cfm->inst_nbr);
 
     if(cfm->inst_nbr >= NX_VIRT_DEV_MAX)
@@ -388,7 +393,7 @@ int hapd_intf_remove_vif(struct prism2_hostapd_param *param, int len)
     if(vif_index >= NX_VIRT_DEV_MAX)
         return -1;
 
-    WPAS_PRT("wpa/host apd remove_if:%d\r\n", vif_index);
+    debug_print("wpa/host apd remove_if:%d\n", vif_index);
 
     return rw_msg_send_remove_if(vif_index);
 }
@@ -401,21 +406,21 @@ int hapd_intf_start_apm(struct prism2_hostapd_param *param, int len)
 
     if(NULL == cfm)
     {
-        WPAS_PRT("apm_start buf_failed\r\n");
+        debug_print("apm_start buf_failed\n");
         return HINTF_FAILURE;
     }
 
     ret = rw_msg_send_apm_start_req(param->vif_idx, g_ap_param_ptr->chann, cfm);
     if(ret)
     {
-        SAAP_PRT("hapd_intf_start_apm failed!\r\n");
+        SAAP_PRT("hapd_intf_start_apm failed!\n");
         os_free(cfm);
         return -1;
     }
 
     if(cfm->status == CO_OK)
     {
-        SAAP_PRT("vif_idx:%d, ch_idx:%d, bcmc_idx:%d\r\n", cfm->vif_idx,
+        SAAP_PRT("vif_idx:%d, ch_idx:%d, bcmc_idx:%d\n", cfm->vif_idx,
                  cfm->ch_idx, cfm->bcmc_idx);
     }
     os_free(cfm);
@@ -428,7 +433,7 @@ int hapd_intf_stop_apm(struct prism2_hostapd_param *param, int len)
     ret = rw_msg_send_apm_stop_req(param->vif_idx);
     if(ret)
     {
-        SAAP_PRT("hapd_intf_start_apm failed!\r\n");
+        SAAP_PRT("hapd_intf_start_apm failed!\n");
         return -1;
     }
     return 0;
@@ -448,14 +453,14 @@ int hapd_intf_set_ap_bcn(struct prism2_hostapd_param *param, int len)
 
     if(param->u.bcn_change.bcn_len == 0)
     {
-        WPAS_WPRT("hapd_intf_set_ap bcn len = 0\r\n");
+        WPAS_WPRT("hapd_intf_set_ap bcn len = 0\n");
         return 0;
     }
 
     bcn_buf = (char *)os_malloc(param->u.bcn_change.bcn_len);
     if(!bcn_buf)
     {
-        WPAS_WPRT("hapd_intf_set_ap no buffer\r\n");
+        WPAS_WPRT("hapd_intf_set_ap no buffer\n");
         return -1;
     }
 
@@ -524,7 +529,7 @@ int wpa_send_scan_req(struct prism2_hostapd_param *param, int len)
     UINT8 i;
     SCAN_PARAM_T scan_param;
 
-    WPAS_PRT("wpa_send_scan_req\r\n");
+    debug_print("wpa_send_scan_req\n");
     scan_param.num_ssids = param->u.scan_req.ssids_num;
     for(i = 0; i < scan_param.num_ssids; i++)
     {
@@ -552,7 +557,7 @@ int wpa_get_scan_rst(struct prism2_hostapd_param *param, int len)
 
     if(NULL == s_scan_result_upload_ptr)
     {
-        WPAS_PRT("get_scan_rst_null\r\n");
+        debug_print("get_scan_rst_null\n");
 		fn = bk_wlan_get_status_cb();
 		if(fn)
 		{
@@ -565,12 +570,12 @@ int wpa_get_scan_rst(struct prism2_hostapd_param *param, int len)
 		uint32_t rl_cancel_flag;
 		if((0 == wifi_get_rescan_cnt()) || rl_pre_sta_get_cancel())
 		{
-			WPAS_PRT("RL_STATUS_STA_LAUNCH_FAILED\r\n");
+			debug_print("RL_STATUS_STA_LAUNCH_FAILED\n");
 			rl_cancel_flag = rl_pre_sta_set_status(RL_STATUS_STA_LAUNCH_FAILED);
 		}
 		else
 		{
-			WPAS_PRT("RL_STATUS_STA_SCAN_VAIN\r\n");
+			debug_print("RL_STATUS_STA_SCAN_VAIN\n");
 			rl_cancel_flag = rl_pre_sta_set_status(RL_STATUS_STA_SCAN_VAIN);
 		}
 		
@@ -590,7 +595,7 @@ int wpa_get_scan_rst(struct prism2_hostapd_param *param, int len)
     }
 #endif
 
-    WPAS_PRT("wpa_get_scan_rst:%d\r\n", s_scan_result_upload_ptr->scanu_num);
+    debug_print("wpa_get_scan_rst:%d\n", s_scan_result_upload_ptr->scanu_num);
     for(i = 0; i < s_scan_result_upload_ptr->scanu_num; i++)
     {
         scan_rst_ptr = s_scan_result_upload_ptr->res[i];
@@ -598,7 +603,7 @@ int wpa_get_scan_rst(struct prism2_hostapd_param *param, int len)
         if (r == NULL)
         {
             ret = -1;
-            WPAS_PRT("wpa_get_scan_rst break;\r\n");
+            debug_print("wpa_get_scan_rst break;\n");
             break;
         }
 
@@ -691,7 +696,7 @@ int wpa_get_bss_info(struct prism2_hostapd_param *param, int len)
 
     if(NULL == cfm)
     {
-        WPAS_PRT("bss_get_info buf_failed\r\n");
+        debug_print("bss_get_info buf_failed\n");
         return HINTF_FAILURE;
     }
 
@@ -756,7 +761,7 @@ void hapd_poll_callback(void *env, uint32_t status)
 	
 	if(!(status & FRAME_SUCCESSFUL_TX_BIT))
 	{
-		os_printf("noAck, hate you\r\n");
+		debug_print("noAck, hate you\n");
 		return;
 	}
 
@@ -764,7 +769,7 @@ void hapd_poll_callback(void *env, uint32_t status)
 	if(sta_entry)
 	{
 		sta_entry->pre_rx_timepoint = fclk_get_tick();
-		os_printf("update_tp:%d\r\n", sta_entry->pre_rx_timepoint);
+		debug_print("update_tp:%d\n", sta_entry->pre_rx_timepoint);
 	}
 }
 
@@ -978,7 +983,7 @@ void hapd_intf_ke_rx_handle(int dummy)
         pd_ptr = (UINT8 *)os_malloc(payload_size);
         if(NULL == pd_ptr)
         {
-            os_printf("hapd_intf_tx_error\r\n");
+            debug_print("hapd_intf_tx_error\n");
             goto exit;
         }
 
