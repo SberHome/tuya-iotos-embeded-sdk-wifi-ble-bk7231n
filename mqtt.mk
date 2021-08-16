@@ -929,7 +929,8 @@ DEPENDENCY_OS_LIST = $(SRC_OS:%.c=$(OBJ_DIR)/%.d)
 
 # Compile options
 # -------------------------------------------------------------------
-CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
+#CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
+CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c11 -ffunction-sections -fdata-sections -nostdlib -fsigned-char -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Werror -Wno-format -Wno-unknown-pragmas -fno-strict-aliasing
 #CFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fdata-sections -nostdlib -fsigned-char -Wno-unused-function -Wunknown-pragmas -Wl,--gc-sections
 
@@ -941,14 +942,18 @@ endif
 #debug defines
 CFLAGS += $(DEBUG_DEFINES)
 
+
+
 OSFLAGS =
-OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -fsigned-char -Wunknown-pragmas -ffunction-sections -fdata-sections
+#OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -fsigned-char -Wunknown-pragmas
+OSFLAGS += -g -marm -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c11 -fsigned-char -Wunknown-pragmas -ffunction-sections -fdata-sections
 #OSFLAGS += -g -mthumb -mcpu=arm968e-s -march=armv5te -mthumb-interwork -mlittle-endian -Os -std=c99 -ffunction-sections -Wall -fsigned-char -fdata-sections -Wunknown-pragmas -Wl,--gc-sections
 
 ASMFLAGS = 
 ASMFLAGS += -g -marm -mthumb-interwork -mcpu=arm968e-s -march=armv5te -x assembler-with-cpp
 
 LFLAGS = 
+#LFLAGS += -g -marm -mcpu=arm968e-s -mthumb-interwork -nostdlib
 LFLAGS += -g -Wl,--gc-sections -marm -mcpu=arm968e-s -mthumb-interwork -nostdlib
 LFLAGS += -Wl,-wrap,malloc -Wl,-wrap,_malloc_r -Wl,-wrap,free -Wl,-wrap,_free_r -Wl,-wrap,zalloc -Wl,-wrap,calloc -Wl,-wrap,realloc  -Wl,-wrap,_realloc_r
 LFLAGS += -Wl,-wrap,printf -Wl,-wrap,vsnprintf -Wl,-wrap,snprintf -Wl,-wrap,sprintf -Wl,-wrap,puts

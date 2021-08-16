@@ -2,7 +2,6 @@
 #include "paho_mqtt.h"
 #include "mqtt.h"
 #include "wlan_ui_pub.h"
-#include "ieee802_11_defs.h"
 #include "net.h"
 
 #ifndef APP_DEBUG
@@ -15,7 +14,6 @@
             os_printf("[APP]"__VA_ARGS__); \
     } while (0);
 
-static char *test_pub_data = NULL;
 
 static uint32_t pub_count = 0;
 static uint32_t sub_count = 0;
@@ -23,8 +21,8 @@ static int recon_count = -1;
 static int test_start_tm = 0;
 static uint32_t g_mqtt_wifi_flag = 0;
 
-uint8_t mqtt_buf[MQTT_PUB_SUB_BUF_SIZE];
-uint8_t mqtt_read_buf[MQTT_PUB_SUB_BUF_SIZE];
+static uint8_t mqtt_buf[MQTT_PUB_SUB_BUF_SIZE];
+static uint8_t mqtt_read_buf[MQTT_PUB_SUB_BUF_SIZE];
 
 // Forward declarations
 static void mqtt_connect_callback(MQTT_CLIENT_T *c);
@@ -32,6 +30,13 @@ static void mqtt_online_callback(MQTT_CLIENT_T *c);
 static void mqtt_offline_callback(MQTT_CLIENT_T *c);
 static void mqtt_sub_callback(MQTT_CLIENT_T *c, MessageData *msg_data);
 static void mqtt_sub_default_callback(MQTT_CLIENT_T *c, MessageData *msg_data);
+
+static network_InitTypeDef_st wNetConfig = {
+    .wifi_ssid = WIFI_SSID,
+    .wifi_key = WIFI_PASSWORD,
+    .wifi_mode = STATION,
+    .dhcp_mode = DHCP_CLIENT,
+    .wifi_retry_interval = 100};
 
 static MQTT_CLIENT_T mqtt_client = {
     .uri = MQTT_TEST_SERVER_URI,
@@ -73,11 +78,6 @@ void mqtt_wifi_connect_cb(void)
     g_mqtt_wifi_flag = 1;
 }
 
-void mqtt_wifi_disconnect_cb(rw_evt_type evt_type, void *data)
-{
-    g_mqtt_wifi_flag = 0;
-}
-
 uint32_t mqtt_is_wifi_connected(void)
 {
     return (1 == g_mqtt_wifi_flag);
@@ -117,28 +117,20 @@ static void mqtt_offline_callback(MQTT_CLIENT_T *c)
 {
     debug_print("mqtt_offline_callback\n");
 }
-/**
- * This function publish message to specific mqtt topic.
- *
- * @param send_str publish message
- *
- * @return none
- */
-static int mqtt_test_publish(const char *send_str)
+
+static int mqtt_test_publish()
 {
     static int counter = 0;
-    MQTTMessage message;
-    const char *msg_str = send_str;
-    const char *topic = MQTT_PUBTOPIC;
-
-    message.qos = MQTT_TEST_QOS;
-    message.retained = 0;
     char msg[20];
-    snprintf(msg, 20, "Hello: %d", counter++);
-    message.payload = msg;
-    message.payloadlen = os_strlen(message.payload);
+    int written = snprintf(msg, sizeof msg, "Hello: %d", counter++);
 
-    return mqtt_publish_with_topic(&mqtt_client, topic, &message);
+    MQTTMessage message = {
+        .qos = MQTT_TEST_QOS,
+        .retained = 0,
+        .payload = msg,
+        .payloadlen = (written < sizeof msg) ? written : 0};
+
+    return mqtt_publish_with_topic(&mqtt_client, MQTT_PUBTOPIC, &message);
 }
 
 static void test_show_info(void)
@@ -155,49 +147,26 @@ static void test_show_info(void)
 
 static void mqtt_pub_handler(void *parameter)
 {
-
-    test_pub_data = os_malloc(TEST_DATA_SIZE * sizeof(char));
-    if (!test_pub_data)
-    {
-        debug_print("no memory for test_pub_data\n");
-        return;
-    }
-    os_memset(test_pub_data, '*', TEST_DATA_SIZE * sizeof(char));
-
     test_start_tm = rtos_get_time();
-    debug_print("test start at '%d'\n", test_start_tm);
+    debug_print("test start at %d\n", test_start_tm);
 
-    while (1)
+    while (true)
     {
-        if (!mqtt_test_publish(test_pub_data))
+        if (!mqtt_test_publish())
         {
             ++pub_count;
         }
 
         rtos_delay_milliseconds(PUB_CYCLE_TM);
-
         test_show_info();
     }
 }
 
-OSStatus wifi_station_init(const char *oob_ssid, const char *connect_key)
+
+
+OSStatus wifi_station_init()
 {
     OSStatus ret = kNoErr;
-    network_InitTypeDef_st wNetConfig = {0};
-
-    int len = os_strlen(oob_ssid);
-    if (SSID_MAX_LEN < len)
-    {
-        debug_print("ssid name more than 32 Bytes\n");
-        return kParamErr;
-    }
-
-    os_strcpy(wNetConfig.wifi_ssid, oob_ssid);
-    os_strcpy(wNetConfig.wifi_key, connect_key);
-
-    wNetConfig.wifi_mode = STATION;
-    wNetConfig.dhcp_mode = DHCP_CLIENT;
-    wNetConfig.wifi_retry_interval = 100;
 
     debug_print("ssid:%s key:%s\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
     ret = bk_wlan_start(&wNetConfig);
@@ -215,7 +184,7 @@ OSStatus user_main(void)
     net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
     //user_connected_callback(mqtt_wifi_connect_cb);
 
-    wifi_station_init("HONOR_KIW-L21_EEE9", "1234567890");
+    wifi_station_init();
 
     //mqtt_waiting_for_wifi_connected();
     paho_mqtt_start(&mqtt_client);

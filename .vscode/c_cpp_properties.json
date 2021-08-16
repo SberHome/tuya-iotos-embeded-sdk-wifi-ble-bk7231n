@@ -4,11 +4,12 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}\\platforms\\bk7231n\\bk7231n_os\\beken378\\os\\FreeRTOSv9.0.0\\",    //common.h
+                "C:\\Program Files (x86)\\GNU Arm Embedded Toolchain\\10 2020-q4-major\\arm-none-eabi\\include\\",
                 "${workspaceFolder}\\**"
             ],
             "compilerPath": "C:\\Program Files (x86)\\GNU Arm Embedded Toolchain\\10 2020-q4-major\\bin\\arm-none-eabi-g++.exe",
             "cppStandard": "c++17",
-            "cStandard": "c17",
+            "cStandard": "c11",
             "intelliSenseMode": "linux-gcc-arm"
         }
     ],

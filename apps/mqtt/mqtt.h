@@ -24,6 +24,8 @@
 #define MQTT_WILLMSG            "Goodbye!"
 #define MQTT_TEST_QOS           1
 #define MQTT_PUB_SUB_BUF_SIZE   1024
+#define WIFI_SSID               "HONOR_KIW-L21_EEE9"
+#define WIFI_PASSWORD           "1234567890"
 
 #define TEST_DATA_SIZE          256
 #define PUB_CYCLE_TM            10000

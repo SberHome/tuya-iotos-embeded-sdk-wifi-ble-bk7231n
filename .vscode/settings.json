@@ -40,6 +40,7 @@
         "generic.h": "c",
         "net.h": "c",
         "lwip_netif_address.h": "c",
-        "param_config.h": "c"
+        "param_config.h": "c",
+        "assert.h": "c"
     }
 }
