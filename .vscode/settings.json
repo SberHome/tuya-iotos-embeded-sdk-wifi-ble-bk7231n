@@ -34,6 +34,8 @@
         "str_pub.h": "c",
         "mqtt.h": "c",
         "stdlib.h": "c",
-        "ap_config.h": "c"
+        "ap_config.h": "c",
+        "start_type_pub.h": "c",
+        "string.h": "c"
     }
 }
