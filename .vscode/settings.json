@@ -36,6 +36,9 @@
         "stdlib.h": "c",
         "ap_config.h": "c",
         "start_type_pub.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "generic.h": "c",
+        "net.h": "c",
+        "lwip_netif_address.h": "c"
     }
 }
