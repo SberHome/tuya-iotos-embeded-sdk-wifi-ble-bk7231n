@@ -12,16 +12,57 @@
 #define debug_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
 
 static char *test_pub_data = NULL;
-static MQTT_CLIENT_T mqtt_client = {0};
+
 static uint32_t pub_count = 0;
 static uint32_t sub_count = 0;
 static int recon_count = -1;
 static int test_start_tm = 0;
 static uint32_t g_mqtt_wifi_flag = 0;
 
-
 uint8_t mqtt_buf[MQTT_PUB_SUB_BUF_SIZE];
 uint8_t mqtt_read_buf[MQTT_PUB_SUB_BUF_SIZE];
+
+// Forward declarations
+static void mqtt_connect_callback(MQTT_CLIENT_T *c);
+static void mqtt_online_callback(MQTT_CLIENT_T *c);
+static void mqtt_offline_callback(MQTT_CLIENT_T *c);
+static void mqtt_sub_callback(MQTT_CLIENT_T *c, MessageData *msg_data);
+static void mqtt_sub_default_callback(MQTT_CLIENT_T *c, MessageData *msg_data);
+
+static MQTT_CLIENT_T mqtt_client = {
+    .uri = MQTT_TEST_SERVER_URI,
+    .condata = MQTTPacket_connectData_initializer,
+    .condata.clientID.cstring = MQTT_CLIENTID,
+    .condata.keepAliveInterval = 60,
+    .condata.cleansession = 1,
+    .condata.username.cstring = MQTT_USERNAME,
+    .condata.password.cstring = MQTT_PASSWORD,
+
+    // config MQTT will param. 
+    .condata.willFlag = 1,
+    .condata.will.qos = MQTT_TEST_QOS,
+    .condata.will.retained = 0,
+    .condata.will.topicName.cstring = MQTT_PUBTOPIC,
+    .condata.will.message.cstring = MQTT_WILLMSG,
+
+    .buf_size = MQTT_PUB_SUB_BUF_SIZE,
+    .readbuf_size = MQTT_PUB_SUB_BUF_SIZE,
+    .buf = mqtt_buf,
+    .readbuf = mqtt_read_buf,
+
+    // set event callback function 
+    .connect_callback = mqtt_connect_callback,
+    .online_callback = mqtt_online_callback,
+    .offline_callback = mqtt_offline_callback,
+
+    // set subscribe table and event callback
+    .messageHandlers[0].topicFilter = MQTT_SUBTOPIC,
+    .messageHandlers[0].callback = mqtt_sub_callback,
+    .messageHandlers[0].qos = MQTT_TEST_QOS,
+
+    // set default subscribe event callback 
+    .defaultMessageHandler = mqtt_sub_default_callback
+};
 
 void mqtt_wifi_connect_cb(void)
 {
@@ -95,80 +136,6 @@ static int mqtt_test_publish(const char *send_str)
     message.payloadlen = os_strlen(message.payload);
 
     return mqtt_publish_with_topic(&mqtt_client, topic, &message);
-}
-
-
-
-
-
-/**
- * This function create and config a mqtt client.
- *
- * @param void
- *
- * @return none
- */
-static void mqtt_start(void)
-{
-    debug_print("mqtt_start\r\n");
-
-    /* init condata param by using MQTTPacket_connectData_initializer */
-    MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
-
-    /* config MQTT context param */
-    mqtt_client.uri = MQTT_TEST_SERVER_URI;
-
-    /* config connect param */
-    memcpy(&mqtt_client.condata, &condata, sizeof(condata));
-    mqtt_client.condata.clientID.cstring = MQTT_CLIENTID;
-    mqtt_client.condata.keepAliveInterval = 60;
-    mqtt_client.condata.cleansession = 1;
-    mqtt_client.condata.username.cstring = MQTT_USERNAME;
-    mqtt_client.condata.password.cstring = MQTT_PASSWORD;
-
-    /* config MQTT will param. */
-    mqtt_client.condata.willFlag = 1;
-    mqtt_client.condata.will.qos = MQTT_TEST_QOS;
-    mqtt_client.condata.will.retained = 0;
-    mqtt_client.condata.will.topicName.cstring = MQTT_PUBTOPIC;
-    mqtt_client.condata.will.message.cstring = MQTT_WILLMSG;
-
-    /* malloc buffer. */
-    mqtt_client.buf_size = mqtt_client.readbuf_size = MQTT_PUB_SUB_BUF_SIZE;
-    mqtt_client.buf = mqtt_buf;
-    mqtt_client.readbuf = mqtt_read_buf;
-
-    /* set event callback function */
-    mqtt_client.connect_callback = mqtt_connect_callback;
-    mqtt_client.online_callback = mqtt_online_callback;
-    mqtt_client.offline_callback = mqtt_offline_callback;
-
-    /* set subscribe table and event callback */
-    mqtt_client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
-    mqtt_client.messageHandlers[0].callback = mqtt_sub_callback;
-    mqtt_client.messageHandlers[0].qos = MQTT_TEST_QOS;
-
-    /* set default subscribe event callback */
-    mqtt_client.defaultMessageHandler = mqtt_sub_default_callback;
-
-    /* run mqtt client */
-    paho_mqtt_start(&mqtt_client);
-    return;
-
-_exit:
-    if (mqtt_client.buf)
-    {
-        os_free(mqtt_client.buf);
-        mqtt_client.buf = NULL;
-    }
-
-    if (mqtt_client.readbuf)
-    {
-        os_free(mqtt_client.readbuf);
-        mqtt_client.readbuf = NULL;
-    }
-
-    return;
 }
 
 static void test_show_info(void)
@@ -247,9 +214,9 @@ OSStatus user_main(void)
 
     wifi_station_init("HONOR_KIW-L21_EEE9", "1234567890");
 
-    mqtt_waiting_for_wifi_connected();
-    mqtt_start();
-
+    //mqtt_waiting_for_wifi_connected();
+    paho_mqtt_start(&mqtt_client);
+    
     while (!mqtt_client.is_connected)
     {
         debug_print("Waiting for mqtt connection...\r\n");
