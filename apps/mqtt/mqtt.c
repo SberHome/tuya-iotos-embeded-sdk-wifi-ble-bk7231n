@@ -7,10 +7,16 @@
 #include "mqtt.h"
 #include "rw_pub.h"
 #include "str_pub.h"
-#include "fake_clock_pub.h"
 #include "wlan_ui_pub.h"
 #include "ieee802_11_defs.h"
-#include "role_launch.h"
+
+
+#ifndef APP_DEBUG
+#define APP_DEBUG 0
+#endif
+
+#define app_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
+
 
 static char *test_pub_data = NULL;
 static MQTT_CLIENT_T mqtt_client;
@@ -22,7 +28,7 @@ static uint32_t g_mqtt_wifi_flag = 0;
 
 void mqtt_wifi_connect_cb(void)
 {
-    os_printf("[MQTT] mqtt_wifi_connect_cb\r\n");
+    app_print("mqtt_wifi_connect_cb\r\n");
     g_mqtt_wifi_flag = 1;
 }
 
@@ -46,31 +52,29 @@ void mqtt_waiting_for_wifi_connected(void)
 
 static void mqtt_sub_default_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    os_printf("[MQTT] mqtt_sub_default_callback\r\n");
+    app_print("mqtt_sub_default_callback\r\n");
 }
 
 static void mqtt_sub_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    os_printf("[MQTT] mqtt_sub_callback\r\n");
-#warning msg_data->topicName->lenstring.data IS NOT A CSTRING !!!
-    os_printf("[MQTT] topic: %s\r\n", msg_data->topicName->lenstring.data);
+    app_print("mqtt_sub_callback\r\n");
     sub_count++;
 }
 
 static void mqtt_connect_callback(MQTT_CLIENT_T *c)
 {
-    os_printf("[MQTT] mqtt_connect_callback\r\n");
+    app_print("mqtt_connect_callback\r\n");
 }
 
 static void mqtt_online_callback(MQTT_CLIENT_T *c)
 {
-    os_printf("[MQTT] mqtt_online_callback\r\n");
+    app_print("mqtt_online_callback\r\n");
     recon_count++;
 }
 
 static void mqtt_offline_callback(MQTT_CLIENT_T *c)
 {
-    os_printf("[MQTT] mqtt_offline_callback\r\n");
+    app_print("mqtt_offline_callback\r\n");
 }
 /**
  * This function publish message to specific mqtt topic.
@@ -105,7 +109,7 @@ static int mqtt_test_publish(const char *send_str)
  */
 static void mqtt_start(void)
 {
-    os_printf("[MQTT] mqtt_start\r\n");
+    app_print("mqtt_start\r\n");
 
     /* init condata param by using MQTTPacket_connectData_initializer */
     MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
@@ -136,7 +140,7 @@ static void mqtt_start(void)
     mqtt_client.readbuf = os_malloc(mqtt_client.readbuf_size);
     if (!(mqtt_client.buf && mqtt_client.readbuf))
     {
-        os_printf("[MQTT] no memory for MQTT mqtt_client buffer!\n");
+        app_print("no memory for MQTT mqtt_client buffer!\n");
         goto _exit;
     }
 
@@ -154,7 +158,7 @@ static void mqtt_start(void)
     mqtt_client.defaultMessageHandler = mqtt_sub_default_callback;
 
     /* run mqtt client */
-    os_printf("[MQTT] paho_mqtt_start\r\n");
+    app_print("paho_mqtt_start\r\n");
     paho_mqtt_start(&mqtt_client);
 
     return;
@@ -177,14 +181,14 @@ _exit:
 
 static void test_show_info(void)
 {
-    os_printf("[MQTT] ==== MQTT Stability test ====\n");
-    os_printf("[MQTT] Server: " MQTT_TEST_SERVER_URI "\n");
-    os_printf("[MQTT] QoS   : %d\n", MQTT_TEST_QOS);
+    app_print("==== MQTT Stability test ====\n");
+    app_print("Server: " MQTT_TEST_SERVER_URI "\n");
+    app_print("QoS   : %d\n", MQTT_TEST_QOS);
 
-    os_printf("[MQTT] Test duration(tick)           : %d\n", rtos_get_time() - test_start_tm);
-    os_printf("[MQTT] Number of published  packages : %d\n", pub_count);
-    os_printf("[MQTT] Number of subscribed packages : %d\n", sub_count);
-    os_printf("[MQTT] Number of reconnections       : %d\n", recon_count);
+    app_print("Test duration(tick)           : %d\n", rtos_get_time() - test_start_tm);
+    app_print("Number of published  packages : %d\n", pub_count);
+    app_print("Number of subscribed packages : %d\n", sub_count);
+    app_print("Number of reconnections       : %d\n", recon_count);
 }
 
 static void mqtt_pub_handler(void *parameter)
@@ -193,13 +197,13 @@ static void mqtt_pub_handler(void *parameter)
     test_pub_data = os_malloc(TEST_DATA_SIZE * sizeof(char));
     if (!test_pub_data)
     {
-        os_printf("[MQTT] no memory for test_pub_data\n");
+        app_print("no memory for test_pub_data\n");
         return;
     }
     os_memset(test_pub_data, '*', TEST_DATA_SIZE * sizeof(char));
 
     test_start_tm = rtos_get_time();
-    os_printf("[MQTT] test start at '%d'\r\n", test_start_tm);
+    app_print("test start at '%d'\r\n", test_start_tm);
 
     while (1)
     {
@@ -222,7 +226,7 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     int len = os_strlen(oob_ssid);
     if (SSID_MAX_LEN < len)
     {
-        bk_printf("[MQTT] ssid name more than 32 Bytes\r\n");
+        bk_printf("ssid name more than 32 Bytes\r\n");
         return kParamErr;
     }
 
@@ -233,11 +237,11 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     wNetConfig.dhcp_mode = DHCP_CLIENT;
     wNetConfig.wifi_retry_interval = 100;
 
-    os_printf("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
+    app_print("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
     ret = bk_wlan_start(&wNetConfig);
 
     if (ret != kNoErr)
-        os_printf("bk_wlan_start failed: %d\r\n", ret);
+        app_print("bk_wlan_start failed: %d\r\n", ret);
 
     return ret;
 }
@@ -245,8 +249,9 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
 OSStatus user_main(void)
 {
     OSStatus ret = kNoErr;
-#warning Need to wait for rl_init() to finish
-    rtos_delay_milliseconds(10 * 1000);
+    extended_app_waiting_for_launch();  // need to wait for rl_init() to finish
+    //rtos_delay_milliseconds(10 * 1000);
+    //net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
     user_connected_callback(mqtt_wifi_connect_cb);
 
     wifi_station_init("HONOR_KIW-L21_EEE9", "1234567890");
@@ -256,7 +261,7 @@ OSStatus user_main(void)
 
     while (!mqtt_client.is_connected)
     {
-        os_printf("Waiting for mqtt connection...\r\n");
+        app_print("Waiting for mqtt connection...\r\n");
         rtos_delay_milliseconds(1000);
     }
 
