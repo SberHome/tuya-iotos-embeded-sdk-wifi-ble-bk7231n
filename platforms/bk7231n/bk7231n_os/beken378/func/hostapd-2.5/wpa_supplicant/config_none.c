@@ -21,6 +21,12 @@
 #include "wpa_common.h"
 #include "role_launch.h"
 
+#ifndef CFG_NONE_DEBUG
+#define CFG_NONE_DEBUG 0
+#endif
+#define debug_print(...)  do { if (CFG_NONE_DEBUG) os_printf("[CFGN]"__VA_ARGS__); } while (0);
+
+
 #if CFG_IEEE80211N
 static void wpa_config_ht_cap_by_sec(int sec)
 {
@@ -68,7 +74,7 @@ static int set_wpa_psk(struct wpa_ssid *ssid)
 	int errors = 0;
 
 	if (g_sta_param_ptr->key_len < 8 || g_sta_param_ptr->key_len > 64) {
-		os_printf("Invalid passphrase "
+		debug_print("Invalid passphrase "
 		   "length %lu (expected: 8..63) '%s'.",
 		   (unsigned long) g_sta_param_ptr->key_len, (char *)g_sta_param_ptr->key);
 		errors++;
@@ -92,7 +98,7 @@ static int set_wpa_psk(struct wpa_ssid *ssid)
 	ssid->key_mgmt |= WPA_KEY_MGMT_PSK;
 	ssid->mem_only_psk = 0;
 	
-    os_null_printf("%s:%d errors=%d,key_len=%d,orig_key_len=%d,%.*s,%.*s\r\n", __FUNCTION__, __LINE__, errors, g_sta_param_ptr->key_len, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->key_len, g_sta_param_ptr->key, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->orig_key);
+    debug_print("errors=%d,key_len=%d,orig_key_len=%d,%.*s,%.*s\n", errors, g_sta_param_ptr->key_len, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->key_len, g_sta_param_ptr->key, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->orig_key);
 	return errors;
 }
 
@@ -121,18 +127,18 @@ static int set_wep_key(struct wpa_ssid*ssid)
 	}else{
 		errors++;
 #if RL_SUPPORT_FAST_CONNECT
-		bk_printf("%s:%d rl_clear_bssid_info\r\n", __FUNCTION__, __LINE__);
+		debug_print("rl_clear_bssid_info\n");
 		rl_clear_bssid_info();
 #endif
 	}
 	ssid->mem_only_psk = 0;
-	os_null_printf("%s:%d errors=%d,key_len=%d,orig_key_len=%d,%.*s,%.*s\r\n", __FUNCTION__, __LINE__, errors, g_sta_param_ptr->key_len, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->key_len, g_sta_param_ptr->key, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->orig_key);
+	debug_print("errors=%d,key_len=%d,orig_key_len=%d,%.*s,%.*s\n", errors, g_sta_param_ptr->key_len, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->key_len, g_sta_param_ptr->key, g_sta_param_ptr->orig_key_len, g_sta_param_ptr->orig_key);
 	return errors;
 }
 
 static int cipher2security(struct wpa_ie_data *ie)
 {
-    bk_printf("%s %d %d %d %d\n", __FUNCTION__, ie->key_mgmt, ie->proto, ie->pairwise_cipher, ie->group_cipher);
+    debug_print("%d %d %d %d\n", ie->key_mgmt, ie->proto, ie->pairwise_cipher, ie->group_cipher);
 	switch(ie->key_mgmt) {
 	case WPA_KEY_MGMT_PSK:
 		if (ie->proto == WPA_PROTO_WPA) {
@@ -209,7 +215,7 @@ static int security2cipher(struct wpa_ie_data *ie, int security)
     default:
 		break;
 	}
-    bk_printf("%s %d %d %d %d security=%d\n", __FUNCTION__, ie->key_mgmt, ie->proto, ie->pairwise_cipher, ie->group_cipher, security);
+    debug_print("%d %d %d %d security=%d\n", ie->key_mgmt, ie->proto, ie->pairwise_cipher, ie->group_cipher, security);
 
 	return 0;
 }
@@ -246,7 +252,7 @@ static void wpa_config_update_fast_psk(struct wpa_ssid *ssid)
 	if(os_memcmp(ssid->ssid, bssid_info.ssid, ssid->ssid_len) == 0
 		&& os_strcmp(ssid->passphrase, bssid_info.pwd) == 0)
 	{
-		bk_printf("Skip PSK caculation if SSID and passphrase are same \n");
+		debug_print("Skip PSK caculation if SSID and passphrase are same \n");
 		os_memset(&ssid->psk, 0, sizeof(ssid->psk));
 		os_strcpy(ssid->psk, bssid_info.psk);
 		ssid->psk_set = 1;
@@ -312,7 +318,7 @@ static struct wpa_ssid * wpa_config_read_network(int *line, int id)
 
 	if ((g_sta_param_ptr->fast_connect_set) && (g_sta_param_ptr->cipher_suite != SECURITY_TYPE_AUTO)){
 		os_memcpy(ssid->bssid, g_sta_param_ptr->fast_connect.bssid, 6);
-		bk_printf("bssid %02x-%02x-%02x-%02x-%02x-%02x\r\n",
+		debug_print("bssid %02x-%02x-%02x-%02x-%02x-%02x\n",
 			ssid->bssid[0],ssid->bssid[1],ssid->bssid[2],
 			ssid->bssid[3],ssid->bssid[4],ssid->bssid[5]);
 		ssid->bssid_set = 1;

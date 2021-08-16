@@ -12,6 +12,12 @@
 #include "mcu_ps_pub.h"
 #include "ate_app.h"
 
+
+#ifndef FLASH_DEBUG
+#define FLASH_DEBUG 0
+#endif
+#define debug_print(...)  do { if (FLASH_DEBUG) os_printf("[FLASH]"__VA_ARGS__); } while (0);
+
 static const flash_config_t flash_config[] =
     {
         {0x1C7016, 1, 0x400000, 2, 0, 2, 0x1F, 0x1F, 0x00, 0x16, 0x01B, 0, 0, 0xA5, 0x01},  //en_25qh32b
@@ -54,7 +60,7 @@ static void flash_get_current_flash_config(void)
     if (i == (sizeof(flash_config) / sizeof(flash_config_t) - 1))
     {
         flash_current_config = &flash_config[i];
-        os_printf("don't config this flash, choose default config\r\n");
+        debug_print("don't config this flash, choose default config\n");
     }
 }
 
@@ -134,7 +140,7 @@ static UINT16 flash_read_sr(UINT8 sr_width)
         value = REG_READ(REG_FLASH_SR_DATA_CRC_CNT);
         sr |= (value & 0x00FF) << 8;
     }
-    //os_printf("--read sr:%x--\r\n",sr);
+    //debug_print("--read sr:%x--\n",sr);
     return sr;
 }
 
@@ -427,7 +433,7 @@ static void set_flash_protect(PROTECT_TYPE type)
                 (param << flash_current_config->protect_post);
         value &= ~(1 << flash_current_config->cmp_post);
         value |= ((cmp & 0x01) << flash_current_config->cmp_post);
-        //os_printf("--write status reg:%x,%x--\r\n", value, flash_current_config->sr_size);
+        //debug_print("--write status reg:%x,%x--\n", value, flash_current_config->sr_size);
         flash_write_sr(flash_current_config->sr_size, value);
     }
 }
@@ -439,7 +445,7 @@ static void flash_erase_sector(UINT32 address)
 
     if (erase_addr >= flash_current_config->flash_size)
     {
-        bk_printf("Erase error:invalid address0x%x\r\n", erase_addr);
+        debug_print("Erase error:invalid address0x%x\n", erase_addr);
         return;
     }
 
@@ -521,7 +527,7 @@ static void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
 
     if ((addr >= flash_current_config->flash_size) || (len > flash_current_config->flash_size) || ((addr + len) > flash_current_config->flash_size))
     {
-        bk_printf("Write error[addr:0x%x len:0x%x]\r\n", addr, len);
+        debug_print("Write error[addr:0x%x len:0x%x]\n", addr, len);
         return;
     }
 
@@ -583,7 +589,7 @@ void flash_init(void)
         ;
 
     id = flash_get_id();
-    FLASH_PRT("[Flash]id:0x%x\r\n", id);
+    debug_print("id:0x%x\n", id);
     flash_get_current_flash_config();
 
     set_flash_protect(FLASH_PROTECT_ALL);
@@ -755,7 +761,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
     if (4 == flash_current_config->line_mode)
     {
         flash_set_line_mode(LINE_MODE_FOUR);
-        //os_printf("change line mode 4\r\n");
+        //debug_print("change line mode 4\n");
     }
 
     peri_busy_count_dec();

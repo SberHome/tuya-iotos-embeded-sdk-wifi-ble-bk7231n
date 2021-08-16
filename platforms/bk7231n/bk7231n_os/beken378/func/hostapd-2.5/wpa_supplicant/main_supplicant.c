@@ -22,6 +22,11 @@
 #include "eloop.h"
 #include "config.h"
 
+#ifndef MAIN_SUPPLICANT_DEBUG
+#define MAIN_SUPPLICANT_DEBUG 0
+#endif
+#define debug_print(...)  do { if (MAIN_SUPPLICANT_DEBUG) os_printf("[MSUPP]"__VA_ARGS__); } while (0);
+
 static struct wpa_global *wpa_global_ptr = NULL;
 #if (CFG_SUPPORT_ALIOS || CFG_SUPPORT_RTT)
 beken_thread_t wpas_thread_handle = NULL;
@@ -79,7 +84,7 @@ int supplicant_main_exit(void)
 	ret = wpa_hostapd_queue_poll(0xff);
 	while((0 == ret) && supplicant_exit_flag)
 	{
-		os_printf("supplicant_main_exiting\r\n");
+		debug_print("supplicant_main_exiting\n");
 		rtos_delay_milliseconds(10);
 	}
 
@@ -198,7 +203,7 @@ int supplicant_main_entry(char *oob_ssid)
             wpa_s->num_ssids_from_scan_req = 1;
             wpa_s->ssids_from_scan_req = wpas_connect_ssid;
             wpa_s->scan_req = MANUAL_SCAN_REQ;
-            os_printf("MANUAL_SCAN_REQ\r\n");
+            debug_print("MANUAL_SCAN_REQ\n");
         }
     }
 

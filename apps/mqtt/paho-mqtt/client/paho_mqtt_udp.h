@@ -2,7 +2,7 @@
 #define __PAHO_MQTT_UDP_H__
 
 #ifndef MQTT_DEBUG
-#define MQTT_DEBUG 1
+#define MQTT_DEBUG 0
 #endif
 
 #if MQTT_DEBUG

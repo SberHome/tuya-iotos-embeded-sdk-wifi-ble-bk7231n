@@ -24,6 +24,11 @@
 #include "bk7011_cal_pub.h"
 #include "phy_trident.h"
 
+#ifndef SYSCTRL_DEBUG
+#define SYSCTRL_DEBUG 0
+#endif
+#define debug_print(...)  do { if (SYSCTRL_DEBUG) os_printf("[SCTRL]"__VA_ARGS__); } while (0);
+
 #define DPLL_DIV                0x0
 #define DCO_CALIB_26M           0x1
 #define DCO_CALIB_60M           0x2
@@ -128,13 +133,13 @@ void sctrl_cali_dpll(UINT8 flag)
 
 void sctrl_dpll_isr(void)
 {
-    os_printf("BIAS Cali\r\n");
+    debug_print("BIAS Cali\n");
     bk7011_cal_bias();
 
     sddev_control(GPIO_DEV_NAME, CMD_GPIO_CLR_DPLL_UNLOOK_INT, NULL);    
     sctrl_cali_dpll(0);
 
-    os_printf("DPLL Unlock\r\n");
+    debug_print("DPLL Unlock\n");
 }
 
 void sctrl_dpll_int_open(void)
@@ -282,7 +287,7 @@ void sctrl_sta_ps_init(void)
     #if PS_WAKEUP_MOTHOD_RW
     intc_service_register(FIQ_MAC_WAKEUP, PRI_FIQ_MAC_WAKEUP, power_save_wakeup_isr);
     nxmac_enable_lp_clk_switch_setf(0x01);
-    os_printf("sctrl_sta_ps_init\r\n");
+    debug_print("sctrl_sta_ps_init\n");
     #endif
 
     sctrl_flash_select_dco();
@@ -469,23 +474,23 @@ void sctrl_ps_dump()
 {
     UINT32 i;
 	
-    os_printf("reg dump\r\n");
-    os_printf("sys\r\n0x%8x:0x%8x\r\n", SCTRL_CONTROL, REG_READ(SCTRL_CONTROL));
-    os_printf("0x%8x:0x%8x\r\n", SCTRL_MODEM_CORE_RESET_PHY_HCLK, REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
-    os_printf("0x%8x:0x%8x\r\n", SCTRL_BLOCK_EN_CFG, REG_READ(SCTRL_BLOCK_EN_CFG));
-    os_printf("0x%8x:0x%8x\r\n", SCTRL_ROSC_CAL, REG_READ(SCTRL_ROSC_CAL));
-    os_printf("0x%8x:0x%8x\r\n", SCTRL_ANALOG_CTRL2, sctrl_analog_get(SCTRL_ANALOG_CTRL2));
-    os_printf("0x%8x:0x%8x\r\n", ICU_INTERRUPT_ENABLE, REG_READ(ICU_INTERRUPT_ENABLE));
-    os_printf("0x%8x:0x%8x\r\n", ICU_PERI_CLK_PWD, REG_READ(ICU_PERI_CLK_PWD));
-    os_printf("0x%8x:0x%8x\r\n", SCTRL_SLEEP, REG_READ(SCTRL_SLEEP));
-    os_printf("0x%8x:0x%8x\r\n", ICU_ARM_WAKEUP_EN, REG_READ(ICU_ARM_WAKEUP_EN));
-    os_printf("mac\r\n0x%8x:0x%8x\r\n", NXMAC_TIMERS_INT_UN_MASK_ADDR, nxmac_timers_int_un_mask_get());
-    os_printf("0x%8x:0x%8x\r\n", NXMAC_DOZE_CNTRL_1_ADDR, nxmac_doze_cntrl_1_get());
-    os_printf("0x%8x:0x%8x\r\n", NXMAC_DOZE_CNTRL_2_ADDR, nxmac_doze_cntrl_2_get());
-    os_printf("0x%8x:0x%8x\r\n", NXMAC_BCN_CNTRL_1_ADDR, nxmac_bcn_cntrl_1_get());
-    os_printf("saves dump\r\n");
+    debug_print("reg dump\n");
+    debug_print("sys\n0x%8x:0x%8x\n", SCTRL_CONTROL, REG_READ(SCTRL_CONTROL));
+    debug_print("0x%8x:0x%8x\n", SCTRL_MODEM_CORE_RESET_PHY_HCLK, REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
+    debug_print("0x%8x:0x%8x\n", SCTRL_BLOCK_EN_CFG, REG_READ(SCTRL_BLOCK_EN_CFG));
+    debug_print("0x%8x:0x%8x\n", SCTRL_ROSC_CAL, REG_READ(SCTRL_ROSC_CAL));
+    debug_print("0x%8x:0x%8x\n", SCTRL_ANALOG_CTRL2, sctrl_analog_get(SCTRL_ANALOG_CTRL2));
+    debug_print("0x%8x:0x%8x\n", ICU_INTERRUPT_ENABLE, REG_READ(ICU_INTERRUPT_ENABLE));
+    debug_print("0x%8x:0x%8x\n", ICU_PERI_CLK_PWD, REG_READ(ICU_PERI_CLK_PWD));
+    debug_print("0x%8x:0x%8x\n", SCTRL_SLEEP, REG_READ(SCTRL_SLEEP));
+    debug_print("0x%8x:0x%8x\n", ICU_ARM_WAKEUP_EN, REG_READ(ICU_ARM_WAKEUP_EN));
+    debug_print("mac\n0x%8x:0x%8x\n", NXMAC_TIMERS_INT_UN_MASK_ADDR, nxmac_timers_int_un_mask_get());
+    debug_print("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_1_ADDR, nxmac_doze_cntrl_1_get());
+    debug_print("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_2_ADDR, nxmac_doze_cntrl_2_get());
+    debug_print("0x%8x:0x%8x\n", NXMAC_BCN_CNTRL_1_ADDR, nxmac_bcn_cntrl_1_get());
+    debug_print("saves dump\n");
     for(i = 0; i < (3 * (sizeof(SCTRL_PS_SAVE_VALUES) / 4)); i++)
-        os_printf(" %d 0x%x\r\n", i, *((UINT32 *)(&ps_saves) + i));   
+        debug_print(" %d 0x%x\n", i, *((UINT32 *)(&ps_saves) + i));   
 }
 
 void sctrl_hw_sleep(UINT32 peri_clk)
@@ -785,7 +790,7 @@ void sctrl_sta_rf_wakeup(void)
         if(sctrl_mcu_ps_info.hw_sleep == 1)
         {
             //if rf add mcu up meanwhile
-            os_printf("err, hw not up\r\n");
+            debug_print("err, hw not up\n");
         }
 
         /* MAC AHB slave clock enable*/
@@ -1086,7 +1091,7 @@ void sctrl_mdm_reset(void)
     volatile INT32 i;
     GLOBAL_INT_DECLARATION();
 
-    os_printf("sctrl_mdm_reset\r\n");
+    debug_print("sctrl_mdm_reset\n");
 
     // Disable the interrupts
     GLOBAL_INT_DISABLE();
@@ -1296,7 +1301,7 @@ void sctrl_exit_rtos_idle_sleep(void)
         REG_WRITE(0x00802800+i*4, 0x0);
     }
     
-    os_printf("idle wake up!\r\n");    
+    debug_print("idle wake up!\n");    
 }
 
 #endif
@@ -1621,22 +1626,22 @@ void sctrl_enter_rtos_deep_sleep(PS_DEEP_CTRL_PARAM *deep_param)
 #endif
    
 #ifdef BK_DEEP_SLEEP_DEBUG
-	BK_DEEP_SLEEP_PRT("SCTRL_CONTROL=0x%08X\r\n", REG_READ(SCTRL_CONTROL)); 
-	BK_DEEP_SLEEP_PRT("SCTRL_SLEEP=0x%08X\r\n", REG_READ(SCTRL_SLEEP)); 
-	BK_DEEP_SLEEP_PRT("SCTRL_ROSC_TIMER=0x%08X\r\n", REG_READ(SCTRL_ROSC_TIMER));
-	BK_DEEP_SLEEP_PRT("SCTRL_BLOCK_EN_CFG=0x%08X\r\n", REG_READ(SCTRL_BLOCK_EN_CFG));
-	BK_DEEP_SLEEP_PRT("SCTRL_ROSC_CAL=0x%08X\r\n", REG_READ(SCTRL_ROSC_CAL));
-	BK_DEEP_SLEEP_PRT("SCTRL_BLOCK_EN_MUX=0x%08X\r\n", REG_READ(SCTRL_BLOCK_EN_MUX));
-	BK_DEEP_SLEEP_PRT("SCTRL_LOW_PWR_CLK=0x%08X\r\n", REG_READ(SCTRL_LOW_PWR_CLK));
-	BK_DEEP_SLEEP_PRT("SCTRL_PWR_MAC_MODEM=0x%08X\r\n", REG_READ(SCTRL_PWR_MAC_MODEM));
-	BK_DEEP_SLEEP_PRT("SCTRL_MODEM_CORE_RESET_PHY_HCLK=0x%08X\r\n", REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
-	BK_DEEP_SLEEP_PRT("SCTRL_CLK_GATING=0x%08X\r\n", REG_READ(SCTRL_CLK_GATING));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_INT_STATUS=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_INT_STATUS));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_TYPE=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_TYPE));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_EN=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_EN));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_INT_STATUS1=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_INT_STATUS1));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_TYPE1=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_TYPE1));
-	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_EN1=0x%08X\r\n", REG_READ(SCTRL_GPIO_WAKEUP_EN1));	
+	BK_DEEP_SLEEP_PRT("SCTRL_CONTROL=0x%08X\n", REG_READ(SCTRL_CONTROL)); 
+	BK_DEEP_SLEEP_PRT("SCTRL_SLEEP=0x%08X\n", REG_READ(SCTRL_SLEEP)); 
+	BK_DEEP_SLEEP_PRT("SCTRL_ROSC_TIMER=0x%08X\n", REG_READ(SCTRL_ROSC_TIMER));
+	BK_DEEP_SLEEP_PRT("SCTRL_BLOCK_EN_CFG=0x%08X\n", REG_READ(SCTRL_BLOCK_EN_CFG));
+	BK_DEEP_SLEEP_PRT("SCTRL_ROSC_CAL=0x%08X\n", REG_READ(SCTRL_ROSC_CAL));
+	BK_DEEP_SLEEP_PRT("SCTRL_BLOCK_EN_MUX=0x%08X\n", REG_READ(SCTRL_BLOCK_EN_MUX));
+	BK_DEEP_SLEEP_PRT("SCTRL_LOW_PWR_CLK=0x%08X\n", REG_READ(SCTRL_LOW_PWR_CLK));
+	BK_DEEP_SLEEP_PRT("SCTRL_PWR_MAC_MODEM=0x%08X\n", REG_READ(SCTRL_PWR_MAC_MODEM));
+	BK_DEEP_SLEEP_PRT("SCTRL_MODEM_CORE_RESET_PHY_HCLK=0x%08X\n", REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
+	BK_DEEP_SLEEP_PRT("SCTRL_CLK_GATING=0x%08X\n", REG_READ(SCTRL_CLK_GATING));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_INT_STATUS=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_INT_STATUS));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_TYPE=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_TYPE));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_EN=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_EN));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_INT_STATUS1=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_INT_STATUS1));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_TYPE1=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_TYPE1));
+	BK_DEEP_SLEEP_PRT("SCTRL_GPIO_WAKEUP_EN1=0x%08X\n", REG_READ(SCTRL_GPIO_WAKEUP_EN1));	
 #endif      
 
     /* enter deep_sleep mode */
@@ -1858,7 +1863,7 @@ UINT32 sctrl_ctrl(UINT32 cmd, void *param)
 
     case CMD_SCTRL_MCLK_LIMIT_FREQ_BIT_SET:
         limit_freq_status |= (*(UINT32 *)param);
-        os_null_printf("l:%x %x\r\n",limit_freq_status,(*(UINT32 *)param));
+        debug_print("l:%x %x\n",limit_freq_status,(*(UINT32 *)param));
         if(limit_freq_status)
         {
             reg = REG_READ(SCTRL_CONTROL);
@@ -1875,7 +1880,7 @@ UINT32 sctrl_ctrl(UINT32 cmd, void *param)
 
     case CMD_SCTRL_MCLK_LIMIT_FREQ_BIT_CLR:
         limit_freq_status &= ~(*(UINT32 *)param);
-        os_null_printf("f:%x %x\r\n",limit_freq_status,(*(UINT32 *)param));
+        debug_print("f:%x %x\n",limit_freq_status,(*(UINT32 *)param));
         if(0 == limit_freq_status)
         {
             #if (USE_DCO_CLK_POWON )

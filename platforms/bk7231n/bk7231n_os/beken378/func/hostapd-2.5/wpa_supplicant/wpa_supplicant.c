@@ -3092,7 +3092,7 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 {
 	static int interface_count = 0;
 
-	os_printf("wpa_dInit\r\n");
+	wpa_printf(MSG_INFO, "wpa_dInit\n");
 	if (wpa_supplicant_update_mac_addr(wpa_s) < 0)
 		return -1;
 

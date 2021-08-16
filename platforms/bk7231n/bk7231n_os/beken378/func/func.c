@@ -7,6 +7,13 @@
 #include "param_config.h"
 #include "saradc_pub.h"
 
+
+#ifndef FUNC_DEBUG
+#define FUNC_DEBUG 0
+#endif
+#define debug_print(...)  do { if (FUNC_DEBUG) os_printf("[FUNC]"__VA_ARGS__); } while (0);
+
+
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
 #endif
@@ -29,6 +36,8 @@
 #include "start_type_pub.h"
 #include "BkDriverFlash.h"
 
+
+
 UINT32 func_init_extended(void)
 {
     char temp_mac[6];
@@ -38,24 +47,24 @@ UINT32 func_init_extended(void)
     wifi_get_mac_address(temp_mac, CONFIG_ROLE_NULL);
 	
     manual_cal_load_bandgap_calm();
-    FUNC_PRT("[FUNC]rwnxl_init\r\n");
+    debug_print("rwnxl_init\n");
     rwnxl_init();
 
 #if CFG_UART_DEBUG 
 	#ifndef KEIL_SIMULATOR
-    FUNC_PRT("[FUNC]uart_debug_init\r\n");   
+    debug_print("uart_debug_init\n");   
     uart_debug_init();
 	#endif
 #endif
 
 #if (!CFG_SUPPORT_RTT)
-    FUNC_PRT("[FUNC]intc_init\r\n");
+    debug_print("intc_init\n");
     intc_init();
 #endif
 
 #if CFG_SUPPORT_CALIBRATION
 	UINT32 is_tab_inflash = 0;
-    FUNC_PRT("[FUNC]calibration_main\r\n");
+    debug_print("calibration_main\n");
     calibration_main();
     #if CFG_SUPPORT_MANUAL_CALI
 	is_tab_inflash = manual_cal_load_txpwr_tab_flash();
@@ -90,23 +99,23 @@ UINT32 func_init_extended(void)
 #endif    
 
 #if CFG_SDIO
-    FUNC_PRT("[FUNC]sdio_intf_init\r\n");
+    debug_print("sdio_intf_init\n");
     sdio_intf_init();
 #endif
 
 #if CFG_SDIO_TRANS
-    FUNC_PRT("[FUNC]sdio_intf_trans_init\r\n");
+    debug_print("sdio_intf_trans_init\n");
     sdio_trans_init();
 #endif
 
 
 #if CFG_USB
-    FUNC_PRT("[FUNC]fusb_init\r\n");
+    debug_print("fusb_init\n");
     fusb_init();
 #endif
 
 #if  CFG_USE_STA_PS
-    FUNC_PRT("[FUNC]ps_init\r\n");
+    debug_print("ps_init\n");
 #endif
 
 #if CFG_ROLE_LAUNCH
@@ -121,8 +130,8 @@ UINT32 func_init_extended(void)
 	bk_wdg_initialize(10000);
 #endif
 
-    FUNC_PRT("[FUNC]func_init_extended OVER!!!\r\n\r\n");
-    os_printf("start_type:%d\r\n",bk_misc_get_start_type());
+    debug_print("func_init_extended OVER!!!\n");
+    debug_print("start_type:%d\n",bk_misc_get_start_type());
     return 0;
 }
 

@@ -136,6 +136,12 @@ static void prvInsertBlockIntoFreeList( BlockLink_t *pxBlockToInsert );
 static void prvHeapInit( void );
 extern void bk_printf(const char *fmt, ...);
 
+#ifndef HEAP_4_DEBUG
+#define HEAP_4_DEBUG 0
+#endif
+#define debug_print(...)  do { if (HEAP_4_DEBUG) bk_printf("[HEAP4]"__VA_ARGS__); } while (0);
+
+
 /*-----------------------------------------------------------*/
 
 /* The size of the structure placed at the beginning of each allocated memory
@@ -322,7 +328,7 @@ void *pvPortMalloc( size_t xWantedSize )
 	{
 	if(pvReturn) {
 	BlockLink_t *pxLink = (BlockLink_t *)((u8*)pvReturn - xHeapStructSize);    
-	bk_printf("\r\nm:%p,%d|%s,%d\r\n", pxLink, (pxLink->xBlockSize & ~xBlockAllocatedBit), call_func_name, line);
+	debug_print("m:%p,%d|%s,%d\n", pxLink, (pxLink->xBlockSize & ~xBlockAllocatedBit), call_func_name, line);
 	}
 	}
 	#endif
@@ -369,7 +375,7 @@ BlockLink_t *pxLink;
 				vTaskSuspendAll();
 				{
 					#if OSMALLOC_STATISTICAL
-					bk_printf("\r\nf:%p,%d|%s,%d\r\n", pxLink, pxLink->xBlockSize, call_func_name, line);
+					debug_print("f:%p,%d|%s,%d\n", pxLink, pxLink->xBlockSize, call_func_name, line);
 					#endif
 					/* Add this block to the list of free blocks. */
 					xFreeBytesRemaining += pxLink->xBlockSize;
@@ -442,7 +448,7 @@ static void prvHeapInit( void )
 	xTotalHeapSize = prvHeapGetTotalSize();
 	ucHeap = prvHeapGetHeaderPointer();
 	
-	bk_printf("prvHeapInit-start addr:0x%x, size:%d\r\n", ucHeap, xTotalHeapSize);
+	debug_print("prvHeapInit-start addr:0x%x, size:%d\n", ucHeap, xTotalHeapSize);
 	#else
 	xTotalHeapSize = configTOTAL_HEAP_SIZE;
 	#endif

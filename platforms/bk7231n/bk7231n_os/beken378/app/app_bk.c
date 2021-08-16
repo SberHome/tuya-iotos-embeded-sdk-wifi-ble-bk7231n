@@ -108,7 +108,7 @@ static void init_thread_main( void *arg )
     GLOBAL_INTERRUPT_START();
 
     bk_app_init();
-    os_printf("app_init finished\r\n");
+    //os_printf("app_init finished\r\n");
 
     rtos_delete_thread( NULL );
 }

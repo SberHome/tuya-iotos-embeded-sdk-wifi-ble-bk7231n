@@ -23,6 +23,11 @@
 #include "mcu_ps_pub.h"
 #endif
 
+#ifndef FCLK_DEBUG
+#define FCLK_DEBUG 0
+#endif
+#define debug_print(...)  do { if (FCLK_DEBUG) os_printf("[FCLK]"__VA_ARGS__); } while (0);
+
 #if CFG_BK7221_MDM_WATCHDOG_PATCH
 void rc_reset_patch(void);
 #endif
@@ -216,7 +221,7 @@ UINT32 timer_cal_tick(void)
     {
         if(lost > 200)
         {
-            //os_printf("m cal_:%x %x\r\n", lost, machw);
+            //debug_print("m cal_:%x %x\n", lost, machw);
         }
 
         lost -= FCLK_DURATION_MS;
@@ -230,13 +235,13 @@ UINT32 timer_cal_tick(void)
         {
             if(lost < (-50000))
             {
-                os_printf("m reset:%x %x\r\n", lost);
+                debug_print("m reset:%x %x\n", lost);
             }
             increase_tick = lost + FCLK_DURATION_MS;
         }
     }
     #endif
-    //os_printf("tc:%d\r\n",lost);
+    //debug_print("tc:%d\n",lost);
     
 #if CFG_USE_MCU_PS
     mcu_ps_machw_init();
@@ -301,7 +306,7 @@ UINT32 bk_cal_init(UINT32 setting)
 #if CFG_USE_MCU_PS
         mcu_ps_machw_init();
 #endif
-        os_printf("decset:%d %d %d %d\r\n",use_cal_net,current_clock,fclk_get_second(),xTaskGetTickCount());
+        debug_print("decset:%d %d %d %d\n",use_cal_net,current_clock,fclk_get_second(),xTaskGetTickCount());
     }
     else
     {
@@ -313,7 +318,7 @@ UINT32 bk_cal_init(UINT32 setting)
 #if CFG_USE_MCU_PS
         mcu_ps_machw_reset();
 #endif
-        os_printf("cset:%d %d %d %d\r\n",use_cal_net,current_clock,fclk_get_second(),xTaskGetTickCount());
+        debug_print("cset:%d %d %d %d\n",use_cal_net,current_clock,fclk_get_second(),xTaskGetTickCount());
     }
     GLOBAL_INT_RESTORE();
 
