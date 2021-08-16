@@ -66,7 +66,7 @@ static MQTT_CLIENT_T mqtt_client = {
 
 void mqtt_wifi_connect_cb(void)
 {
-    debug_print("mqtt_wifi_connect_cb\r\n");
+    debug_print("mqtt_wifi_connect_cb\n");
     g_mqtt_wifi_flag = 1;
 }
 
@@ -90,29 +90,29 @@ void mqtt_waiting_for_wifi_connected(void)
 
 static void mqtt_sub_default_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    debug_print("mqtt_sub_default_callback\r\n");
+    debug_print("mqtt_sub_default_callback\n");
 }
 
 static void mqtt_sub_callback(MQTT_CLIENT_T *c, MessageData *msg_data)
 {
-    debug_print("mqtt_sub_callback\r\n");
+    debug_print("mqtt_sub_callback\n");
     sub_count++;
 }
 
 static void mqtt_connect_callback(MQTT_CLIENT_T *c)
 {
-    debug_print("mqtt_connect_callback\r\n");
+    debug_print("mqtt_connect_callback\n");
 }
 
 static void mqtt_online_callback(MQTT_CLIENT_T *c)
 {
-    debug_print("mqtt_online_callback\r\n");
+    debug_print("mqtt_online_callback\n");
     recon_count++;
 }
 
 static void mqtt_offline_callback(MQTT_CLIENT_T *c)
 {
-    debug_print("mqtt_offline_callback\r\n");
+    debug_print("mqtt_offline_callback\n");
 }
 /**
  * This function publish message to specific mqtt topic.
@@ -162,7 +162,7 @@ static void mqtt_pub_handler(void *parameter)
     os_memset(test_pub_data, '*', TEST_DATA_SIZE * sizeof(char));
 
     test_start_tm = rtos_get_time();
-    debug_print("test start at '%d'\r\n", test_start_tm);
+    debug_print("test start at '%d'\n", test_start_tm);
 
     while (1)
     {
@@ -185,7 +185,7 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     int len = os_strlen(oob_ssid);
     if (SSID_MAX_LEN < len)
     {
-        debug_print("ssid name more than 32 Bytes\r\n");
+        debug_print("ssid name more than 32 Bytes\n");
         return kParamErr;
     }
 
@@ -196,11 +196,11 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
     wNetConfig.dhcp_mode = DHCP_CLIENT;
     wNetConfig.wifi_retry_interval = 100;
 
-    debug_print("ssid:%s key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
+    debug_print("ssid:%s key:%s\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
     ret = bk_wlan_start(&wNetConfig);
 
     if (ret != kNoErr)
-        debug_print("bk_wlan_start failed: %d\r\n", ret);
+        debug_print("bk_wlan_start failed: %d\n", ret);
 
     return ret;
 }
@@ -219,7 +219,7 @@ OSStatus user_main(void)
     
     while (!mqtt_client.is_connected)
     {
-        debug_print("Waiting for mqtt connection...\r\n");
+        debug_print("Waiting for mqtt connection...\n");
         rtos_delay_milliseconds(1000);
     }
 
