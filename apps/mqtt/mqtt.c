@@ -5,11 +5,15 @@
 #include "ieee802_11_defs.h"
 #include "net.h"
 
-
 #ifndef APP_DEBUG
 #define APP_DEBUG 0
 #endif
-#define debug_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
+#define debug_print(...)                   \
+    do                                     \
+    {                                      \
+        if (APP_DEBUG)                     \
+            os_printf("[APP]"__VA_ARGS__); \
+    } while (0);
 
 static char *test_pub_data = NULL;
 
@@ -38,7 +42,7 @@ static MQTT_CLIENT_T mqtt_client = {
     .condata.username.cstring = MQTT_USERNAME,
     .condata.password.cstring = MQTT_PASSWORD,
 
-    // config MQTT will param. 
+    // config MQTT will param.
     .condata.willFlag = 1,
     .condata.will.qos = MQTT_TEST_QOS,
     .condata.will.retained = 0,
@@ -50,7 +54,7 @@ static MQTT_CLIENT_T mqtt_client = {
     .buf = mqtt_buf,
     .readbuf = mqtt_read_buf,
 
-    // set event callback function 
+    // set event callback function
     .connect_callback = mqtt_connect_callback,
     .online_callback = mqtt_online_callback,
     .offline_callback = mqtt_offline_callback,
@@ -60,9 +64,8 @@ static MQTT_CLIENT_T mqtt_client = {
     .messageHandlers[0].callback = mqtt_sub_callback,
     .messageHandlers[0].qos = MQTT_TEST_QOS,
 
-    // set default subscribe event callback 
-    .defaultMessageHandler = mqtt_sub_default_callback
-};
+    // set default subscribe event callback
+    .defaultMessageHandler = mqtt_sub_default_callback};
 
 void mqtt_wifi_connect_cb(void)
 {
@@ -177,7 +180,7 @@ static void mqtt_pub_handler(void *parameter)
     }
 }
 
-OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
+OSStatus wifi_station_init(const char *oob_ssid, const char *connect_key)
 {
     OSStatus ret = kNoErr;
     network_InitTypeDef_st wNetConfig = {0};
@@ -189,8 +192,8 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
         return kParamErr;
     }
 
-    os_strcpy((char *)wNetConfig.wifi_ssid, oob_ssid);
-    os_strcpy((char *)wNetConfig.wifi_key, connect_key);
+    os_strcpy(wNetConfig.wifi_ssid, oob_ssid);
+    os_strcpy(wNetConfig.wifi_key, connect_key);
 
     wNetConfig.wifi_mode = STATION;
     wNetConfig.dhcp_mode = DHCP_CLIENT;
@@ -208,7 +211,7 @@ OSStatus wifi_station_init(char *oob_ssid, char *connect_key)
 OSStatus user_main(void)
 {
     OSStatus ret = kNoErr;
-    extended_app_waiting_for_launch();  // need to wait for rl_init() to finish
+    extended_app_waiting_for_launch(); // need to wait for rl_init() to finish
     net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
     //user_connected_callback(mqtt_wifi_connect_cb);
 
@@ -216,7 +219,7 @@ OSStatus user_main(void)
 
     //mqtt_waiting_for_wifi_connected();
     paho_mqtt_start(&mqtt_client);
-    
+
     while (!mqtt_client.is_connected)
     {
         debug_print("Waiting for mqtt connection...\n");
