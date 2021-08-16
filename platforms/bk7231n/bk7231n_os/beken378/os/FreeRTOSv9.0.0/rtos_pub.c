@@ -18,6 +18,12 @@
 
 #define cmd_printf os_printf
 
+#ifndef RTOS_PUB_DEBUG
+#define RTOS_PUB_DEBUG 0
+#endif
+
+#define debug_print(...)  do { if (RTOS_PUB_DEBUG) os_printf("[RTOS_PUB]"__VA_ARGS__); } while (0);
+
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -693,7 +699,7 @@ static void timer_callback1( xTimerHandle handle )
 OSStatus rtos_start_oneshot_timer( beken2_timer_t* timer )
 {
     if (!rtos_is_oneshot_timer_init(timer)) {
-        os_debug("Timer not initialised\n");
+        debug_print("Timer not initialised\n");
         return kGeneralErr;
     }
 
@@ -721,7 +727,7 @@ OSStatus rtos_deinit_oneshot_timer( beken2_timer_t* timer )
 {
 	OSStatus ret = kNoErr;
     if (!rtos_is_oneshot_timer_init(timer)) {
-        os_debug("Timer not initialised\n");
+        debug_print("Timer not initialised\n");
         return kGeneralErr;
     }
 

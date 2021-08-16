@@ -7,8 +7,6 @@
 #include "hal/soc/soc.h"
 #endif
 
-#define os_debug(fmt, ...) do { bk_printf("[%s:%d] %s " fmt, __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); } while (0)
-
 #define os_printf                      bk_printf
 
 #define warning_prf                    bk_printf

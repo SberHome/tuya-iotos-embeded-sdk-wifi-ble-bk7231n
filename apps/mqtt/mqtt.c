@@ -250,9 +250,8 @@ OSStatus user_main(void)
 {
     OSStatus ret = kNoErr;
     extended_app_waiting_for_launch();  // need to wait for rl_init() to finish
-    //rtos_delay_milliseconds(10 * 1000);
-    //net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
-    user_connected_callback(mqtt_wifi_connect_cb);
+    net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
+    //user_connected_callback(mqtt_wifi_connect_cb);
 
     wifi_station_init("HONOR_KIW-L21_EEE9", "1234567890");
 

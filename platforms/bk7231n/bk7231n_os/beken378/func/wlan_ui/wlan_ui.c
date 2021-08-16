@@ -34,6 +34,14 @@
 #include "txu_cntrl.h"
 #include "rw_msdu.h"
 #include "bk7011_cal_pub.h"
+#include "hostapd_intf_pub.h"
+
+
+#ifndef WLAN_UI_DEBUG
+#define WLAN_UI_DEBUG 0
+#endif
+
+#define debug_print(...)  do { if (WLAN_UI_DEBUG) os_printf("[WLAN_UI]"__VA_ARGS__); } while (0);
 
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
@@ -599,7 +607,7 @@ OSStatus bk_wlan_start_sta(network_InitTypeDef_st *inNetworkInitPara)
 
 OSStatus bk_wlan_start(network_InitTypeDef_st *inNetworkInitPara)
 {
-    os_debug("START\n");
+    debug_print("START\n");
     OSStatus ret = 0;
 #if CFG_ROLE_LAUNCH
     LAUNCH_REQ lreq;
