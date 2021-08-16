@@ -84,6 +84,13 @@
 #include "role_launch.h"
 #include "wlan_ui_pub.h"
 
+
+
+#ifndef DHCP_DEBUG_PRINT
+#define DHCP_DEBUG_PRINT 0
+#endif
+#define debug_print(...)  do { if (DHCP_DEBUG_PRINT) os_printf("[DHCP]"__VA_ARGS__); } while (0);
+
 /** DHCP_CREATE_RAND_XID: if this is set to 1, the xid is created using
  * LWIP_RAND() (this overrides DHCP_GLOBAL_XID)
  */
@@ -752,7 +759,7 @@ void dhcp_start_timeout_check(u32_t secs, u32_t usecs)
 
 	if(rtos_is_oneshot_timer_init(&dhcp_tmr))
 	{
-		os_printf("dhcp_check_status_reload_timer\r\n\r\n");
+		debug_print("dhcp_check_status_reload_timer\\n");
 		rtos_oneshot_reload_timer(&dhcp_tmr);
 	}
 	else
@@ -766,7 +773,7 @@ void dhcp_start_timeout_check(u32_t secs, u32_t usecs)
 		
 		err = rtos_start_oneshot_timer(&dhcp_tmr);
 		ASSERT(kNoErr == err);
-		os_printf("dhcp_check_status_init_timer:%d\r\n", clk_time);
+		debug_print("dhcp_check_status_init_timer:%d\n", clk_time);
 	}		
 
 	return;
