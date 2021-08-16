@@ -1,22 +1,15 @@
 #include "rtos_pub.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include "paho_mqtt.h"
 #include "mqtt.h"
-#include "rw_pub.h"
-#include "str_pub.h"
 #include "wlan_ui_pub.h"
 #include "ieee802_11_defs.h"
+#include "net.h"
 
 
 #ifndef APP_DEBUG
 #define APP_DEBUG 0
 #endif
-
 #define app_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
-
 
 static char *test_pub_data = NULL;
 static MQTT_CLIENT_T mqtt_client;
