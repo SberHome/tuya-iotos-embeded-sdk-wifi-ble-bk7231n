@@ -106,6 +106,9 @@
 #define ASSERT_ERR2(cond, param0, param1)
 #define ASSERT_WARN(cond)
 
+
+void extended_app_waiting_for_launch(void);
+
 /// @}
 /// @}
 #endif // _ARCH_H_
