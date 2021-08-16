@@ -47,6 +47,14 @@
 #include "app_music_pub.h"
 #include "bk7011_cal_pub.h"
 
+
+#ifndef APP_BK_DEBUG
+#define APP_BK_DEBUG 0
+#endif
+
+#define debug_print(...)  do { if (APP_BK_DEBUG) os_printf("[APP_BK]"__VA_ARGS__); } while (0);
+
+
 #if (CFG_SUPPORT_ALIOS || CFG_SUPPORT_RTT)
 beken_thread_t  init_thread_handle;
 beken_thread_t  app_thread_handle;
@@ -182,7 +190,7 @@ int bmsg_tx_raw_cb_sender(uint8_t *buffer, int length, void *cb, void *param)
 	ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, 1*SECONDS);
 	if(ret != kNoErr) 
 	{
-		APP_PRT("bmsg_tx_sender failed\r\n");
+		debug_print("bmsg_tx_sender failed\r\n");
 	}
 
 	return ret;
@@ -399,7 +407,7 @@ void bmsg_rx_sender(void *arg)
     ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, BEKEN_NO_WAIT);
     if(kNoErr != ret)
     {
-        APP_PRT("bmsg_rx_sender_failed\r\n");
+        debug_print("bmsg_rx_sender_failed\r\n");
     }
 }
 
@@ -417,7 +425,7 @@ int bmsg_tx_sender(struct pbuf *p, uint32_t vif_idx)
     ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, 1 * SECONDS);
     if(kNoErr != ret)
     {
-        APP_PRT("bmsg_tx_sender failed\r\n");
+        debug_print("bmsg_tx_sender failed\r\n");
         pbuf_free(p);
     }
 
@@ -438,7 +446,7 @@ int bmsg_tx_raw_sender(uint8_t *payload, uint16_t length)
 
 	if(ret != kNoErr) 
 	{
-		APP_PRT("bmsg_tx_sender failed\r\n");
+		debug_print("bmsg_tx_sender failed\r\n");
 		os_free(payload);
 	}
 
@@ -471,11 +479,11 @@ int bmsg_ioctl_sender(void *arg)
     ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, BEKEN_NO_WAIT);
     if(kNoErr != ret)
     {
-        APP_PRT("bmsg_ioctl_sender_failed\r\n");
+        debug_print("bmsg_ioctl_sender_failed\r\n");
     }
     else
     {
-        APP_PRT("bmsg_ioctl_sender\r\n");
+        debug_print("bmsg_ioctl_sender\r\n");
     }
 
     return ret;
@@ -494,7 +502,7 @@ void bmsg_music_sender(void *arg)
     ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, BEKEN_NO_WAIT);
     if(kNoErr != ret)
     {
-        APP_PRT("bmsg_media_sender_failed\r\n");
+        debug_print("bmsg_media_sender_failed\r\n");
     }
 }
 
@@ -512,7 +520,7 @@ void bmsg_txing_sender(uint8_t sta_idx)
     ret = rtos_push_to_queue(&g_wifi_core.io_queue, &msg, BEKEN_NO_WAIT);
     if(kNoErr != ret)
     {
-        APP_PRT("bmsg_txing_sender failed\r\n");
+        debug_print("bmsg_txing_sender failed\r\n");
     }
 }
 
@@ -585,22 +593,22 @@ static void core_thread_main( void *arg )
 #endif
 
             case BMSG_RX_TYPE:
-                APP_PRT("bmsg_rx_handler\r\n");
+                debug_print("bmsg_rx_handler\r\n");
                 bmsg_rx_handler(&msg);
                 break;
 
             case BMSG_TX_TYPE:
-                APP_PRT("bmsg_tx_handler\r\n");
+                debug_print("bmsg_tx_handler\r\n");
                 bmsg_tx_handler(&msg);
                 break;
 
             case BMSG_SKT_TX_TYPE:
-                APP_PRT("bmsg_skt_tx_handler\r\n");
+                debug_print("bmsg_skt_tx_handler\r\n");
                 bmsg_skt_tx_handler(&msg);
                 break;
 
             case BMSG_IOCTL_TYPE:
-                APP_PRT("bmsg_ioctl_handler\r\n");
+                debug_print("bmsg_ioctl_handler\r\n");
                 bmsg_ioctl_handler(&msg);
                 break;
             case BMSG_MEDIA_TYPE:
@@ -628,8 +636,10 @@ static void core_thread_main( void *arg )
 					break;
 					
 #endif
+            case BMSG_NULL_TYPE:
+                break;
             default:
-                APP_PRT("unknown_msg\r\n");
+                debug_print("unknown_msg\r\n");
                 break;
             }
 
