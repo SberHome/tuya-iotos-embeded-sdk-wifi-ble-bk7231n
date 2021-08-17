@@ -62,5 +62,8 @@ extern void flash_exit(void);
 extern UINT8 flash_get_line_mode(void);
 extern void flash_set_line_mode(UINT8 );
 void flash_protection_op(UINT8 mode, PROTECT_TYPE type);
+UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
+UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
+UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
 #endif //_FLASH_PUB_H

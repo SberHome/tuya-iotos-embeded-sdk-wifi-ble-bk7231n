@@ -4,12 +4,10 @@
 #include "app.h"
 #include "str_pub.h"
 #include "fake_clock_pub.h"
-
 #include "lwip/sockets.h"
 
-#define OS1_FLASH_ADDR 0x8C000
-#define TFTP_ALL_CRC_LEN 4
 
+//#define OS1_FLASH_ADDR 0x8C000 // dont know what this is for
 typedef struct send_data_hd
 {
     u32 total_len;
@@ -33,42 +31,48 @@ typedef struct img_head
     uint32_t bk;
 } IMG_HEAD, *IMG_HEAD_P;
 
-#define TFTP_PKT_HD_LEN (sizeof(SEND_PTK_HD))
-
-extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
-extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
-extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
-void store_block (unsigned block, uint8_t *src, unsigned len);
-
-
-#define ET_DEBUG 0
-
-#define WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
+#define TFTP_WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
 #define TIMEOUT		5UL		/* Seconds to timeout for a lost pkt	*/
-#ifndef	CONFIG_NET_RETRY_COUNT
 #define TIMEOUT_COUNT	10		/* # of timeouts before giving up  */
-#else
-# define TIMEOUT_COUNT  (CONFIG_NET_RETRY_COUNT * 2)
-#endif
-/* (for checking the image size)	*/
-#define HASHES_PER_LINE	65		/* Number of "loading" hashes per line	*/
+
 
 /*
  *	TFTP operations.
  */
-#define TFTP_RRQ	1
-#define TFTP_WRQ	2
-#define TFTP_DATA	3
-#define TFTP_ACK	4
-#define TFTP_ERROR	5
-#define TFTP_OACK	6
+typedef enum Tftp_operation_e {
+    TFTP_RRQ = 1,
+    TFTP_WRQ = 2,
+    TFTP_DATA =	3,
+    TFTP_ACK = 4,
+    TFTP_ERROR = 5,
+    TFTP_OACK =	6
+} Tftp_operation_t;
 
-#define STATE_RRQ	1
-#define STATE_DATA	2
-#define STATE_TOO_LARGE	3
-#define STATE_BAD_MAGIC	4
-#define STATE_OACK	5
-#define TFTP_BLOCK_SIZE		512		    /* default TFTP block size	*/
+typedef enum TftpState_e {
+    STATE_RRQ = 1,
+    STATE_DATA = 2,
+    STATE_TOO_LARGE	= 3,
+    STATE_BAD_MAGIC	= 4,
+    STATE_OACK = 5
+} TftpState_t;
+
+typedef struct TftpHandle_s {
+    TftpState_t state;
+    uint16_t block;     // current block number
+    uint16_t lastblock; /* last packet sequence number received */
+    uint16_t req_block_size; // requested block size
+    uint16_t block_size;    // actual block size,
+    uint16_t server_port;
+    uint64_t blockwrap;  /* count of sequence number wraparounds */
+    uint32_t timeout_counter;
+    uint8_t* buf; // data buffer
+    char* filename;
+} TftpHandle_t;
+
+
+#define DOWNLOAD_AREA_ADDR 0x00132000   // Методом тыка определил, что прошивку нужно загружать по этому адресу
+
+#define TFTP_DEFAULT_BLOCK_SIZE		512		    /* default TFTP block size	*/
 #define TFTP_SEQUENCE_SIZE	((uint64_t)(1<<16))    /* sequence number is 16 bit */
 #define TFTP_TIMER    10000   // ms
 #define TFTP_SERVER_IP "192.168.43.58"
@@ -79,7 +83,7 @@ void store_block (unsigned block, uint8_t *src, unsigned len);
  * almost-MTU block sizes.  At least try... fall back to 512 if need be.
  */
 //#define TFTP_MTU_BLOCKSIZE (1024 + sizeof(SEND_PTK_HD))
-#define TFTP_MTU_BLOCKSIZE 1024
+#define TFTP_REQ_MTU_BLOCKSIZE 1024
 #define TFTP_BUF_LEN 1600
 
 OSStatus tftp_start(void);
