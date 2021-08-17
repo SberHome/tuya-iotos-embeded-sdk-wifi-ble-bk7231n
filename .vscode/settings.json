@@ -43,6 +43,7 @@
         "param_config.h": "c",
         "assert.h": "c",
         "system_error": "c",
-        "error.h": "c"
+        "error.h": "c",
+        "random": "c"
     }
 }

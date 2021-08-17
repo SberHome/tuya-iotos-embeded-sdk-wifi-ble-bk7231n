@@ -986,6 +986,12 @@ application: prerequirement $(OBJ_C_LIST) $(OBJ_S_LIST) $(OBJ_OS_LIST)
 	@mv $(BEKEN_DIR)/tools/generate/package_tool/windows/all_2M.1220.bin $(BIN_DIR)/$(TARGET_NAME)_all_2M.1220.bin
 #	Бинарник для загрузки по адресу 0x00011000	
 	@mv $(BEKEN_DIR)/tools/generate/package_tool/windows/$(TARGET_NAME)_enc_uart_2M.1220.bin $(BIN_DIR)
+	@echo	
+	@echo making ${APP_NAME}_UG_${APP_VERSION}.bin - OTA binary
+	@echo "*************************************************************************"	
+	@$(BEKEN_DIR)/tools/generate/package_tool/windows/rt_ota_packaging_tool_cli.exe -f $(BIN_DIR)/$(TARGET_NAME).bin -v $(CURRENT_TIME) -o $(BIN_DIR)/$(TARGET_NAME).rbl -p app -c gzip -s aes -k 0123456789ABCDEF0123456789ABCDEF -i 0123456789ABCDEF
+	@$(BEKEN_DIR)/tools/generate/package_tool/windows/package.exe $(BIN_DIR)/$(TARGET_NAME).rbl $(BIN_DIR)/${APP_NAME}_UG_${APP_VERSION}.bin $(APP_VERSION)
+
 
 # Generate build info
 # -------------------------------------------------------------------	

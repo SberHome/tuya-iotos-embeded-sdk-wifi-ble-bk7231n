@@ -13,6 +13,8 @@
 #define print_err(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][ERR]"__VA_ARGS__); } while (0);
 
 
+void store_block_alt(unsigned int block_num, uint8_t *src, unsigned int len);
+
 SEND_PTK_HD send_hd, send_hd_bk;
 static u32 os_data_addr = OS1_FLASH_ADDR;
 IMG_HEAD img_hd = {
@@ -191,7 +193,7 @@ static void TftpHandler(char *buffer, unsigned int len, u16_t port)
         break;
     case TFTP_DATA:
         TftpBlock = ntohs(*s);
-        print_inf("Got DATA block: %d\n", TftpBlock);
+        print_dbg("Got DATA block: %d\n", TftpBlock);
         if (len < 2)
             return;
         len -= 2;
@@ -254,7 +256,8 @@ static void TftpHandler(char *buffer, unsigned int len, u16_t port)
         TftpLastBlock = TftpBlock;
         //store_block(TftpBlock - 1, (UINT8 *)(pkt + 2), len);
         uint16_t* block_data = ++s;
-        store_block(TftpBlock - 1, (UINT8 *)(block_data), len);
+        //store_block(TftpBlock - 1, (UINT8 *)(block_data), len);
+        store_block_alt(TftpBlock - 1, (UINT8 *)(block_data), len);
 
         /*
          *	Acknoledge the block just received, which will prompt
@@ -374,7 +377,8 @@ static void tftp_server_process(beken_thread_arg_t arg)
         }
         print_dbg("Received len: %d\n", len);
         TftpHandler(tftp_buf, len, server_addr.sin_port);
-        rtos_delay_milliseconds(3000);
+        //rtos_delay_milliseconds(3000);
+        rtos_delay_milliseconds(100);
     }
 
 exit:
@@ -413,109 +417,41 @@ OSStatus tftp_start(void)
     return ret;
 }
 
-void store_block(unsigned int block_num, uint8_t *src, unsigned int len)
+// Пишет блоки в память в сыром виде
+void store_block_alt(unsigned int block_num, uint8_t *src, unsigned int len)
 {
-    uint8_t *f_data;
-    UINT32 param, or_crc;
-    UINT32 param1;
+    print_dbg("Store block: %d len: %d\n", block_num, len);
+    uint32_t const dwnld_area_addr = 0x00132000;    // Методом тыка определил, что прошивку нужно загружать по этому адресу
+    static uint32_t current_address = dwnld_area_addr;
 
-    print_inf("Store block: %d len: %d\n", block_num, len);
-    os_memcpy(&send_hd, src, sizeof(send_hd));
-    print_inf("--------------------------BLOCK HEADER\n");
-    print_inf("total_len: %d\n", send_hd.total_len);
-    print_inf("total_seq: %d\n", send_hd.total_seq);
-    print_inf("seq: %d\n", send_hd.seq);
-    print_inf("os_hd_addr: %d\n", send_hd.os_hd_addr);
-    print_inf("os0_ex_addr: %d\n", send_hd.os0_ex_addr);
-    print_inf("os0_flash_addr: %d\n", send_hd.os0_flash_addr);
-    print_inf("os1_flash_addr: %d\n", send_hd.os1_flash_addr);    
-    
-
-    if ((block_num + 1 != send_hd.seq))
+    // Erasing sector
+    if (current_address % 0x1000 == 0)
     {
-        print_err("bk: %d seq: %d t_seq: %d fail!\n", block_num, send_hd.seq, send_hd.total_seq);
-    }
-
-    // Check next and previous block headers match
-    if (block_num)
-    {
-        if (!((send_hd_bk.seq + 1 == send_hd.seq) && (send_hd_bk.total_len == send_hd.total_len) && (send_hd_bk.os0_ex_addr == send_hd.os0_ex_addr) && (send_hd_bk.os0_flash_addr == send_hd.os0_flash_addr) && (send_hd_bk.os1_flash_addr == send_hd.os1_flash_addr) && (send_hd_bk.total_seq == send_hd.total_seq)))
-            print_err("tftp seq head err\n");
-    }
-    else
-    {
-        os_data_addr = send_hd.os1_flash_addr;
-        tftp_crc = 0;
-    }
-    os_memcpy(&send_hd_bk, &send_hd, sizeof(send_hd));
-
-    if (os_data_addr % 0x1000 == 0)
-    {
-        param = os_data_addr;
+        uint32_t param = current_address;
         flash_ctrl(CMD_FLASH_ERASE_SECTOR, &param);
-        print_wrn("erase_addr:%x \n", os_data_addr);
+        print_dbg("erase_addr: %x \n", param);
     }
 
-    print_wrn("w_addr:%x \n", os_data_addr);
-    if ((u32)os_data_addr >= 0x200000 || (u32)os_data_addr < 0x27000)   // > 2Mb or < ?
+    print_dbg("Writing to: %x, len: %d\n", current_address, len);
+    flash_write(src, len, current_address);
+
+    bool verify_ok = true;
+    for (uint32_t offset = 0; offset < len; offset++)
     {
-        print_inf("eerr_addr:%x \n", os_data_addr);
-        return;
+        uint32_t adr = current_address + offset;
+        uint8_t r_val;
+        uint8_t w_val = src[offset];
+        flash_read(&r_val, 4, adr);
+        if (r_val != w_val)
+            verify_ok = false;
     }
 
-    if ((u32)os_data_addr < 0x400000)   // < 4Mb
-    {
-        flash_write(src + TFTP_PKT_HD_LEN, len - TFTP_PKT_HD_LEN, (u32)os_data_addr);
-        f_data = os_malloc(1024);
-        if (f_data)
-        {
-            flash_read(f_data, len - TFTP_PKT_HD_LEN, (u32)os_data_addr);
-            if (!os_memcmp(src + TFTP_PKT_HD_LEN, f_data, len - TFTP_PKT_HD_LEN))
-            {
-                print_wrn("block%d WRITE ok !\n", block_num);
-                print_wrn(".");
-            }
-            else
-            {
-                print_inf("block%d  flash  write err\n", block_num);
-            }
-            os_free(f_data);
-        }
-        else
-        {
-            print_inf("malloc fail.\n");
-        }
-
-        if (send_hd.seq != send_hd.total_seq)
-            tftp_crc = co_crc32((UINT32)src, len, tftp_crc);
-        else
-        {
-            print_wrn("seq%d  send over\n", send_hd.seq);
-            os_memcpy(&or_crc, src + len - TFTP_ALL_CRC_LEN, TFTP_ALL_CRC_LEN);
-            tftp_crc = co_crc32((UINT32)src, len - TFTP_ALL_CRC_LEN, tftp_crc);
-            if (tftp_crc == or_crc)
-            {
-                print_inf("crc OK:%x %x\n", tftp_crc, or_crc);
-                img_hd.bkup_addr = send_hd.os1_flash_addr;
-                img_hd.bkup_len = send_hd_bk.total_len;
-                img_hd.crc = or_crc;
-                img_hd.ex_addr = send_hd.os0_ex_addr;
-                img_hd.os_addr = send_hd.os0_flash_addr;
-                img_hd.hd_addr = send_hd.os_hd_addr;
-                img_hd.status = 1;
-                param = (u32)send_hd.os_hd_addr;
-                flash_ctrl(CMD_FLASH_ERASE_SECTOR, &param);
-                flash_write((char *)&img_hd, sizeof(img_hd), (u32)send_hd.os_hd_addr);
-
-                print_wrn("%X %X %X %X %X \n", img_hd.bkup_addr,
-                          img_hd.bkup_len, img_hd.crc, img_hd.ex_addr, img_hd.status);
-            }
-            else
-            {
-                print_inf("crc ERR--:%d %d\n", tftp_crc, or_crc);
-            }
-        }
-
-        os_data_addr += len - TFTP_PKT_HD_LEN;
+    if (verify_ok) {
+        print_inf("block: %d, len: %d, verify OK!\n", block_num, len);
     }
+    else {
+        print_err("block: %d, len: %d, verify FAIL!\n", block_num, len);
+    }
+
+    current_address += len;
 }

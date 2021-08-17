@@ -72,15 +72,14 @@ void store_block (unsigned block, uint8_t *src, unsigned len);
 #define TFTP_SEQUENCE_SIZE	((uint64_t)(1<<16))    /* sequence number is 16 bit */
 #define TFTP_TIMER    10000   // ms
 #define TFTP_SERVER_IP "192.168.43.58"
-#define TFTP_FIRMWARE_FILENAME "mqtt_1.0.0_enc_uart_2M.1220.bin"
-//#define TFTP_FIRMWARE_FILENAME "mqtt_1.0.0_enc.bin"
+#define TFTP_FIRMWARE_FILENAME "mqtt_1.0.0.rbl"
 
 /* 512 is poor choice for ethernet, MTU is typically 1500.
  * Minus eth.hdrs thats 1468.  Can get 2x better throughput with
  * almost-MTU block sizes.  At least try... fall back to 512 if need be.
  */
-#define TFTP_MTU_BLOCKSIZE (1024 + sizeof(SEND_PTK_HD))
-//#define TFTP_MTU_BLOCKSIZE 1024
+//#define TFTP_MTU_BLOCKSIZE (1024 + sizeof(SEND_PTK_HD))
+#define TFTP_MTU_BLOCKSIZE 1024
 #define TFTP_BUF_LEN 1600
 
 OSStatus tftp_start(void);
