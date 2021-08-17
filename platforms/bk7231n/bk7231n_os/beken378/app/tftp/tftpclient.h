@@ -1,27 +1,11 @@
+#ifndef __TFTPCLIENT_H__
+#define __TFTPCLIENT_H__
 
-#include "include.h"
-#include "arm_arch.h"
-#include "rwnx_config.h"
 #include "app.h"
-#include "target_util_pub.h"
-#include "mem_pub.h"
 #include "str_pub.h"
-#include "drv_model_pub.h"
-#include "sys_ctrl_pub.h"
-#include "saradc_pub.h"
-#include "uart_pub.h"
-#include "sys_rtos.h"
-#include "rtos_pub.h"
-#include "error.h"
-#include "fake_clock_pub.h"
-#include "rw_pub.h"
-#include "udp.h"
-#include "flash_pub.h"
 #include "fake_clock_pub.h"
 
 #include "lwip/sockets.h"
-#include "lwip/ip_addr.h"
-#include "lwip/inet.h"
 
 //#define TFTP_DEBUG
 #ifdef TFTP_DEBUG
@@ -112,3 +96,4 @@ void ftpd_start(void);
 
 #endif
 
+#endif // __TFTPCLIENT_H__

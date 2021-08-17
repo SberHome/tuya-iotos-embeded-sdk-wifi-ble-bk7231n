@@ -25,11 +25,11 @@
 #define THD_LWIP_PRIORITY                          4
 #define THD_INIT_PRIORITY                          4
 #define THD_RECONNECT_PRIORITY                     4
-#define THD_MEDIA_PRIORITY						   4
+#define THD_MEDIA_PRIORITY						         4
 #define THD_WPAS_PRIORITY                          5
 #define THD_EXTENDED_APP_PRIORITY                 (5 + 1) //change extended priority lower for light-firmware
 #define THD_HOSTAPD_PRIORITY                       5
-#define THDD_KEY_SCAN_PRIORITY					   7
+#define THDD_KEY_SCAN_PRIORITY					      7
 #endif // CFG_OS_FREERTOS
 
 /*section 2-----function macro config-----*/
@@ -134,11 +134,11 @@
 #define CFG_USE_SDCARD_HOST                        0
 
 /*section 20 ----- support mp3 decoder*/
-#define CONFIG_APP_MP3PLAYER 			           0
+#define CONFIG_APP_MP3PLAYER 			               0
 
 /*section 21 ----- support ota*/
 #define CFG_SUPPORT_OTA_HTTP                       0
-#define CFG_SUPPORT_OTA_TFTP                       0
+#define CFG_SUPPORT_OTA_TFTP                       1
 
 /*section 22 ----- support adc calibrate*/
 #define CFG_SARADC_CALIBRATE                       0
@@ -181,9 +181,9 @@
 #define CFG_XTAL_FREQUENCE                         CFG_XTAL_FREQUENCE_26M
 #endif
 
-#define CFG_RWNX_QOS_MSDU						   1
+#define CFG_RWNX_QOS_MSDU						         1
 
-#define  CFG_USE_SPI_DMA						   1
-#define  CFG_USE_SPI_MASTER						   1
-#define  CFG_USE_SPI_SLAVE						   1
+#define  CFG_USE_SPI_DMA						         1
+#define  CFG_USE_SPI_MASTER						      1
+#define  CFG_USE_SPI_SLAVE						         1
 #endif // _SYS_CONFIG_H_

@@ -1,9 +1,14 @@
-APP_NAME = mqtt
+APP_NAME = ota_tftp
 APP_VERSION = 1.0.0
 SOC_NAME = bk7231n
 
 INCLUDES =
 SRC_C =
+
+# Application
+SRC_C += apps/$(APP_NAME)/ota_tftp.c
+INCLUDES += -Iapps/$(APP_NAME)
+INCLUDES += -I$(BEKEN_DIR)/beken378/app/tftp
 
 BUILD_DIR = build
 BEKEN_DIR = platforms/bk7231n/bk7231n_os
@@ -43,14 +48,6 @@ DEBUG_DEFINES += -DWLAN_UI_DEBUG=1
 #DEBUG_DEFINES += -DCFG_NONE_DEBUG=1
 #DEBUG_DEFINES += -DMAIN_SUPPLICANT_DEBUG=1
 
-
-
-
-
-
-
-
-
 ENCRYPT = $(BEKEN_DIR)/tools/generate/package_tool/windows/encrypt.exe
 ENCRYPT_ARGS = 0 0 0
 
@@ -81,20 +78,6 @@ OBJDUMP = "$(CROSS_COMPILE)objdump"
 # Include folder list
 # -------------------------------------------------------------------
 
-
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/client
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/client/src
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/packet/src
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui/ssl_mqtt
-INCLUDES += -Iapps/$(APP_NAME)/paho-mqtt/mqtt_ui/tcp_mqtt
-
-SRC_C += apps/$(APP_NAME)/paho-mqtt/client/paho_mqtt_udp.c
-SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTPacket.c
-SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTConnectClient.c
-SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTSubscribeClient.c
-SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTDeserializePublish.c
-SRC_C += apps/$(APP_NAME)/paho-mqtt/packet/src/MQTTSerializePublish.c
 
 # Beken SDK include folder and source file list
 
@@ -276,8 +259,7 @@ endif
 SRC_OS =
 
 
-#myapp
-SRC_C += apps/$(APP_NAME)/mqtt.c
+
 
 SRC_C += $(BEKEN_DIR)/beken378/os/mem_arch.c
 SRC_C += $(BEKEN_DIR)/beken378/os/platform_stub.c
@@ -918,8 +900,7 @@ SRC_OS += $(BEKEN_DIR)/beken378/os/FreeRTOSv9.0.0/rtos_pub.c
 
 
 
-# Application
-INCLUDES += -Iapps/$(APP_NAME)
+
 
 #assembling files
 SRC_S = 

@@ -398,7 +398,7 @@ int httpclient_send_userdata(httpclient_t *client, httpclient_data_t *client_dat
 }
 
 /* 0 on success, err code on failure */
-int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, int *p_read_len, uint32_t timeout_ms)
+static int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, int *p_read_len, uint32_t timeout_ms)
 {
     int ret = 0;
     iotx_time_t timer;

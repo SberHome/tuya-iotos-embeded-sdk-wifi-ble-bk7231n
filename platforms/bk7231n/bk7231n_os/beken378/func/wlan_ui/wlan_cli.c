@@ -41,7 +41,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
-#endif
+#endif  // CFG_SUPPORT_BOOTLOADER
 
 #include "temp_detect_pub.h"
 #if CFG_SUPPORT_OTA_HTTP

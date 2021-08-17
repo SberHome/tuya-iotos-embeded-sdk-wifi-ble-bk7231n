@@ -61,5 +61,6 @@ extern void flash_init(void);
 extern void flash_exit(void);
 extern UINT8 flash_get_line_mode(void);
 extern void flash_set_line_mode(UINT8 );
+void flash_protection_op(UINT8 mode, PROTECT_TYPE type);
 
 #endif //_FLASH_PUB_H

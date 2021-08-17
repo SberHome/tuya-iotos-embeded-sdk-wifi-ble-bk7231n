@@ -83,7 +83,6 @@ enum
     WLAN_RX_MANAGEMENT,/* receive ALL management packet */
     WLAN_RX_DATA,      /* receive ALL data packet */
     WLAN_RX_MCAST_DATA,/* receive ALL multicast and broadcast packet */
-
     WLAN_RX_ALL,       /* receive ALL 802.11 packet */
 };
 
