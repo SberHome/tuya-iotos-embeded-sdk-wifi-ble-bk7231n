@@ -1,6 +1,7 @@
 #ifndef _NET_H_
 #define _NET_H_
 
+#include <stdint.h>
 #include "lwip_netif_address.h"
 
 extern void uap_ip_down(void);

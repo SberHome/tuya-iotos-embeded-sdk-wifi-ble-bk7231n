@@ -1,33 +1,22 @@
-#include "rtos_pub.h"
 #include "ota_tftp.h"
-#include "wlan_ui_pub.h"
 #include "net.h"
-#include "tftpclient.h"
-
+#include "rtos_pub.h"
+#include "my_tftpclient.h"
+#include "wlan_ui_pub.h"
 
 #ifndef APP_DEBUG
 #define APP_DEBUG 0
 #endif
-#define debug_print(...)                   \
-    do                                     \
-    {                                      \
-        if (APP_DEBUG)                     \
-            os_printf("[APP]"__VA_ARGS__); \
-    } while (0);
-
+#define debug_print(...)  do { if (APP_DEBUG) os_printf("[APP]"__VA_ARGS__); } while (0);
 #define error_print(error_code, message) debug_print("ERROR: %d. " message "\n", error_code)
-
 
 static bool g_mqtt_wifi_flag = false;
 
-
-static network_InitTypeDef_st wNetConfig = {
-    .wifi_ssid = WIFI_SSID,
-    .wifi_key = WIFI_PASSWORD,
-    .wifi_mode = STATION,
-    .dhcp_mode = DHCP_CLIENT,
-    .wifi_retry_interval = 100};
-
+static network_InitTypeDef_st wNetConfig = {.wifi_ssid = WIFI_SSID,
+                                            .wifi_key = WIFI_PASSWORD,
+                                            .wifi_mode = STATION,
+                                            .dhcp_mode = DHCP_CLIENT,
+                                            .wifi_retry_interval = 100};
 
 void mqtt_wifi_connect_cb(void)
 {
@@ -35,10 +24,7 @@ void mqtt_wifi_connect_cb(void)
     g_mqtt_wifi_flag = true;
 }
 
-bool mqtt_is_wifi_connected(void)
-{
-    return g_mqtt_wifi_flag;
-}
+bool mqtt_is_wifi_connected(void) { return g_mqtt_wifi_flag; }
 
 void mqtt_waiting_for_wifi_connected(void)
 {
@@ -48,10 +34,10 @@ void mqtt_waiting_for_wifi_connected(void)
     }
 }
 
+void ota_tftp_thread(void *param)
+{
 
-void ota_tftp_thread(void *param) {
-
-    while(true)
+    while (true)
     {
         debug_print("Thread running...\n");
         rtos_delay_milliseconds(3000);
@@ -76,23 +62,18 @@ OSStatus user_main(void)
     OSStatus ret = kNoErr;
     extended_app_waiting_for_launch(); // need to wait for rl_init() to finish
     net_set_sta_ipup_callback(mqtt_wifi_connect_cb);
-    //user_connected_callback(mqtt_wifi_connect_cb);
+    // user_connected_callback(mqtt_wifi_connect_cb);
 
     wifi_station_init();
+    tftp_start();
 
-    //mqtt_waiting_for_wifi_connected();
-
-
-    ret = rtos_create_thread(NULL,
-                             8,
-                             "ota_tftp_thread",
-                             ota_tftp_thread,
-                             1024 * 4,
-                             NULL);
-    if (ret != kNoErr)
-    {
-        error_print(ret, "Cannot create thread");
-        return ret;
-    }
+    // mqtt_waiting_for_wifi_connected();
+    /*
+  ret = rtos_create_thread(NULL, 8, "ota_tftp_thread", ota_tftp_thread,
+                           1024 * 4, NULL);
+  if (ret != kNoErr) {
+    error_print(ret, "Cannot create thread");
+    return ret;
+  }*/
     return ret;
 }

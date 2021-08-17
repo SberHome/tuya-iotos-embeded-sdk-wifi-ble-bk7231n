@@ -1,4 +1,4 @@
-#include "tftpclient.h"
+#include "my_tftpclient.h"
 #include "flash_pub.h"
 #include "co_math.h"
 #include "rtos_pub.h"
@@ -7,27 +7,24 @@
 #define TFTP_CLIENT_DEBUG 0
 #endif
 #define print_inf(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][INF]"__VA_ARGS__); } while (0);
-#define print_dbg(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][DBG]"__VA_ARGS__); } while (0);
-//#define print_dbg(...) 
+//#define print_dbg(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][DBG]"__VA_ARGS__); } while (0);
+#define print_dbg(...) 
 #define print_wrn(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][WRN]"__VA_ARGS__); } while (0);
 #define print_err(...) do { if (TFTP_CLIENT_DEBUG) os_printf("[TFTP][ERR]"__VA_ARGS__); } while (0);
 
-#if CFG_SUPPORT_BOOTLOADER
-#if (CFG_SUPPORT_OTA_TFTP || CFG_SUPPORT_OTA_HTTP)
+
 SEND_PTK_HD send_hd, send_hd_bk;
 static u32 os_data_addr = OS1_FLASH_ADDR;
-uint32_t tftp_crc = 0;
 IMG_HEAD img_hd = {
     0,
 };
-#endif // (CFG_SUPPORT_OTA_TFTP || CFG_SUPPORT_OTA_HTTP)
 
-#if CFG_SUPPORT_OTA_TFTP
 
 beken_semaphore_t sm_tftp_server;
 beken_timer_t tm_tftp_server;
 xTaskHandle tftp_thread_handle = NULL;
 
+static uint32_t tftp_crc = 0;
 int udp_tftp_listen_fd = -1;
 struct sockaddr_in server_addr;
 socklen_t s_addr_len = sizeof(server_addr);
@@ -35,8 +32,8 @@ char *tftp_buf = NULL;
 char BootFile[128] = TFTP_FIRMWARE_FILENAME; /* Boot File name			*/
 static int TftpServerPort;                /* The UDP port at their end		*/
 static int TftpTimeoutCount;
-static uint64_t TftpBlock;           /* packet sequence number		*/
-static uint64_t TftpLastBlock;       /* last packet sequence number received */
+static uint16_t TftpBlock;           /* packet sequence number		*/
+static uint16_t TftpLastBlock;       /* last packet sequence number received */
 static uint64_t TftpBlockWrap;       /* count of sequence number wraparounds */
 static uint64_t TftpBlockWrapOffset; /* memory offset due to wrapping	*/
 static int TftpState;
@@ -193,11 +190,12 @@ static void TftpHandler(char *buffer, unsigned int len, u16_t port)
         TftpSend(); /* Send ACK */
         break;
     case TFTP_DATA:
-        print_inf("Got DATA block: %d\n", ntohs(*s));
+        TftpBlock = ntohs(*s);
+        print_inf("Got DATA block: %d\n", TftpBlock);
         if (len < 2)
             return;
         len -= 2;
-        TftpBlock = ntohs(*s);
+        
 
         /*
          * RFC1350 specifies that the first data packet will
@@ -239,7 +237,7 @@ static void TftpHandler(char *buffer, unsigned int len, u16_t port)
 
             if (TftpBlock != 1) /* Assertion */
             {
-                print_inf("TFTP error: First block is not block 1 (%ld) Starting again\n", TftpBlock);
+                print_inf("TFTP error: First block is not block 1 (%d) Starting again\n", TftpBlock);
                 break;
             }
         }
@@ -254,7 +252,9 @@ static void TftpHandler(char *buffer, unsigned int len, u16_t port)
         }
 
         TftpLastBlock = TftpBlock;
-        store_block(TftpBlock - 1, (UINT8 *)(pkt + 2), len);
+        //store_block(TftpBlock - 1, (UINT8 *)(pkt + 2), len);
+        uint16_t* block_data = ++s;
+        store_block(TftpBlock - 1, (UINT8 *)(block_data), len);
 
         /*
          *	Acknoledge the block just received, which will prompt
@@ -325,7 +325,7 @@ static void tftp_server_process(beken_thread_arg_t arg)
     int len = 0;
     int i;
 
-    tftp_buf = (char *)os_malloc(TFTP_LEN);
+    tftp_buf = (char *)os_malloc(TFTP_BUF_LEN);
     if (tftp_buf == NULL)
     {
         print_err("buf == NULL\n");
@@ -365,7 +365,7 @@ static void tftp_server_process(beken_thread_arg_t arg)
 
     while (true)
     {
-        len = recvfrom(udp_tftp_listen_fd, tftp_buf, TFTP_LEN, 0, (struct sockaddr *)&server_addr, &s_addr_len);
+        len = recvfrom(udp_tftp_listen_fd, tftp_buf, TFTP_BUF_LEN, 0, (struct sockaddr *)&server_addr, &s_addr_len);
         result = rtos_reload_timer(&tm_tftp_server);
         if (result != kNoErr)
         {
@@ -412,28 +412,35 @@ OSStatus tftp_start(void)
         print_err("TFTP thread create failed\n");
     return ret;
 }
-#endif // CFG_SUPPORT_OTA_TFTP
 
-#if (CFG_SUPPORT_OTA_TFTP || CFG_SUPPORT_OTA_HTTP)
-void store_block(unsigned block, uint8_t *src, unsigned len)
+void store_block(unsigned int block_num, uint8_t *src, unsigned int len)
 {
     uint8_t *f_data;
     UINT32 param, or_crc;
     UINT32 param1;
 
-    print_inf("Store block: %d len: %d\n", block, len);
+    print_inf("Store block: %d len: %d\n", block_num, len);
     os_memcpy(&send_hd, src, sizeof(send_hd));
-    print_inf("seq: %d t_seq: %d\n", send_hd.seq, send_hd.total_seq);
+    print_inf("--------------------------BLOCK HEADER\n");
+    print_inf("total_len: %d\n", send_hd.total_len);
+    print_inf("total_seq: %d\n", send_hd.total_seq);
+    print_inf("seq: %d\n", send_hd.seq);
+    print_inf("os_hd_addr: %d\n", send_hd.os_hd_addr);
+    print_inf("os0_ex_addr: %d\n", send_hd.os0_ex_addr);
+    print_inf("os0_flash_addr: %d\n", send_hd.os0_flash_addr);
+    print_inf("os1_flash_addr: %d\n", send_hd.os1_flash_addr);    
     
-    if ((block + 1 != send_hd.seq))
+
+    if ((block_num + 1 != send_hd.seq))
     {
-        print_inf("bk:%d seq%d t_seq:%d fail!\n", block, send_hd.seq, send_hd.total_seq);
+        print_err("bk: %d seq: %d t_seq: %d fail!\n", block_num, send_hd.seq, send_hd.total_seq);
     }
 
-    if (block)
+    // Check next and previous block headers match
+    if (block_num)
     {
         if (!((send_hd_bk.seq + 1 == send_hd.seq) && (send_hd_bk.total_len == send_hd.total_len) && (send_hd_bk.os0_ex_addr == send_hd.os0_ex_addr) && (send_hd_bk.os0_flash_addr == send_hd.os0_flash_addr) && (send_hd_bk.os1_flash_addr == send_hd.os1_flash_addr) && (send_hd_bk.total_seq == send_hd.total_seq)))
-            print_inf("tftp seq head err\n");
+            print_err("tftp seq head err\n");
     }
     else
     {
@@ -450,13 +457,13 @@ void store_block(unsigned block, uint8_t *src, unsigned len)
     }
 
     print_wrn("w_addr:%x \n", os_data_addr);
-    if ((u32)os_data_addr >= 0x200000 || (u32)os_data_addr < 0x27000)
+    if ((u32)os_data_addr >= 0x200000 || (u32)os_data_addr < 0x27000)   // > 2Mb or < ?
     {
         print_inf("eerr_addr:%x \n", os_data_addr);
         return;
     }
 
-    if ((u32)os_data_addr < 0x400000)
+    if ((u32)os_data_addr < 0x400000)   // < 4Mb
     {
         flash_write(src + TFTP_PKT_HD_LEN, len - TFTP_PKT_HD_LEN, (u32)os_data_addr);
         f_data = os_malloc(1024);
@@ -465,12 +472,12 @@ void store_block(unsigned block, uint8_t *src, unsigned len)
             flash_read(f_data, len - TFTP_PKT_HD_LEN, (u32)os_data_addr);
             if (!os_memcmp(src + TFTP_PKT_HD_LEN, f_data, len - TFTP_PKT_HD_LEN))
             {
-                print_wrn("block%d WRITE ok !\n", block);
+                print_wrn("block%d WRITE ok !\n", block_num);
                 print_wrn(".");
             }
             else
             {
-                print_inf("block%d  flash  write err\n", block);
+                print_inf("block%d  flash  write err\n", block_num);
             }
             os_free(f_data);
         }
@@ -512,7 +519,3 @@ void store_block(unsigned block, uint8_t *src, unsigned len)
         os_data_addr += len - TFTP_PKT_HD_LEN;
     }
 }
-
-#endif // (CFG_SUPPORT_OTA_TFTP || CFG_SUPPORT_OTA_HTTP)
-
-#endif // CFG_SUPPORT_BOOTLOADER

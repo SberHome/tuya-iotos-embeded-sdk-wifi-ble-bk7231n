@@ -7,6 +7,7 @@ SRC_C =
 
 # Application
 SRC_C += apps/$(APP_NAME)/ota_tftp.c
+SRC_C += apps/$(APP_NAME)/my_tftpclient.c
 INCLUDES += -Iapps/$(APP_NAME)
 INCLUDES += -I$(BEKEN_DIR)/beken378/app/tftp
 
@@ -23,13 +24,14 @@ SOC_NAME_LDS = $(BEKEN_DIR)/beken378/build/bk7231n_ota.ld
 
 DEBUG_DEFINES = 
 DEBUG_DEFINES += -DAPP_DEBUG=1
+DEBUG_DEFINES += -DTFTP_CLIENT_DEBUG=1
 #DEBUG_DEFINES += -DMQTT_DEBUG=1
 #DEBUG_DEFINES += -DRTOS_PUB_DEBUG=1
-DEBUG_DEFINES += -DWLAN_UI_DEBUG=1
+#DEBUG_DEFINES += -DWLAN_UI_DEBUG=1
 #DEBUG_DEFINES += -DAPP_BK_DEBUG=1
 #DEBUG_DEFINES += -DROLE_LAUNCH_DEBUG=1
 #DEBUG_DEFINES += -DWPA_SCAN_DEBUG=1
-#DEBUG_DEFINES += -DNET_DEBUG=1
+DEBUG_DEFINES += -DNET_DEBUG=1
 #DEBUG_DEFINES += -DSAAP_DEBUG=1
 #DEBUG_DEFINES += -DSASTA_DEBUG=1
 #DEBUG_DEFINES += -DDHCP_DEBUG_PRINT=1
@@ -276,7 +278,7 @@ SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_net.c
 SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_httpc.c
 SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_timer.c
 SRC_C += $(BEKEN_DIR)/beken378/app/http/lite-log.c
-SRC_C += $(BEKEN_DIR)/beken378/app/tftp/tftpclient.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/tftp/tftpclient.c
 
 #demo module
 SRC_C += $(BEKEN_DIR)/beken378/demo/ieee802_11_demo.c
