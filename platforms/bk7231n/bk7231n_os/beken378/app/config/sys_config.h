@@ -138,7 +138,7 @@
 
 /*section 21 ----- support ota*/
 #define CFG_SUPPORT_OTA_HTTP                       0
-#define CFG_SUPPORT_OTA_TFTP                       1
+#define CFG_SUPPORT_OTA_TFTP                       0
 
 /*section 22 ----- support adc calibrate*/
 #define CFG_SARADC_CALIBRATE                       0
