@@ -17,14 +17,14 @@ static void store_block_alt(unsigned int block_num, uint8_t *src, unsigned int l
 
 TftpHandle_t Tftp_handle;
 
-beken_semaphore_t sm_tftp_server;
-beken_timer_t tm_tftp_server;
-xTaskHandle tftp_thread_handle = NULL;
-int udp_tftp_listen_fd = -1;
-struct sockaddr_in server_addr;
-socklen_t s_addr_len = sizeof(server_addr);
+static beken_semaphore_t sm_tftp_server;
+static beken_timer_t tm_tftp_server;
+static xTaskHandle tftp_thread_handle = NULL;
+static int udp_tftp_listen_fd = -1;
+static struct sockaddr_in server_addr;
+static socklen_t s_addr_len = sizeof(server_addr);
 
-int string_to_ip(char *s)
+static int string_to_ip(char *s)
 {
     int tftp_s_addr = inet_addr(s);
     return tftp_s_addr;
@@ -350,7 +350,7 @@ exit:
 }
 
 // Starts TFTP service
-OSStatus tftp_start(void)
+OSStatus my_tftp_start(void)
 {
     OSStatus ret;
 

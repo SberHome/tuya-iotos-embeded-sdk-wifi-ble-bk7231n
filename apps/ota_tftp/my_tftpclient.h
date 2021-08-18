@@ -86,6 +86,6 @@ typedef struct TftpHandle_s {
 #define TFTP_REQ_MTU_BLOCKSIZE 1024
 #define TFTP_BUF_LEN 1600
 
-OSStatus tftp_start(void);
+OSStatus my_tftp_start(void);
 
 #endif // __TFTPCLIENT_H__

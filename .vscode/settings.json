@@ -44,6 +44,8 @@
         "assert.h": "c",
         "system_error": "c",
         "error.h": "c",
-        "random": "c"
+        "random": "c",
+        "arm_arch.h": "c",
+        "romcallflash.h": "c"
     }
 }

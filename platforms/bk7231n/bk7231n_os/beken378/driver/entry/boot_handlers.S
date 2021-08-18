@@ -657,7 +657,7 @@ vPortYieldProcessor:
     .type WFI,%function
 WFI:
 	MOV R0, #0
-	MCR p15, 0, R0, c7, c0, 4
+	MCR p15, 0, R0, c7, c0, 4   // see ARM968E-S Technical reference manual
 	BX LR
 /*EOF*/
 

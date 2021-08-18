@@ -84,7 +84,7 @@ void extended_app_launch(void)
 	ASSERT(kNoErr == ret);
 }
 
-void entry_main(void)
+void __attribute__((weak)) entry_main(void)
 {
     /* disable ATE when enable JTAG since TUYA using GPIO21 as check port */
 #if ATE_APP_FUN && !CFG_JTAG_ENABLE

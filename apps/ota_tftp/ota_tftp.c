@@ -64,6 +64,6 @@ OSStatus user_main(void)
     net_set_sta_ipup_callback(wifi_connect_cb);
 
     wifi_station_init();
-    tftp_start();
+    my_tftp_start();
     return ret;
 }

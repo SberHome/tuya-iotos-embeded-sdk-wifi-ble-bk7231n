@@ -811,7 +811,7 @@ void app_start(void)
 #endif
 }
 
-void user_main_entry(void)
+void __attribute__((weak)) user_main_entry(void)
 {
 	rtos_create_thread(NULL,
 					   THD_INIT_PRIORITY,

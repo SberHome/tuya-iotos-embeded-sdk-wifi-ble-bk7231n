@@ -1431,7 +1431,7 @@ static void phy_cca_test(char *pcWriteBuffer, int xWriteBufferLen, int argc, cha
 #if CFG_SUPPORT_OTA_TFTP
 extern void tftp_start(void);
 extern void string_to_ip(char *s);
-char BootFile[128];
+extern char	BootFile[];
 static void tftp_ota_get_Command(char *pcWriteBuffer, int xWriteBufferLen, int argc, char **argv)
 {
     short len = 0,i;
@@ -1443,7 +1443,7 @@ static void tftp_ota_get_Command(char *pcWriteBuffer, int xWriteBufferLen, int a
     }
 
      os_printf("%s\n",argv[1]);
-
+    
     os_strcpy(BootFile,argv[2]);
     os_printf("%s\n",BootFile);
     string_to_ip (argv[1]);

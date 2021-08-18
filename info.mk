@@ -1,15 +1,14 @@
-APP_NAME = ota_tftp
+APP_NAME = info
 APP_VERSION = 1.0.0
 SOC_NAME = bk7231n
 
 INCLUDES =
 SRC_C =
+SRC_OS =
 
 # Application
-SRC_C += apps/$(APP_NAME)/ota_tftp.c
-SRC_C += apps/$(APP_NAME)/my_tftpclient.c
+SRC_C += apps/$(APP_NAME)/info.c
 INCLUDES += -Iapps/$(APP_NAME)
-INCLUDES += -I$(BEKEN_DIR)/beken378/app/tftp
 
 BUILD_DIR = build
 BEKEN_DIR = platforms/bk7231n/bk7231n_os
@@ -24,14 +23,14 @@ SOC_NAME_LDS = $(BEKEN_DIR)/beken378/build/bk7231n_ota.ld
 
 DEBUG_DEFINES = 
 DEBUG_DEFINES += -DAPP_DEBUG=1
-DEBUG_DEFINES += -DTFTP_CLIENT_DEBUG=1
+#DEBUG_DEFINES += -DTFTP_CLIENT_DEBUG=1
 #DEBUG_DEFINES += -DMQTT_DEBUG=1
 #DEBUG_DEFINES += -DRTOS_PUB_DEBUG=1
 #DEBUG_DEFINES += -DWLAN_UI_DEBUG=1
 #DEBUG_DEFINES += -DAPP_BK_DEBUG=1
 #DEBUG_DEFINES += -DROLE_LAUNCH_DEBUG=1
 #DEBUG_DEFINES += -DWPA_SCAN_DEBUG=1
-DEBUG_DEFINES += -DNET_DEBUG=1
+#DEBUG_DEFINES += -DNET_DEBUG=1
 #DEBUG_DEFINES += -DSAAP_DEBUG=1
 #DEBUG_DEFINES += -DSASTA_DEBUG=1
 #DEBUG_DEFINES += -DDHCP_DEBUG_PRINT=1
@@ -258,7 +257,6 @@ endif
 # -------------------------------------------------------------------
 # Source file list
 # -------------------------------------------------------------------
-SRC_OS =
 
 
 
@@ -274,14 +272,14 @@ SRC_C += $(BEKEN_DIR)/beken378/app/config/param_config.c
 SRC_C += $(BEKEN_DIR)/beken378/app/standalone-ap/sa_ap.c
 SRC_C += $(BEKEN_DIR)/beken378/app/standalone-station/sa_station.c
 #ota-http
-SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_net.c
-SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_httpc.c
-SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_timer.c
-SRC_C += $(BEKEN_DIR)/beken378/app/http/lite-log.c
-SRC_C += $(BEKEN_DIR)/beken378/app/tftp/tftpclient.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_net.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_httpc.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/http/utils_timer.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/http/lite-log.c
+#SRC_C += $(BEKEN_DIR)/beken378/app/tftp/tftpclient.c
 
 #demo module
-SRC_C += $(BEKEN_DIR)/beken378/demo/ieee802_11_demo.c
+#SRC_C += $(BEKEN_DIR)/beken378/demo/ieee802_11_demo.c
 
 #driver layer
 SRC_C += $(BEKEN_DIR)/beken378/driver/common/dd.c
@@ -453,118 +451,118 @@ INCLUDES += -I$(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_pub/ui
 ifeq ("${CFG_BLE_5X_USE_RWIP_LIB}", "0")
 #rw source start
 #ble lib
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_cte.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_hci.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_past.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_sig.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_smp.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_actv.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_addr.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_adv.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_cfg.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_init.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_list.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_per_sync.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_scan.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_smp.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attc/attc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attm/attm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attm/attm_db.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/atts/atts.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_rc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_sdp.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_svc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattm/gattm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattm/gattm_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_lecb.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_pdu.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_sig.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cm/l2cm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/rwble_hl/rwble_hl.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/co/ble_util_buf.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_chmap_upd.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_clk_acc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_con_upd.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_cte.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_dbg.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_disconnect.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_dl_upd.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_encrypt.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_feat_exch.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_hci.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_le_ping.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_llcp.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_past.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_phy_upd.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_ver_exch.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_adv.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_con.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_init.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_per_adv.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_scan.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_sync.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_test.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_adv.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_hci.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_init.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_scan.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_test.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_fc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_msg.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_tl.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_alarm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_arb.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_plan.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_prog.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_slice.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_c1.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_ccm.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_cmac.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f4.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f5.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f6.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_g2.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k1.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k2.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k3.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k4.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_rpa.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_s1.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/common/src/common_list.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/common/src/common_utils.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_iqgen.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_mwsgen.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_swdiag.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc_mem.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc_tl.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ecc_p256/src/ecc_p256.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/h4tl/src/h4tl.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_event.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_mem.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_msg.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_queue.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_task.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_timer.c
-SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/rwip/rwip_driver.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_cte.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_hci.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_past.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_sig.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_smp.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapc/gapc_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_actv.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_addr.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_adv.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_cfg.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_init.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_list.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_per_sync.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_scan.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_smp.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gap/gapm/gapm_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attc/attc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attm/attm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/attm/attm_db.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/atts/atts.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_rc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_sdp.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_svc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattc/gattc_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattm/gattm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/gatt/gattm/gattm_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_lecb.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_pdu.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_sig.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cc/l2cc_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/l2c/l2cm/l2cm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/hl/src/rwble_hl/rwble_hl.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/co/ble_util_buf.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_chmap_upd.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_clk_acc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_con_upd.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_cte.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_dbg.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_disconnect.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_dl_upd.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_encrypt.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_feat_exch.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_hci.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_le_ping.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_llcp.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_past.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_phy_upd.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llc/llc_ver_exch.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_adv.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_con.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_init.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_per_adv.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_scan.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_sync.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/lld/lld_test.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_adv.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_hci.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_init.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_scan.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/ble/ll/src/llm/llm_test.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_fc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_msg.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/hci/src/hci_tl.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_alarm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_arb.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_plan.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_prog.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/ip/sch/src/sch_slice.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_c1.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_ccm.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_cmac.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f4.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f5.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_f6.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_g2.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k1.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k2.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k3.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_k4.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_rpa.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/aes/src/ble_aes_s1.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/common/src/common_list.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/common/src/common_utils.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_iqgen.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_mwsgen.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_swdiag.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc_mem.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/dbg/src/dbg_trc_tl.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ecc_p256/src/ecc_p256.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/h4tl/src/h4tl.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_event.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_mem.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_msg.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_queue.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_task.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/ke/src/kernel_timer.c
+#SRC_C += $(BEKEN_DIR)/beken378/driver/ble_5_x_rw/ble_lib/modules/rwip/rwip_driver.c
 ####################################################
 endif  ###ifeq ("${CFG_BLE_5X_USE_RWIP_LIB}", "0")
 
@@ -595,7 +593,7 @@ endif ##ifeq ("${CFG_BLE_5X_VERSION}", "1") && ("${CFG_BLE_5X_RW}", "1")
 
 #function layer
 SRC_C += $(BEKEN_DIR)/beken378/func/func.c
-SRC_C += $(BEKEN_DIR)/beken378/func/bk7011_cal/bk7231U_cal.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/bk7011_cal/bk7231U_cal.c
 SRC_C += $(BEKEN_DIR)/beken378/func/bk7011_cal/bk7231N_cal.c
 SRC_C += $(BEKEN_DIR)/beken378/func/bk7011_cal/manual_cal_bk7231U.c
 SRC_C += $(BEKEN_DIR)/beken378/func/joint_up/role_launch.c
@@ -645,23 +643,23 @@ SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/drivers/driver_beken.c
 SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/drivers/driver_common.c
 SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/drivers/drivers.c
 SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/l2_packet/l2_packet_none.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/rsn_supp/wpa.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/rsn_supp/wpa.c
 SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/rsn_supp/wpa_ie.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/common.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/eloop.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/os_none.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/wpabuf.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/blacklist.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/bss.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/config.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/config_none.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/events.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/main_supplicant.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/notify.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wmm_ac.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpa_scan.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpas_glue.c
-SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpa_supplicant.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/common.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/eloop.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/os_none.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/src/utils/wpabuf.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/blacklist.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/bss.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/config.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/config_none.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/events.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/main_supplicant.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/notify.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wmm_ac.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpa_scan.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpas_glue.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/hostapd-2.5/wpa_supplicant/wpa_supplicant.c
 
 ifeq ($(CFG_WRAP_LIBC),1)
 SRC_C += $(BEKEN_DIR)/beken378/func/libc/stdio/lib_libvscanf.c
@@ -673,10 +671,10 @@ SRC_C += $(BEKEN_DIR)/beken378/func/libc/stdlib/lib_strtod.c
 SRC_C += $(BEKEN_DIR)/beken378/func/libc/stdlib/lib_qsort.c
 endif
 
-SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/port/ethernetif.c
-SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/port/net.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/port/ethernetif.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/port/net.c
 SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/port/sys_arch.c
-SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/src/api/api_lib.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/src/api/api_lib.c
 SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/src/api/api_msg.c
 SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/src/api/err.c
 SRC_C += $(BEKEN_DIR)/beken378/func/lwip_intf/lwip-2.0.2/src/api/netbuf.c
@@ -738,23 +736,23 @@ SRC_C += $(BEKEN_DIR)/beken378/func/sim_uart/pwm_uart.c
 SRC_C += $(BEKEN_DIR)/beken378/func/spidma_intf/spidma_intf.c
 SRC_C += $(BEKEN_DIR)/beken378/func/temp_detect/temp_detect.c
 SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_evm.c
-SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_help.c
-SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_reg.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_help.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_reg.c
 SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/cmd_rx_sensitivity.c
-SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/command_line.c
-SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/command_table.c
-SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/udebug.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/command_line.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/command_table.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/uart_debug/udebug.c
 SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverFlash.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverRng.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverGpio.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverPwm.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverUart.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverWdg.c
-SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverTimer.c
-SRC_C += $(BEKEN_DIR)/beken378/func/wlan_ui/wlan_cli.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverRng.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverGpio.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverPwm.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverUart.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverWdg.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/user_driver/BkDriverTimer.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/wlan_ui/wlan_cli.c
 SRC_C += $(BEKEN_DIR)/beken378/func/wlan_ui/wlan_ui.c
-SRC_C += $(BEKEN_DIR)/beken378/func/bk_tuya_pwm/bk_tuya_pwm.c
-SRC_C += $(BEKEN_DIR)/beken378/func/net_param_intf/net_param.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/bk_tuya_pwm/bk_tuya_pwm.c
+#SRC_C += $(BEKEN_DIR)/beken378/func/net_param_intf/net_param.c
 
 #rwnx ip module
 #SRC_C += ./beken378/ip/common/co_dlist.c
