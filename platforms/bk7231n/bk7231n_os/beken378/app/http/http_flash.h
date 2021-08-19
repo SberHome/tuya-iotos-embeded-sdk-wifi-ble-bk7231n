@@ -1,6 +1,6 @@
 #include "drv_model_pub.h"
 
-#define HTTP_WR_TO_FLASH        1
+#define HTTP_WR_TO_FLASH        0
 
 typedef struct http_data_st{
     UINT32 http_total;
