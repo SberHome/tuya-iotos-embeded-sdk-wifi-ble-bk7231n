@@ -15,13 +15,33 @@
 #include "mem_pub.h"
 
 
-uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
+#ifndef UTILS_NET_DEBUG
+#define UTILS_NET_DEBUG 0
+#endif
+#define print_inf(...)                                            \
+    do {                                                          \
+        if (UTILS_NET_DEBUG) os_printf("[UNET][INF]"__VA_ARGS__); \
+    } while (0)
+#define print_dbg(...)                                            \
+    do {                                                          \
+        if (UTILS_NET_DEBUG) os_printf("[UNET][DBG]"__VA_ARGS__); \
+    } while (0)
+#define print_wrn(...)                                            \
+    do {                                                          \
+        if (UTILS_NET_DEBUG) os_printf("[UNET][WRN]"__VA_ARGS__); \
+    } while (0)
+#define print_err(...)                                            \
+    do {                                                          \
+        if (UTILS_NET_DEBUG) os_printf("[UNET][ERR]"__VA_ARGS__); \
+    } while (0)
+
+static int HAL_TCP_Establish(const char *host, uint16_t port)
 {
     struct addrinfo hints;
     struct addrinfo *addrInfoList = NULL;
     struct addrinfo *cur = NULL;
-    int fd = 0;
-    int rc = 0;
+    int fd = -1;
+    int rc = -1;
     char service[6];
 
     os_memset(&hints, 0, sizeof(hints));
@@ -31,67 +51,68 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     sprintf(service, "%u", port);
 
     if ((rc = getaddrinfo(host, service, &hints, &addrInfoList)) != 0) {
-        log_err("getaddrinfo error");
-        return 0;
+        print_err("getaddrinfo error\n");
+        return -1;
     }
+
+    print_dbg("rc=%d\n", rc);
 
     for (cur = addrInfoList; cur != NULL; cur = cur->ai_next) {
         if (cur->ai_family != AF_INET) {
-            log_err("socket type error");
-            rc = 0;
+            print_err("socket type error\n");
+            rc = -1;
             continue;
         }
 
         fd = socket(cur->ai_family, cur->ai_socktype, cur->ai_protocol);
         if (fd < 0) {
-            log_err("create socket error");
-            rc = 0;
+            print_err("create socket error\n");
+            rc = -1;
             continue;
         }
+        print_dbg("socket fd: %d\n", fd);
 
-        if (connect(fd, cur->ai_addr, cur->ai_addrlen) == 0) {
-            rc = fd;
-            break;
+        int con_res = connect(fd, cur->ai_addr, cur->ai_addrlen);
+        if ( con_res != 0) {
+            print_err("connect failed, %d\n", con_res);
+            close(fd);
+            rc = -1;
+            continue;
         }
-
-        close(fd);
-        log_err("connect error");
-        rc = 0;
+        print_dbg("connect successful:\n");
+        rc = fd;
+        break;
     }
 
-    if (0 == rc){
-        log_err("fail to establish tcp");
-    } else {
-        log_err("success to establish tcp, fd=%d", rc);
-    }
+    if (-1 == rc)
+        print_err("fail to establish tcp\n");
+
+    print_dbg("tcp conenction open, fd=%d\n", fd);
     freeaddrinfo(addrInfoList);
-
-    return (uintptr_t)rc;
+    return fd;
 }
 
-
-int32_t HAL_TCP_Destroy(uintptr_t fd)
+static int32_t HAL_TCP_Destroy(handle_type fd)
 {
     int rc;
 
     //Shutdown both send and receive operations.
-    rc = shutdown((int) fd, 2);
+    rc = shutdown(fd, 2);
     if (0 != rc) {
-        log_err("shutdown error");
+        print_err("shutdown error\n");
         return -1;
     }
 
-    rc = close((int) fd);
+    rc = close(fd);
     if (0 != rc) {
-        log_err("closesocket error");
+        print_err("close socket error\n");
         return -1;
     }
 
     return 0;
 }
 
-
-int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t timeout_ms)
+static int32_t HAL_TCP_Write(handle_type fd, const char *buf, uint32_t len, uint32_t timeout_ms)
 {
     int ret, err_code;
     uint32_t len_sent;
@@ -118,22 +139,22 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             ret = select(fd + 1, NULL, &sets, NULL, &timeout);
             if (ret > 0) {
                if (0 == FD_ISSET(fd, &sets)) {
-                    log_err("Should NOT arrive");
+                    print_err("Should NOT arrive\n");
                     //If timeout in next loop, it will not sent any data
                     ret = 0;
                     continue;
                 }
             } else if (0 == ret) {
-                log_err("select-write timeout %lu", fd);
+                print_err("select-write timeout %lu\n", fd);
                 break;
             } else {
                 if (EINTR == errno) {
-                    log_err("EINTR be caught");
+                    print_err("EINTR be caught\n");
                     continue;
                 }
 
                 err_code = -1;
-                log_err("select-write fail");
+                print_err("select-write fail\n");
                 break;
             }
         }
@@ -143,15 +164,15 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             if (ret > 0) {
                 len_sent += ret;
             } else if (0 == ret) {
-                log_err("No data be sent");
+                print_err("No data be sent\n");
             } else {
                 if (EINTR == errno) {
-                    log_err("EINTR be caught");
+                    print_err("EINTR be caught\n");
                     continue;
                 }
 
                 err_code = -1;
-                log_err("send fail");
+                print_err("send fail\n");
                 break;
             }
         }
@@ -160,8 +181,7 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
     return len_sent;
 }
 
-
-int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
+static int32_t HAL_TCP_Read(handle_type fd, char *buf, uint32_t len, uint32_t timeout_ms)
 {
     int ret, err_code,data_over;
     uint32_t len_recv;
@@ -203,15 +223,15 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                    
                     len_recv += ret;
                 } else if (0 == ret) {
-                    log_err("connection is closed");
+                    print_err("connection is closed\n");
                     err_code = -1;
                     break;
                 } else {
                     if (EINTR == errno) {
-                        log_err("EINTR be caught");
+                        print_err("EINTR be caught\n");
                         continue;
                     }
-                    log_err("send fail");
+                    print_err("send fail\n");
                     err_code = -2;
                     break;
                 }
@@ -219,10 +239,10 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                 break;
             } else {
                 if (EINTR == errno) {
-                log_err("EINTR be caught-------\r\n");
+                print_err("EINTR be caught-------\n");
                 //continue;
                 }
-                log_err("select-recv fail");
+                print_err("select-recv fail");
                 err_code = -2;
                 break;
             }
@@ -238,11 +258,10 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
 }
 
 /*** TCP connection ***/
-int read_tcp(utils_network_pt pNetwork, char *buffer, uint32_t len, uint32_t timeout_ms)
+static int read_tcp(utils_network_pt pNetwork, char *buffer, uint32_t len, uint32_t timeout_ms)
 {
     return HAL_TCP_Read(pNetwork->handle, buffer, len, timeout_ms);
 }
-
 
 static int write_tcp(utils_network_pt pNetwork, const char *buffer, uint32_t len, uint32_t timeout_ms)
 {
@@ -251,28 +270,28 @@ static int write_tcp(utils_network_pt pNetwork, const char *buffer, uint32_t len
 
 static int disconnect_tcp(utils_network_pt pNetwork)
 {
-    if (0 == pNetwork->handle) {
+    if (HANDLE_INVALID == pNetwork->handle) {
         return -1;
     }
 
     HAL_TCP_Destroy(pNetwork->handle);
-    pNetwork->handle = 0;
+    pNetwork->handle = HANDLE_INVALID;
     return 0;
 }
-
 
 static int connect_tcp(utils_network_pt pNetwork)
 {
     if (NULL == pNetwork) {
-        log_err("network is null");
-        return 1;
-    }
-
-    pNetwork->handle = HAL_TCP_Establish(pNetwork->pHostAddress, pNetwork->port);
-    if (0 == pNetwork->handle) {
+        print_err("network is null\n");
         return -1;
     }
 
+    print_inf("Opening TCP to %s:%d\n",pNetwork->pHostAddress, pNetwork->port);
+    pNetwork->handle = HAL_TCP_Establish(pNetwork->pHostAddress, pNetwork->port);
+    if (HANDLE_INVALID == pNetwork->handle) {
+        print_err("HAL_TCP_Establish failed\n");
+        return -1;
+    }
     return 0;
 }
 
@@ -318,7 +337,7 @@ int iotx_net_connect(utils_network_pt pNetwork)
 int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, const char *ca_crt)
 {
     if (!pNetwork || !host) {
-        log_err("parameter error! pNetwork=%p, host = %p", pNetwork, host);
+        print_err("parameter error! pNetwork=%p, host = %p\n", pNetwork, host);
         return -1;
     }
     pNetwork->pHostAddress = host;
@@ -331,7 +350,7 @@ int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, co
         pNetwork->ca_crt_len = os_strlen(ca_crt);
     }
 
-    pNetwork->handle = 0;
+    pNetwork->handle = HANDLE_INVALID;
     pNetwork->read = utils_net_read;
     pNetwork->write = utils_net_write;
     pNetwork->disconnect = iotx_net_disconnect;
