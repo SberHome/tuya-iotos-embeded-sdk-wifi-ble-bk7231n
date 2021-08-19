@@ -872,7 +872,7 @@ iotx_err_t httpclient_connect(httpclient_t *client)
 {
     int ret = ERROR_HTTP_CONN;
 
-    client->net.handle = 0;
+    client->net.handle = HANDLE_INVALID;
 
     ret = httpclient_conn(client);
     //    if (0 == ret)
@@ -887,7 +887,7 @@ iotx_err_t httpclient_send_request(httpclient_t *client, const char *url, int me
 {
     int ret = ERROR_HTTP_CONN;
 
-    if (0 == client->net.handle) {
+    if (HANDLE_INVALID == client->net.handle) {
         log_debug("not connection have been established");
         return ret;
     }
@@ -914,7 +914,7 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
     iotx_time_init(&timer);
     utils_time_countdown_ms(&timer, timeout_ms);
 
-    if (0 == client->net.handle) {
+    if (HANDLE_INVALID == client->net.handle) {
         log_debug("not connection have been established");
         return ret;
     }
@@ -943,10 +943,10 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
 
 void httpclient_close(httpclient_t *client)
 {
-    if (client->net.handle > 0) {
+    if (client->net.handle != HANDLE_INVALID) {
         client->net.disconnect(&client->net);
     }
-    client->net.handle = 0;
+    client->net.handle = HANDLE_INVALID;
 }
 
 int httpclient_common(httpclient_t *client, const char *url, int port, const char *ca_crt, int method,
@@ -957,7 +957,7 @@ int httpclient_common(httpclient_t *client, const char *url, int port, const cha
     int ret = 0;
     char host[HTTPCLIENT_MAX_HOST_LEN] = { 0 };
 
-    if (0 == client->net.handle) {
+    if (HANDLE_INVALID == client->net.handle) {
         //Establish connection if no.
     	httpclient_parse_host(url, host, sizeof(host));
     	log_debug("host: '%s', port: %d", host, port);

@@ -14,7 +14,7 @@
 struct utils_network;
 typedef struct utils_network utils_network_t, *utils_network_pt;
 
-#define HANDLE_INVALID (-1)
+#define HANDLE_INVALID (0)
 
 typedef int handle_type;
 
@@ -26,7 +26,7 @@ struct utils_network {
     /**< NULL, TCP connection; NOT NULL, SSL connection */
     const char *ca_crt;
 
-    /**< connection handle: -1, NOT connection; NOT -1, handle of the connection */
+    /**< connection handle: 0, NOT connection; NOT 0, handle of the connection */
     handle_type handle;
 
     /**< Read data from server function pointer. */
