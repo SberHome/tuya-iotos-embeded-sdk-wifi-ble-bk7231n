@@ -56,7 +56,8 @@ static DD_INIT_S dd_init_tbl[] =
     {ICU_DEV_NAME,          icu_init,                   icu_exit},
     {WDT_DEV_NAME,          wdt_init,                   wdt_exit},
     {GPIO_DEV_NAME,         gpio_init,                  gpio_exit},
-    
+    {FLASH_DEV_NAME,        flash_init,                 flash_exit},
+
 #ifndef KEIL_SIMULATOR    
 #if CFG_USE_UART2
     {UART2_DEV_NAME,        uart2_init,                 uart2_exit},
@@ -66,8 +67,6 @@ static DD_INIT_S dd_init_tbl[] =
 #if CFG_USE_UART1
     {UART1_DEV_NAME,        uart1_init,                 uart1_exit},
 #endif
-
-    {FLASH_DEV_NAME,        flash_init,                 flash_exit},
     
 #if CFG_GENERAL_DMA
     {GDMA_DEV_NAME,         gdma_init,                  gdma_exit},
