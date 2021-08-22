@@ -15,9 +15,7 @@
 #define SPI_PERI_CLK_26M		(26 * 1000 * 1000)
 #define SPI_PERI_CLK_DCO		(80 * 1000 * 1000)
 
-static SDD_OPERATIONS spi_op = {
-	spi_ctrl
-};
+
 
 static void spi_active(BOOLEAN val)
 {
@@ -474,8 +472,11 @@ static void spi_tx_end_callback_set(spi_callback callback, void *param)
 
 void spi_init(void)
 {
-	intc_service_register(IRQ_SPI, PRI_IRQ_SPI, spi_isr);
+    static SDD_OPERATIONS spi_op = {
+	    spi_ctrl
+    };
 
+	intc_service_register(IRQ_SPI, PRI_IRQ_SPI, spi_isr);
 	sddev_register_dev(SPI_DEV_NAME, &spi_op);
 }
 
