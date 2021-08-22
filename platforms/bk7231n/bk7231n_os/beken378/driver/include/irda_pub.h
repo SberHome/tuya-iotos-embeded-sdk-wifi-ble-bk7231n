@@ -22,5 +22,4 @@ enum
 *******************************************************************************/
 void irda_init(void);
 void irda_exit(void);
-void irda_isr(void);
 #endif //_IRDA_PUB_H_

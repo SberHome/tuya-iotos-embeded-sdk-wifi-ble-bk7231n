@@ -7,7 +7,6 @@
 #include "drv_model_pub.h"
 #include "intc_pub.h"
 
-
 #define IR_MAP                                   \
 {                                                \
     0x0, /* KEY_play   */                        \
@@ -32,8 +31,9 @@
 static UINT16 IR_Code[IR_CODE_SIZE] = IR_MAP;
 static UINT32 Recv_IR_Code = 0xffffffff;
 
-
-
+static SDD_OPERATIONS irda_op = {
+    irda_ctrl
+};
 
 static void irda_gpio_config()
 {
@@ -140,27 +140,7 @@ static UINT32 trng_get_random(void)
 
     return value;
 }
-
-void irda_init(void)
-{
-    static SDD_OPERATIONS irda_op = {
-        irda_ctrl
-    };
     
-	irda_gpio_config();
-	
-	intc_service_register(IRQ_IRDA, PRI_IRQ_IRDA, irda_isr); 
-	
-	sddev_register_dev(IRDA_DEV_NAME, &irda_op);
-
-	trng_active(1);
-}
-
-void irda_exit(void)
-{
-	sddev_unregister_dev(IRDA_DEV_NAME);
-}
-
 static UINT32 irda_ctrl(UINT32 cmd, void *param)
 {
 	UINT32 ret = IRDA_SUCCESS;
@@ -192,7 +172,7 @@ static UINT32 irda_ctrl(UINT32 cmd, void *param)
 	return ret;
 }
 
-void irda_isr(void)
+static void irda_isr(void)
 {
 	static UINT16 ValidFlag = 0;
 	UINT32 irda_int;
@@ -225,5 +205,19 @@ void irda_isr(void)
 
 	REG_WRITE(IRDA_INT, irda_int);
 }
-// eof
 
+void irda_init(void)
+{
+	irda_gpio_config();
+	
+    intc_service_register(IRQ_IRDA, PRI_IRQ_IRDA, irda_isr); 
+	
+	sddev_register_dev(IRDA_DEV_NAME, &irda_op);
+
+	trng_active(1);
+}
+
+void irda_exit(void)
+{
+	sddev_unregister_dev(IRDA_DEV_NAME);
+}

@@ -14,6 +14,7 @@ static SDD_OPERATIONS gpio_op =
 {
     gpio_ctrl
 };
+
 static int gpio_ops_filter_flag = 0;
 
 void gpio_isr(void)
