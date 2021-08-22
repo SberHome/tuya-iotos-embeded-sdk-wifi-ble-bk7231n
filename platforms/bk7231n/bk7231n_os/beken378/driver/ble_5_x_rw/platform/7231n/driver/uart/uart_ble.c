@@ -1,10 +1,10 @@
 #include "includes.h"
 #include "arm_arch.h"
-#include <stddef.h>     // standard definition
+//#include <stddef.h>     // standard definition
 #include <stdarg.h>
 #include <stdint.h>        // standard integer definition
-#include <string.h>        // string manipulation
-#include <stdio.h>
+//#include <string.h>        // string manipulation
+//#include <stdio.h>
 #include "rwip.h"
 #include "uart.h"
 #include "uart_ble.h"
@@ -173,7 +173,9 @@ void uart_rx_cmd_handler(uint8_t *buff, uint8_t len)
     }
 }
 
-extern int bkreg_run_command(const char *content, int cnt);
+// forward declaration
+int bkreg_run_command(const char *content, int cnt);
+
 void  ble_uart_isr(void)
 {
 	UINT32 status;

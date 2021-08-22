@@ -56,9 +56,9 @@
 static void task_Command( char *pcWriteBuffer, int xWriteBufferLen, int argc, char **argv );
 #endif
 
-#if CFG_SUPPORT_BKREG
-extern int bkreg_run_command(const char *content, int cnt);
-#endif
+// forward declaration
+int bkreg_run_command(const char *content, int cnt);
+
 
 int mico_debug_enabled;
 char log_buf[LOG_SERVICE_BUFLEN];
