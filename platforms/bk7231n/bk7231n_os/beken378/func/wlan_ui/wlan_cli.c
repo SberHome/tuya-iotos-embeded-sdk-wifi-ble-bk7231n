@@ -35,6 +35,7 @@
 #include "bk7011_cal_pub.h"
 #include "flash_pub.h"
 #include "mcu_ps_pub.h"
+#include "command_line.h"
 
 #if CFG_SUPPORT_BOOTLOADER
 #include "wdt_pub.h"
@@ -55,10 +56,6 @@
 #ifndef MOC
 static void task_Command( char *pcWriteBuffer, int xWriteBufferLen, int argc, char **argv );
 #endif
-
-// forward declaration
-int bkreg_run_command(const char *content, int cnt);
-
 
 int mico_debug_enabled;
 char log_buf[LOG_SERVICE_BUFLEN];
