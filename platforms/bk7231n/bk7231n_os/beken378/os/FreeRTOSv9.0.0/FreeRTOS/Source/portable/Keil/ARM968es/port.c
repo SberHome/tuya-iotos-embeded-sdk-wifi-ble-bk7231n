@@ -345,7 +345,7 @@ void vPortExitCritical(void) {
 }
 
 /*-----------------------------------------------------------*/
-uint32_t test_get_spsr(void) {
+uint32_t __attribute__((target("arm"))) test_get_spsr(void) {
     uint32_t spsr_content;
 
     __asm volatile(
@@ -358,7 +358,7 @@ uint32_t test_get_spsr(void) {
 }
 /*-----------------------------------------------------------*/
 
-uint32_t platform_is_in_irq_enable(void) {
+uint32_t __attribute__((target("arm"))) platform_is_in_irq_enable(void) {
 #define ARM968_IF_MASK 0xC0
 #define ARM968_IRQ_ENABLE 0x80
 
@@ -375,7 +375,7 @@ uint32_t platform_is_in_irq_enable(void) {
 }
 /*-----------------------------------------------------------*/
 
-uint32_t platform_is_in_fiq_enable(void) {
+uint32_t __attribute__((target("arm"))) platform_is_in_fiq_enable(void) {
 #define ARM968_IF_MASK 0xC0
 #define ARM968_FIQ_ENABLE 0x40
 
@@ -404,7 +404,7 @@ void printf_lr_register(void) {
     os_printf("lr:%x\r\n", value);
 }
 
-uint32_t platform_is_in_irq_context(void) {
+uint32_t __attribute__((target("arm"))) platform_is_in_irq_context(void) {
 #define ARM968_IRQ_MODE 0x12
 
     uint32_t mode;
@@ -420,7 +420,7 @@ uint32_t platform_is_in_irq_context(void) {
 }
 /*-----------------------------------------------------------*/
 
-uint32_t platform_is_in_fiq_context(void) {
+uint32_t __attribute__((target("arm"))) platform_is_in_fiq_context(void) {
 #define ARM968_FIQ_MODE 0x11
 
     uint32_t mode;
@@ -436,7 +436,7 @@ uint32_t platform_is_in_fiq_context(void) {
 }
 /*-----------------------------------------------------------*/
 
-uint32_t platform_spsr_content(void) {
+uint32_t __attribute__((target("arm"))) platform_spsr_content(void) {
     uint32_t mode;
 
     __asm volatile(
@@ -463,7 +463,7 @@ uint32_t platform_sp_content(void) {
 
 /*-----------------------------------------------------------*/
 
-uint32_t platform_cpsr_content(void) {
+uint32_t __attribute__((target("arm"))) platform_cpsr_content(void) {
     uint32_t mode;
 
     __asm volatile(
@@ -505,7 +505,7 @@ void rtos_stack_overflow(char* taskname) {
 /*
  * Enable Interrupts
  */
-void port_enable_interrupts_flag(int val) {
+void __attribute__((target("arm"))) port_enable_interrupts_flag(int val) {
     unsigned long cpsr_val;
     unsigned long mask;
 
@@ -519,7 +519,7 @@ void port_enable_interrupts_flag(int val) {
         :);
 }
 
-void portENABLE_IRQ(void) {
+void __attribute__((target("arm"))) portENABLE_IRQ(void) {
     unsigned long temp;
     __asm volatile(
         "mrs	%0, cpsr		@ local_irq_enable\n"
@@ -530,7 +530,7 @@ void portENABLE_IRQ(void) {
         : "memory");
 }
 
-void portENABLE_FIQ(void) {
+void __attribute__((target("arm"))) portENABLE_FIQ(void) {
     unsigned long temp;
     __asm volatile(
         "mrs	%0, cpsr		@ local_irq_enable\n"
@@ -544,7 +544,7 @@ void portENABLE_FIQ(void) {
 /*
  * Disable Interrupts
  */
-int portDISABLE_FIQ(void) {
+int __attribute__((target("arm"))) portDISABLE_FIQ(void) {
     unsigned long temp;
     unsigned long mask;
 
@@ -559,7 +559,7 @@ int portDISABLE_FIQ(void) {
     return (!!(mask & 0x40));
 }
 
-int port_disable_interrupts_flag(void) {
+int __attribute__((target("arm"))) port_disable_interrupts_flag(void) {
     unsigned long temp;
     unsigned long mask;
 
@@ -574,7 +574,7 @@ int port_disable_interrupts_flag(void) {
     return (mask & 0xC0);
 }
 
-int portDISABLE_IRQ(void) {
+int __attribute__((target("arm"))) portDISABLE_IRQ(void) {
     unsigned long temp;
     unsigned long mask;
 
