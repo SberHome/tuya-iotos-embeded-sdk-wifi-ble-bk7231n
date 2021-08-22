@@ -138,7 +138,7 @@ typedef enum
 } temperature_type;
 
 
-extern void manual_cal_load_bandgap_calm(void);
+void manual_cal_load_bandgap_calm(void);
 void bk7011_cal_vdddig_by_temperature(temperature_type new_temperature_type);
 
 extern void calibration_main(void);

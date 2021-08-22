@@ -43,6 +43,26 @@
 #define BK_TX_DAC_UNSIGNED_MASK_GAIN 0xFA0
 #define BK_TX_DAC_COEF 4 // 2^(12-10) from 10 bits to 12 bits
 
+
+#if CALN_DEBUG
+#define CAL_PRT      null_prf
+#define CAL_WARN     null_prf// warning_prf
+#define CAL_FATAL    null_prf
+#define CAL_TIM_PRT null_prf
+#define CAL_FLASH_PRT debug_print
+#else
+#define CAL_PRT      null_prf
+#define CAL_WARN     null_prf
+#define CAL_FATAL    null_prf
+#define CAL_TIM_PRT null_prf
+#define CAL_FLASH_PRT null_prf
+#endif
+
+#ifndef CALN_DEBUG
+#define CALN_DEBUG 0
+#endif
+#define debug_print(...)  do { if CALN_DEBUG) CAL_PRT("[CALN]"__VA_ARGS__); } while (0);
+
 #if CFG_SUPPORT_CALIBRATION
 
 #define TX_WANTED_POWER_CAL            0
@@ -58,25 +78,10 @@
 
 #include "uart_pub.h"
 
-#ifndef CALN_DEBUG
-#define CALN_DEBUG 0
-#endif
-#define debug_print(...)  do { if CALN_DEBUG) CAL_PRT("[CALN]"__VA_ARGS__); } while (0);
 
 
-#if CALN_DEBUG
-#define CAL_PRT      null_prf
-#define CAL_WARN     null_prf// warning_prf
-#define CAL_FATAL    null_prf
-#define CAL_TIM_PRT null_prf
-#define CAL_FLASH_PRT debug_print
-#else
-#define CAL_PRT      null_prf
-#define CAL_WARN     null_prf
-#define CAL_FATAL    null_prf
-#define CAL_TIM_PRT null_prf
-#define CAL_FLASH_PRT null_prf
-#endif
+
+
 
 extern void bk7011_cal_pll(void);
 static void bk7011_cal_dcormod_save_base(INT32 mod);

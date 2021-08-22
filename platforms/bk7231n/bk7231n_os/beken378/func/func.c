@@ -6,7 +6,7 @@
 #include "lwip_intf.h"
 #include "param_config.h"
 #include "saradc_pub.h"
-
+#include "bk7011_cal_pub.h"
 
 #ifndef FUNC_DEBUG
 #define FUNC_DEBUG 0
