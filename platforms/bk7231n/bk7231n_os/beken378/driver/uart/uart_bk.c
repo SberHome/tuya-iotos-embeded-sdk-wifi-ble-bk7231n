@@ -23,7 +23,7 @@ static UART_S uart[2] =
         {0, 0, 0},
         {0, 0, 0}};
 
-#if CFG_UART_DEBUG_COMMAND_LINE
+#if CFG_USE_UART1
 static DD_OPERATIONS uart1_op =
     {
         uart1_open,
@@ -33,6 +33,7 @@ static DD_OPERATIONS uart1_op =
         uart1_ctrl};
 #endif
 
+#if CFG_USE_UART2
 static DD_OPERATIONS uart2_op =
     {
         uart2_open,
@@ -40,6 +41,7 @@ static DD_OPERATIONS uart2_op =
         uart2_read,
         uart2_write,
         uart2_ctrl};
+#endif
 
 UINT8 uart_is_tx_fifo_empty(UINT8 uport) {
     UINT32 param;
@@ -361,7 +363,13 @@ void uart_set_tx_fifo_needwr_int(UINT8 uport, UINT8 set) {
         REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
 
-#if CFG_UART_DEBUG_COMMAND_LINE
+void uart_send_backgroud(void) {
+    /* send the buf at backgroud context*/
+    uart_write_fifo_frame(UART2_PORT, uart[UART2_PORT].tx, DEBUG_PRT_MAX_CNT);
+}
+
+
+#if CFG_USE_UART1
 /*******************************************************************/
 void uart1_isr(void) {
     UINT32 status;
@@ -529,9 +537,7 @@ UINT32 uart1_ctrl(UINT32 cmd, void* parm) {
 
     return ret;
 }
-#endif  // (!CFG_UART_DEBUG_COMMAND_LINE)
 
-#if CFG_UART_DEBUG_COMMAND_LINE    
 void uart1_init(void) {
     UINT32 ret;
     UINT32 param;
@@ -558,51 +564,46 @@ void uart1_init(void) {
     param = IRQ_UART1_BIT;
     sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
 }
+
 #endif
 
-void uart_reset(UINT8 uport) {
-    if (UART1_PORT == uport) {
-        uart1_exit();
-        uart1_init();
-    } else {
-        uart2_exit();
-        uart2_init();
-    }
-}
-
-UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count) {
-    UINT32 len;
+#if CFG_USE_UART2
+void uart2_init(void) {
     UINT32 ret;
-    UINT32 val;
+    UINT32 param;
+    UINT32 intr_status;
 
-    len = 0;
+    ret = uart_sw_init(UART2_PORT);
+    ASSERT(UART_SUCCESS == ret);
 
-    while (1) {
-        ret = kfifo_get(tx_ptr, (UINT8*)&val, 1);
-        if (0 == ret) {
-            break;
-        }
+    ddev_register_dev(UART2_DEV_NAME, &uart2_op);
 
-#if __CC_ARM
-        uart_send_byte(uport, (UINT8)val);
-#else
-        bk_send_byte(uport, (UINT8)val);
+    intc_service_register(IRQ_UART2, PRI_IRQ_UART2, uart2_isr);
+
+    param = PWD_UART2_CLK_BIT;
+    sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+
+    param = GFUNC_MODE_UART2;
+    sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
+    uart_hw_init(UART2_PORT);
+
+    /*irq enable, Be careful: it is best that irq enable at open routine*/
+    intr_status = REG_READ(REG_UART2_INTR_STATUS);
+    REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
+
+    param = IRQ_UART2_BIT;
+    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
+
+#if 0
+    os_printf("\r\n\r\n/*Version Information**************");
+    os_printf("\r\n *        release_version:%s", RELEASE_VERSION);
+    os_printf("\r\n *        release_time:%s", RELEASE_TIME);
+    os_printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
+    os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
+    os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
+    os_printf("\r\n *Version Over**********************/\r\n\r\n");
 #endif
-
-        len += ret;
-        if (len >= count) {
-            break;
-        }
-    }
-
-    return len;
 }
-
-void uart_send_backgroud(void) {
-    /* send the buf at backgroud context*/
-    uart_write_fifo_frame(UART2_PORT, uart[UART2_PORT].tx, DEBUG_PRT_MAX_CNT);
-}
-
 UINT32 uart2_open(UINT32 op_flag) {
     return UART_SUCCESS;
 }
@@ -701,6 +702,64 @@ UINT32 uart2_ctrl(UINT32 cmd, void* parm) {
     return ret;
 }
 
+void uart2_exit(void) {
+    UINT32 param;
+
+    /*irq enable, Be careful: it is best that irq enable at close routine*/
+    param = IRQ_UART2_BIT;
+    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
+
+    uart_hw_uninit(UART2_PORT);
+
+    ddev_unregister_dev(UART2_DEV_NAME);
+
+    uart_sw_uninit(UART2_PORT);
+}
+#endif //CFG_USE_UART2
+
+void uart_reset(UINT8 uport) {
+    if (UART1_PORT == uport) {
+    #if CFG_USE_UART1
+        uart1_exit();
+        uart1_init();
+    #endif
+    } else {
+    #if CFG_USE_UART2
+        uart2_exit();
+        uart2_init();
+    #endif        
+    }
+}
+
+UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count) {
+    UINT32 len;
+    UINT32 ret;
+    UINT32 val;
+
+    len = 0;
+
+    while (1) {
+        ret = kfifo_get(tx_ptr, (UINT8*)&val, 1);
+        if (0 == ret) {
+            break;
+        }
+
+#if __CC_ARM
+        uart_send_byte(uport, (UINT8)val);
+#else
+        bk_send_byte(uport, (UINT8)val);
+#endif
+
+        len += ret;
+        if (len >= count) {
+            break;
+        }
+    }
+
+    return len;
+}
+
+
 void uart_fifo_flush(UINT8 uport) {
     UINT32 val;
     UINT32 reg;
@@ -752,59 +811,6 @@ void uart_hw_uninit(UINT8 uport) {
     for (i = 0; i < rx_count; i++) {
         UART_READ_BYTE_DISCARD(uport);
     }
-}
-
-
-
-void uart2_init(void) {
-    UINT32 ret;
-    UINT32 param;
-    UINT32 intr_status;
-
-    ret = uart_sw_init(UART2_PORT);
-    ASSERT(UART_SUCCESS == ret);
-
-    ddev_register_dev(UART2_DEV_NAME, &uart2_op);
-
-    intc_service_register(IRQ_UART2, PRI_IRQ_UART2, uart2_isr);
-
-    param = PWD_UART2_CLK_BIT;
-    sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
-
-    param = GFUNC_MODE_UART2;
-    sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
-    uart_hw_init(UART2_PORT);
-
-    /*irq enable, Be careful: it is best that irq enable at open routine*/
-    intr_status = REG_READ(REG_UART2_INTR_STATUS);
-    REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
-
-    param = IRQ_UART2_BIT;
-    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
-
-#if 0
-    os_printf("\r\n\r\n/*Version Information**************");
-    os_printf("\r\n *        release_version:%s", RELEASE_VERSION);
-    os_printf("\r\n *        release_time:%s", RELEASE_TIME);
-    os_printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
-    os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
-    os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
-    os_printf("\r\n *Version Over**********************/\r\n\r\n");
-#endif
-}
-
-void uart2_exit(void) {
-    UINT32 param;
-
-    /*irq enable, Be careful: it is best that irq enable at close routine*/
-    param = IRQ_UART2_BIT;
-    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
-
-    uart_hw_uninit(UART2_PORT);
-
-    ddev_unregister_dev(UART2_DEV_NAME);
-
-    uart_sw_uninit(UART2_PORT);
 }
 
 void uart_wait_tx_over() {

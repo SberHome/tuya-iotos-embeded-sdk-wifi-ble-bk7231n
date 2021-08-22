@@ -58,7 +58,9 @@ static DD_INIT_S dd_init_tbl[] =
     {GPIO_DEV_NAME,         gpio_init,                  gpio_exit},
     
 #ifndef KEIL_SIMULATOR    
+#if CFG_USE_UART2
     {UART2_DEV_NAME,        uart2_init,                 uart2_exit},
+#endif
 #endif    
 
 #if CFG_USE_UART1

@@ -125,4 +125,3 @@ extern int uart_write_byte(int uport, char c);
 extern void bk_send_string(UINT8 uport, const char *string);
 extern UINT8 get_printf_port(void);
 #endif // _UART_PUB_H
-
