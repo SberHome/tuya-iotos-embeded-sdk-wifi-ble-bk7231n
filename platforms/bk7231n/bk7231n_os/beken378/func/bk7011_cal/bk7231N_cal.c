@@ -1,4 +1,3 @@
-
 #include "include.h"
 #if (CFG_SOC_NAME == SOC_BK7231N)
 
@@ -1278,7 +1277,7 @@ void rwnx_cal_set_lpfcap_iq(UINT32 lpfcap_i, UINT32 lpfcap_q)
     CAL_TIM_PRT("[%d]v=0x%x,0x%x ram=0x%x,0x%x reg=0x%x,0x%x\n", __LINE__, lpfcap_i, lpfcap_q, BK7231N_TRX_RAM.REG0x6.bits.lpfcapcali50, BK7231N_TRX_RAM.REG0x6.bits.lpfcapcalq50, BK7231N_TRX_REG.REG0x6->bits.lpfcapcali50, BK7231N_TRX_REG.REG0x6->bits.lpfcapcalq50);
 }
 
-#if CFG_SUPPORT_MANUAL_CALI
+
 static UINT32 rwnx_cal_translate_tx_rate(UINT32 rate)
 {
     UINT32 param;
@@ -1329,6 +1328,7 @@ static UINT32 rwnx_cal_translate_tx_rate(UINT32 rate)
     return param;
 }
 
+#if CFG_SUPPORT_MANUAL_CALI
 static UINT32 rwnx_cal_translate_tx_rate_for_n(UINT32 rate, UINT32 bandwidth)
 {
     UINT32 param;
@@ -1912,6 +1912,7 @@ void rwnx_cal_set_txpwr(UINT32 pwr_gain, UINT32 grate)
     g_pwr_current.idx = pwr_gain;
     g_pwr_current.mode = grate;
 } 
+#endif
 
 #if CFG_USE_TEMPERATURE_DETECT
 extern UINT32 ble_in_dut_mode(void);
@@ -1952,6 +1953,7 @@ void rwnx_cal_set_txpwr_by_tmpdetect(INT16 shift_b, INT16 shift_g)
 }  
 #endif  // CFG_USE_TEMPERATURE_DETECT
 
+#if CFG_SUPPORT_MANUAL_CALI
 void rwnx_cal_set_reg_mod_pa(UINT16 reg_mod, UINT16 reg_pa)
 {
     CHECK_OPERATE_RF_REG_IF_IN_SLEEP();
