@@ -289,8 +289,6 @@ int run_command(const char *cmd, int flag);
 cmd_tbl_t *cmd_find_tbl(const char *cmd, cmd_tbl_t *table, int table_len);
 int cmd_usage(const cmd_tbl_t *cmdtp);
 
-#if CFG_SUPPORT_BKREG
-extern int bkreg_run_command(const char *cmd, int flag);
-#endif // CFG_SUPPORT_BKREG
+int bkreg_run_command(const char *cmd, int flag);
 
 #endif // _COMMAND_LINE_H_
