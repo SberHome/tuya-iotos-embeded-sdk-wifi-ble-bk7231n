@@ -67,7 +67,7 @@ UINT32 sta_rf_sleeped = 0;
 
 extern void WFI( void );
 /**********************************************************************/
-void sctrl_dpll_delay10us(void)
+static void sctrl_dpll_delay10us(void)
 {
     volatile UINT32 i = 0;
 	
@@ -77,7 +77,7 @@ void sctrl_dpll_delay10us(void)
     }
 }
 
-void sctrl_dpll_delay200us(void)
+static void sctrl_dpll_delay200us(void)
 {
     volatile UINT32 i = 0;
 	
@@ -87,7 +87,7 @@ void sctrl_dpll_delay200us(void)
     }
 }
 
-void sctrl_ps_dpll_delay(UINT32 time)
+static void sctrl_ps_dpll_delay(UINT32 time)
 {
     volatile UINT32 i = 0;
 
@@ -131,7 +131,7 @@ void sctrl_cali_dpll(UINT8 flag)
     bk7011_update_tx_power_when_cal_dpll(0);
 }
 
-void sctrl_dpll_isr(void)
+static void sctrl_dpll_isr(void)
 {
     debug_print("BIAS Cali\n");
     bk7011_cal_bias();
@@ -167,7 +167,7 @@ void sctrl_dpll_int_close(void)
     sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
 }
 
-void sctrl_dco_cali(UINT32 speed)
+static void sctrl_dco_cali(UINT32 speed)
 {
     UINT32 reg_val;
     
@@ -234,7 +234,7 @@ void sctrl_dco_cali(UINT32 speed)
     sctrl_analog_set(SCTRL_ANALOG_CTRL1, reg_val); 
 }
 
-void sctrl_set_cpu_clk_dco(void)
+static void sctrl_set_cpu_clk_dco(void)
 {
     UINT32 reg_val;
 
@@ -493,7 +493,7 @@ void sctrl_ps_dump()
         debug_print(" %d 0x%x\n", i, *((UINT32 *)(&ps_saves) + i));   
 }
 
-void sctrl_hw_sleep(UINT32 peri_clk)
+static void sctrl_hw_sleep(UINT32 peri_clk)
 {    
     UINT32 reg;
     PS_DEBUG_DOWN_TRIGER;
@@ -584,7 +584,7 @@ void sctrl_hw_sleep(UINT32 peri_clk)
     ps_delay(1);//5
 }
 
-void sctrl_hw_wakeup()
+static void sctrl_hw_wakeup()
 {
     UINT32 reg;
     
@@ -730,7 +730,6 @@ void sctrl_rf_wakeup(void)
     GLOBAL_INT_RESTORE();
 }
 
-
 void sctrl_set_rf_sleep(void)
 {
     extern UINT32 if_other_mode_rf_sleep(void);
@@ -779,6 +778,7 @@ void sctrl_sta_rf_sleep(void)
     
     GLOBAL_INT_RESTORE();
 }
+
 void sctrl_sta_rf_wakeup(void)
 {
     UINT32 reg;
@@ -812,7 +812,6 @@ void sctrl_sta_rf_wakeup(void)
     GLOBAL_INT_RESTORE();
 }
 #endif
-
 
 #if CFG_USE_MCU_PS
 UINT8 sctrl_if_mcu_can_sleep(void)
@@ -921,7 +920,7 @@ void sctrl_mcu_exit(void)
 }
 #endif
 
-void sctrl_subsys_power(UINT32 cmd)
+static void sctrl_subsys_power(UINT32 cmd)
 {
     UINT32 reg = 0;
     UINT32 reg_val;
@@ -1009,7 +1008,7 @@ void sctrl_subsys_power(UINT32 cmd)
     }
 }
 
-void sctrl_subsys_reset(UINT32 cmd)
+static void sctrl_subsys_reset(UINT32 cmd)
 {
     UINT32 reg = 0;
     UINT32 reset_word = 0;
@@ -1672,8 +1671,6 @@ RESET_SOURCE_STATUS sctrl_get_deep_sleep_wake_soure(void)
 
     return waked_source;
 }
-
-
 #endif
 
 #if (CFG_SOC_NAME != SOC_BK7231)
