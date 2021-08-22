@@ -1,19 +1,6 @@
-#include "include.h"
 #include "arm_arch.h"
-
-#include "uart_pub.h"
 #include "uart.h"
-
-#include "drv_model_pub.h"
-#include "sys_ctrl_pub.h"
-#include "mem_pub.h"
-#include "icu_pub.h"
 #include "gpio_pub.h"
-#include "sys_version.h"
-#include "ate_app.h"
-#include <stdio.h>
-
-#include "mem_pub.h"
 #include "intc_pub.h"
 #if CFG_USE_STA_PS
 #include "power_save_pub.h"
@@ -28,8 +15,6 @@
 static struct uart_callback_des uart_receive_callback[2] = {{NULL}, {NULL}};
 static struct uart_callback_des uart_txfifo_needwr_callback[2] = {{NULL}, {NULL}};
 static struct uart_callback_des uart_tx_end_callback[2] = {{NULL}, {NULL}};
-
-extern uint32_t get_ate_mode_state(void);
 
 #ifndef KEIL_SIMULATOR
 
@@ -47,13 +32,6 @@ static DD_OPERATIONS uart1_op =
         uart1_write,
         uart1_ctrl};
 #endif
-
-// Forward declarations
-UINT32 uart2_open(UINT32 op_flag);
-UINT32 uart2_close(void);
-UINT32 uart2_read(char* user_buf, UINT32 count, UINT32 op_flag);
-UINT32 uart2_write(char* user_buf, UINT32 count, UINT32 op_flag);
-UINT32 uart2_ctrl(UINT32 cmd, void* parm);
 
 static DD_OPERATIONS uart2_op =
     {
