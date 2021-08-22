@@ -375,7 +375,7 @@ const TXPWR_ST gtxpwr_tab_def_ble[BLE_2_4_G_CHANNEL_NUM] = {
     INIT_TXPWR_VALUE(16, TXPWR_ELEM_UNUSED),
     INIT_TXPWR_VALUE(16, TXPWR_ELEM_UNUSED),  // ch39 2480 inused
 };
-#endif
+#endif  // TXPWR_DEFAULT_TAB
 
 TXPWR_ST gtxpwr_tab_b[WLAN_2_4_G_CHANNEL_NUM];
 TXPWR_ST gtxpwr_tab_g[WLAN_2_4_G_CHANNEL_NUM];
