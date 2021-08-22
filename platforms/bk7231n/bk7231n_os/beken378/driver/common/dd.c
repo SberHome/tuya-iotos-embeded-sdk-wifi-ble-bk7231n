@@ -113,7 +113,10 @@ static DD_INIT_S dd_init_tbl[] =
 #endif
 
     {SARADC_DEV_NAME,       saradc_init,                saradc_exit},
+
+#if CFG_USE_IRDA    
     {IRDA_DEV_NAME,         irda_init,                  irda_exit},
+#endif
 
 #if CFG_MAC_PHY_BAPASS
     {MPB_DEV_NAME,          mpb_init,                   mpb_exit},

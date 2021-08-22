@@ -33,9 +33,7 @@ static UINT16 IR_Code[IR_CODE_SIZE] = IR_MAP;
 static UINT32 Recv_IR_Code = 0xffffffff;
 
 
-static SDD_OPERATIONS irda_op = {
-            irda_ctrl
-};
+
 
 static void irda_gpio_config()
 {
@@ -145,6 +143,10 @@ static UINT32 trng_get_random(void)
 
 void irda_init(void)
 {
+    static SDD_OPERATIONS irda_op = {
+        irda_ctrl
+    };
+    
 	irda_gpio_config();
 	
 	intc_service_register(IRQ_IRDA, PRI_IRQ_IRDA, irda_isr); 
