@@ -2,6 +2,10 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
+
+#ifndef __IOT_EXPORT_ERRNO_H__
+#define __IOT_EXPORT_ERRNO_H__
+
 /* From utils_error.h */
 typedef enum IOT_RETURN_CODES {
     ERROR_DEVICE_NOT_EXSIT = -311,
@@ -84,3 +88,5 @@ typedef enum IOT_RETURN_CODES {
 
 } iotx_err_t;
 /* From utils_error.h */
+
+#endif
