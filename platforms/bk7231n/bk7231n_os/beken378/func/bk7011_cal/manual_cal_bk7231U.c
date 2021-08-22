@@ -1,14 +1,38 @@
 #include "include.h"
+#include "uart_pub.h"
 
 #if (CFG_SOC_NAME != SOC_BK7231)
 #include "temp_detect_pub.h"
 #include "arm_arch.h"
 #include "sys_ctrl_pub.h"
 #include "bk7011_cal_pub.h"
+#include "drv_model_pub.h"
+#include "ate_app.h"
+#include "power_save_pub.h"
+#include "mem_pub.h"
+
+#define MCAL_DEBUG 1
+#if MCAL_DEBUG
+//#define debug_print      os_printf
+//#define debug_print     os_printf
+//#define debug_print    fatal_prf
+#else
+#define debug_print null_prf
+#define debug_print null_prf
+#define debug_print null_prf
+#endif
+
+#ifndef CAL_DEBUG
+#define CAL_DEBUG 0
+#endif
+#define debug_print(...)                              \
+    do {                                              \
+        if (CAL_DEBUG) os_printf("[CAL]"__VA_ARGS__); \
+    } while (0)
+
+
 
 #if CFG_SUPPORT_MANUAL_CALI
-#include "mem_pub.h"
-#include "drv_model_pub.h"
 #include "saradc_pub.h"
 #include "param_config.h"
 
@@ -17,9 +41,8 @@
 #else
 #include "BkDriverFlash.h"
 #endif
-#include "power_save_pub.h"
 #include "cmd_evm.h"
-#include "ate_app.h"
+
 
 #define TXPWR_DEFAULT_TAB 1
 
@@ -50,25 +73,7 @@
 #define BK_FLASH_SECTOR_SIZE (4 * 1024)
 #define BK_FLASH_WRITE_CHECK_TIMES 3
 
-#define MCAL_DEBUG 1
-#include "uart_pub.h"
-#if MCAL_DEBUG
-//#define debug_print      os_printf
-//#define debug_print     os_printf
-//#define debug_print    fatal_prf
-#else
-#define debug_print null_prf
-#define debug_print null_prf
-#define debug_print null_prf
-#endif
 
-#ifndef CAL_DEBUG
-#define CAL_DEBUG 0
-#endif
-#define debug_print(...)                              \
-    do {                                              \
-        if (CAL_DEBUG) os_printf("[CAL]"__VA_ARGS__); \
-    } while (0);
 
 /* bit[7]: TXPWR flag 
  *          0:  invalid
