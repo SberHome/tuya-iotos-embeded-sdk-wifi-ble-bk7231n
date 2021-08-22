@@ -15,10 +15,7 @@
 UINT8 current_channel;
 UINT8 current_group;
 
-static SDD_OPERATIONS pwm_op =
-{
-    pwm_ctrl
-};
+
 
 void (*p_PWM_Int_Handler[CHANNEL_NO])(UINT8);
 
@@ -935,6 +932,11 @@ static void pwm_int_handler_clear(UINT8 ucChannel)
 
 void pwm_init(void)
 {
+    static SDD_OPERATIONS pwm_op =
+    {
+        pwm_ctrl
+    };
+
 	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(0), 0x0);
 	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(1), 0x0);
 	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(2), 0x0);

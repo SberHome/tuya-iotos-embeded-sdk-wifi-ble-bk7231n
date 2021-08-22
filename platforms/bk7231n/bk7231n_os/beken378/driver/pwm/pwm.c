@@ -11,10 +11,6 @@
 #include "gpio_pub.h"
 #include "uart_pub.h"
 
-static SDD_OPERATIONS pwm_op =
-{
-    pwm_ctrl
-};
 
 void (*p_PWM_Int_Handler[CHANNEL_NO])(UINT8);
 
@@ -200,6 +196,11 @@ static void pwm_int_handler_clear(UINT8 ucChannel)
 
 void pwm_init(void)
 {
+    static SDD_OPERATIONS pwm_op =
+    {
+        pwm_ctrl
+    };
+
     REG_WRITE(PWM_CTL, 0x0);
     
     intc_service_register(IRQ_PWM, PRI_IRQ_PWM, pwm_isr);

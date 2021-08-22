@@ -94,10 +94,15 @@ static DD_INIT_S dd_init_tbl[] =
 #if CFG_USB
     {USB_DEV_NAME,          usb_init,                   usb_exit},
 #endif
+
+#if CFG_USE_PWM
     {PWM_DEV_NAME,          pwm_init,                   pwm_exit},
+#endif
+
 #if (CFG_SOC_NAME != SOC_BK7231)
     {TIMER_DEV_NAME,        bk_timer_init,              bk_timer_exit},
 #endif
+
 #if CFG_USE_SPI
     {SPI_DEV_NAME,          spi_init,                   spi_exit},
 #endif
@@ -106,6 +111,7 @@ static DD_INIT_S dd_init_tbl[] =
     {FFT_DEV_NAME,          fft_init,                   fft_exit},
     {I2S_DEV_NAME,          i2s_init,                   i2s_exit},
 #endif
+
     {SARADC_DEV_NAME,       saradc_init,                saradc_exit},
     {IRDA_DEV_NAME,         irda_init,                  irda_exit},
 
