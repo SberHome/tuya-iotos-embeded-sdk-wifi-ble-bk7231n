@@ -33,29 +33,27 @@ extern uint32_t get_ate_mode_state(void);
 
 #ifndef KEIL_SIMULATOR
 
-UART_S uart[2] =
-{
-    {0, 0, 0}, 
-	{0, 0, 0}
-};
+static UART_S uart[2] =
+    {
+        {0, 0, 0},
+        {0, 0, 0}};
 
 #if CFG_UART_DEBUG_COMMAND_LINE
 static DD_OPERATIONS uart1_op =
-{
-    uart1_open,
-    uart1_close,
-    uart1_read,
-    uart1_write,
-    uart1_ctrl
-};
+    {
+        uart1_open,
+        uart1_close,
+        uart1_read,
+        uart1_write,
+        uart1_ctrl};
 #endif
 
 // Forward declarations
 UINT32 uart2_open(UINT32 op_flag);
 UINT32 uart2_close(void);
-UINT32 uart2_read(char *user_buf, UINT32 count, UINT32 op_flag);
-UINT32 uart2_write(char *user_buf, UINT32 count, UINT32 op_flag);
-UINT32 uart2_ctrl(UINT32 cmd, void *parm);
+UINT32 uart2_read(char* user_buf, UINT32 count, UINT32 op_flag);
+UINT32 uart2_write(char* user_buf, UINT32 count, UINT32 op_flag);
+UINT32 uart2_ctrl(UINT32 cmd, void* parm);
 
 static DD_OPERATIONS uart2_op =
     {
@@ -65,11 +63,10 @@ static DD_OPERATIONS uart2_op =
         uart2_write,
         uart2_ctrl};
 
-UINT8 uart_is_tx_fifo_empty(UINT8 uport)
-{
-	UINT32 param;
+UINT8 uart_is_tx_fifo_empty(UINT8 uport) {
+    UINT32 param;
 
-    if(UART1_PORT == uport)
+    if (UART1_PORT == uport)
         param = REG_READ(REG_UART1_FIFO_STATUS);
     else
         param = REG_READ(REG_UART2_FIFO_STATUS);
@@ -77,11 +74,10 @@ UINT8 uart_is_tx_fifo_empty(UINT8 uport)
     return (param & TX_FIFO_EMPTY) != 0 ? 1 : 0;
 }
 
-UINT8 uart_is_tx_fifo_full(UINT8 uport)
-{
-	UINT32 param;
+UINT8 uart_is_tx_fifo_full(UINT8 uport) {
+    UINT32 param;
 
-    if(UART1_PORT == uport)
+    if (UART1_PORT == uport)
         param = REG_READ(REG_UART1_FIFO_STATUS);
     else
         param = REG_READ(REG_UART2_FIFO_STATUS);
@@ -89,70 +85,62 @@ UINT8 uart_is_tx_fifo_full(UINT8 uport)
     return (param & TX_FIFO_FULL) != 0 ? 1 : 0;
 }
 
-void bk_send_byte(UINT8 uport, UINT8 data)
-{
-    if(UART1_PORT == uport)
-        while(!UART1_TX_WRITE_READY);
+void bk_send_byte(UINT8 uport, UINT8 data) {
+    if (UART1_PORT == uport)
+        while (!UART1_TX_WRITE_READY)
+            ;
     else
-        while(!UART2_TX_WRITE_READY);
+        while (!UART2_TX_WRITE_READY)
+            ;
 
     UART_WRITE_BYTE(uport, data);
 }
 
-void bk_send_string(UINT8 uport, const char *string)
-{
-    while(*string)
-    {
+void bk_send_string(UINT8 uport, const char* string) {
+    while (*string) {
         bk_send_byte(uport, *string++);
     }
 }
 
 static UINT8 pirntf_port = 2;
 
-UINT8 get_printf_port(void)
-{
+UINT8 get_printf_port(void) {
     return pirntf_port;
 }
-void set_printf_port(UINT8 port)
-{
+void set_printf_port(UINT8 port) {
     pirntf_port = port;
 }
 
 /*uart2 as deubg port*/
 char string[256];
 
-void bk_printf(const char *fmt, ...)
-{
+void bk_printf(const char* fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
     vsnprintf(string, sizeof(string) - 1, fmt, ap);
     string[255] = 0;
 #if ATE_APP_FUN
-	if(get_ate_mode_state())
-	{
-    	bk_send_string(UART1_PORT, string);
-	}
-	else
+    if (get_ate_mode_state()) {
+        bk_send_string(UART1_PORT, string);
+    } else
 #endif
-	{
-        if(get_printf_port() == 1)
-        	bk_send_string(UART1_PORT, string);
+    {
+        if (get_printf_port() == 1)
+            bk_send_string(UART1_PORT, string);
         else
             bk_send_string(UART2_PORT, string);
-	}
+    }
     va_end(ap);
 }
 
-void fatal_print(const char *fmt, ...)
-{
+void fatal_print(const char* fmt, ...) {
     os_printf(fmt);
 
     DEAD_WHILE();
 }
 
-void uart_hw_init(UINT8 uport)
-{
+void uart_hw_init(UINT8 uport) {
     UINT32 reg, baud_div;
     UINT32 conf_reg_addr, fifo_conf_reg_addr;
     UINT32 flow_conf_reg_addr, wake_conf_reg_addr, intr_reg_addr;
@@ -160,16 +148,13 @@ void uart_hw_init(UINT8 uport)
     baud_div = UART_CLOCK / UART_BAUD_RATE;
     baud_div = baud_div - 1;
 
-    if(UART1_PORT == uport)
-    {
+    if (UART1_PORT == uport) {
         conf_reg_addr = REG_UART1_CONFIG;
         fifo_conf_reg_addr = REG_UART1_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART1_FLOW_CONFIG;
         wake_conf_reg_addr = REG_UART1_WAKE_CONFIG;
         intr_reg_addr = REG_UART1_INTR_ENABLE;
-    }
-    else
-    {
+    } else {
         conf_reg_addr = REG_UART2_CONFIG;
         fifo_conf_reg_addr = REG_UART2_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART2_FLOW_CONFIG;
@@ -177,15 +162,10 @@ void uart_hw_init(UINT8 uport)
         intr_reg_addr = REG_UART2_INTR_ENABLE;
     }
 
-    reg = UART_TX_ENABLE
-          | UART_RX_ENABLE
-          | ((DEF_DATA_LEN & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI)
-          | ((baud_div & UART_CLK_DIVID_MASK) << UART_CLK_DIVID_POSI);
+    reg = UART_TX_ENABLE | UART_RX_ENABLE | ((DEF_DATA_LEN & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI) | ((baud_div & UART_CLK_DIVID_MASK) << UART_CLK_DIVID_POSI);
     REG_WRITE(conf_reg_addr, reg);
 
-    reg = ((TX_FIFO_THRD & TX_FIFO_THRESHOLD_MASK) << TX_FIFO_THRESHOLD_POSI)
-          | ((RX_FIFO_THRD & RX_FIFO_THRESHOLD_MASK) << RX_FIFO_THRESHOLD_POSI)
-          | ((RX_STOP_DETECT_TIME32 & RX_STOP_DETECT_TIME_MASK) << RX_STOP_DETECT_TIME_POSI);
+    reg = ((TX_FIFO_THRD & TX_FIFO_THRESHOLD_MASK) << TX_FIFO_THRESHOLD_POSI) | ((RX_FIFO_THRD & RX_FIFO_THRESHOLD_MASK) << RX_FIFO_THRESHOLD_POSI) | ((RX_STOP_DETECT_TIME32 & RX_STOP_DETECT_TIME_MASK) << RX_STOP_DETECT_TIME_POSI);
     REG_WRITE(fifo_conf_reg_addr, reg);
 
     REG_WRITE(flow_conf_reg_addr, 0);
@@ -197,37 +177,33 @@ void uart_hw_init(UINT8 uport)
     return;
 }
 
-void uart_hw_set_change(UINT8 uport, uart_config_t *uart_config)
-{
+void uart_hw_set_change(UINT8 uport, uart_config_t* uart_config) {
     UINT32 reg, baud_div, width;
 #if CFG_SUPPORT_ALIOS
-    hal_uart_parity_t 	     parity_en;
-    hal_uart_stop_bits_t	  stop_bits;
+    hal_uart_parity_t parity_en;
+    hal_uart_stop_bits_t stop_bits;
 #else
-    uart_parity_t 	     parity_en;
-    uart_stop_bits_t	  stop_bits;
+    uart_parity_t parity_en;
+    uart_stop_bits_t stop_bits;
 #endif
     UINT8 parity_mode = 0;
     UINT32 intr_ena_reg_addr, conf_reg_addr, fifi_conf_reg_addr;
     UINT32 flow_conf_reg_addr, wake_reg_addr;
 
-    if(UART1_PORT == uport)
-    {
+    if (UART1_PORT == uport) {
         intr_ena_reg_addr = REG_UART1_INTR_ENABLE;
         conf_reg_addr = REG_UART1_CONFIG;
         fifi_conf_reg_addr = REG_UART1_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART1_FLOW_CONFIG;
         wake_reg_addr = REG_UART1_WAKE_CONFIG;
-    }
-    else
-    {
+    } else {
         intr_ena_reg_addr = REG_UART2_INTR_ENABLE;
         conf_reg_addr = REG_UART2_CONFIG;
         fifi_conf_reg_addr = REG_UART2_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART2_FLOW_CONFIG;
         wake_reg_addr = REG_UART2_WAKE_CONFIG;
     }
-    REG_WRITE(intr_ena_reg_addr, 0);//disable int
+    REG_WRITE(intr_ena_reg_addr, 0);  //disable int
 
     baud_div = UART_CLOCK / uart_config->baud_rate;
     baud_div = baud_div - 1;
@@ -235,12 +211,11 @@ void uart_hw_set_change(UINT8 uport, uart_config_t *uart_config)
     parity_en = uart_config->parity;
     stop_bits = uart_config->stop_bits;
 
-    if(parity_en)
-    {
+    if (parity_en) {
 #if CFG_SUPPORT_ALIOS
-        if(parity_en == ODD_PARITY)
+        if (parity_en == ODD_PARITY)
 #else
-        if(parity_en == BK_PARITY_ODD)
+        if (parity_en == BK_PARITY_ODD)
 #endif
             parity_mode = 1;
         else
@@ -248,20 +223,12 @@ void uart_hw_set_change(UINT8 uport, uart_config_t *uart_config)
         parity_en = 1;
     }
 
-    reg = UART_TX_ENABLE
-          | UART_RX_ENABLE
-          | ((width & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI)
-          | (parity_en << 5)
-          | (parity_mode << 6)
-          | (stop_bits << 7)
-          | ((baud_div & UART_CLK_DIVID_MASK) << UART_CLK_DIVID_POSI);
+    reg = UART_TX_ENABLE | UART_RX_ENABLE | ((width & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI) | (parity_en << 5) | (parity_mode << 6) | (stop_bits << 7) | ((baud_div & UART_CLK_DIVID_MASK) << UART_CLK_DIVID_POSI);
 
     width = ((width & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI);
     REG_WRITE(conf_reg_addr, reg);
 
-    reg = ((TX_FIFO_THRD & TX_FIFO_THRESHOLD_MASK) << TX_FIFO_THRESHOLD_POSI)
-          | ((RX_FIFO_THRD & RX_FIFO_THRESHOLD_MASK) << RX_FIFO_THRESHOLD_POSI)
-          | ((RX_STOP_DETECT_TIME32 & RX_STOP_DETECT_TIME_MASK) << RX_STOP_DETECT_TIME_POSI);
+    reg = ((TX_FIFO_THRD & TX_FIFO_THRESHOLD_MASK) << TX_FIFO_THRESHOLD_POSI) | ((RX_FIFO_THRD & RX_FIFO_THRESHOLD_MASK) << RX_FIFO_THRESHOLD_POSI) | ((RX_STOP_DETECT_TIME32 & RX_STOP_DETECT_TIME_MASK) << RX_STOP_DETECT_TIME_POSI);
     REG_WRITE(fifi_conf_reg_addr, reg);
 
     REG_WRITE(flow_conf_reg_addr, 0);
@@ -271,20 +238,16 @@ void uart_hw_set_change(UINT8 uport, uart_config_t *uart_config)
     REG_WRITE(intr_ena_reg_addr, reg);
 }
 
-UINT32 uart_sw_init(UINT8 uport)
-{
+UINT32 uart_sw_init(UINT8 uport) {
     uart[uport].rx = kfifo_alloc(RX_RB_LENGTH);
     uart[uport].tx = kfifo_alloc(TX_RB_LENGTH);
 
-    if((!uart[uport].tx) || (!uart[uport].rx))
-    {
-        if(uart[uport].tx)
-        {
+    if ((!uart[uport].tx) || (!uart[uport].rx)) {
+        if (uart[uport].tx) {
             kfifo_free(uart[uport].tx);
         }
 
-        if(uart[uport].rx)
-        {
+        if (uart[uport].rx) {
             kfifo_free(uart[uport].rx);
         }
         return UART_FAILURE;
@@ -293,15 +256,12 @@ UINT32 uart_sw_init(UINT8 uport)
     return UART_SUCCESS;
 }
 
-UINT32 uart_sw_uninit(UINT8 uport)
-{
-    if(uart[uport].tx)
-    {
+UINT32 uart_sw_uninit(UINT8 uport) {
+    if (uart[uport].tx) {
         kfifo_free(uart[uport].tx);
     }
 
-    if(uart[uport].rx)
-    {
+    if (uart[uport].rx) {
         kfifo_free(uart[uport].rx);
     }
 
@@ -310,28 +270,25 @@ UINT32 uart_sw_uninit(UINT8 uport)
     return UART_SUCCESS;
 }
 
-UINT32 uart_read_fifo_frame(UINT8 uport, KFIFO_PTR rx_ptr)
-{
+UINT32 uart_read_fifo_frame(UINT8 uport, KFIFO_PTR rx_ptr) {
     UINT32 val;
     UINT32 rx_count, fifo_status_reg;
 
-    if(UART1_PORT == uport)
+    if (UART1_PORT == uport)
         fifo_status_reg = REG_UART1_FIFO_STATUS;
     else
         fifo_status_reg = REG_UART2_FIFO_STATUS;
 
     rx_count = 0;
-    while(REG_READ(fifo_status_reg) & FIFO_RD_READY)
-    {
+    while (REG_READ(fifo_status_reg) & FIFO_RD_READY) {
         UART_READ_BYTE(uport, val);
-        rx_count += kfifo_put(rx_ptr, (UINT8 *)&val, 1);
+        rx_count += kfifo_put(rx_ptr, (UINT8*)&val, 1);
     }
 
     return rx_count;
 }
 
-void uart2_isr(void)
-{
+void uart2_isr(void) {
     UINT32 status;
     UINT32 intr_en;
     UINT32 intr_status;
@@ -341,120 +298,94 @@ void uart2_isr(void)
     REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
     status = intr_status & intr_en;
 
-    if(status & (RX_FIFO_NEED_READ_STA | UART_RX_STOP_END_STA))
-    {
-	#if (!CFG_SUPPORT_RTT)
-		uart_read_fifo_frame(UART2_PORT, uart[UART2_PORT].rx);
-	#endif
+    if (status & (RX_FIFO_NEED_READ_STA | UART_RX_STOP_END_STA)) {
+#if (!CFG_SUPPORT_RTT)
+        uart_read_fifo_frame(UART2_PORT, uart[UART2_PORT].rx);
+#endif
 
-		if (uart_receive_callback[1].callback != 0)
-		{
-			void *param = uart_receive_callback[1].param;
+        if (uart_receive_callback[1].callback != 0) {
+            void* param = uart_receive_callback[1].param;
 
-			uart_receive_callback[1].callback(UART2_PORT, param);
-		}
-		else
-		{
-			uart_read_byte(UART2_PORT); /*drop data for rtt*/
-		}
+            uart_receive_callback[1].callback(UART2_PORT, param);
+        } else {
+            uart_read_byte(UART2_PORT); /*drop data for rtt*/
+        }
     }
 
-	if(status & TX_FIFO_NEED_WRITE_STA)
-    {
-        if (uart_txfifo_needwr_callback[1].callback != 0)
-        {
-            void *param = uart_txfifo_needwr_callback[1].param;
+    if (status & TX_FIFO_NEED_WRITE_STA) {
+        if (uart_txfifo_needwr_callback[1].callback != 0) {
+            void* param = uart_txfifo_needwr_callback[1].param;
 
             uart_txfifo_needwr_callback[1].callback(UART2_PORT, param);
-        }      
+        }
     }
 
-	if(status & RX_FIFO_OVER_FLOW_STA)
-    {
+    if (status & RX_FIFO_OVER_FLOW_STA) {
     }
 
-	if(status & UART_RX_PARITY_ERR_STA)
-    {
+    if (status & UART_RX_PARITY_ERR_STA) {
         uart_fifo_flush(UART2_PORT);
     }
- 
-	if(status & UART_RX_STOP_ERR_STA)
-    {
+
+    if (status & UART_RX_STOP_ERR_STA) {
     }
 
-	if(status & UART_TX_STOP_END_STA)
-    {
-        if (uart_tx_end_callback[1].callback != 0)
-        {
-            void *param = uart_tx_end_callback[1].param;
+    if (status & UART_TX_STOP_END_STA) {
+        if (uart_tx_end_callback[1].callback != 0) {
+            void* param = uart_tx_end_callback[1].param;
 
             uart_tx_end_callback[1].callback(UART2_PORT, param);
         }
     }
 
-	if(status & UART_RXD_WAKEUP_STA)
-    {
+    if (status & UART_RXD_WAKEUP_STA) {
     }
 }
 
-void uart_set_tx_stop_end_int(UINT8 uport, UINT8 set)
-{
-	UINT32 reg;
+void uart_set_tx_stop_end_int(UINT8 uport, UINT8 set) {
+    UINT32 reg;
 
-	if(UART1_PORT == uport)
-		reg = REG_READ(REG_UART1_INTR_ENABLE);
-	else
-		reg = REG_READ(REG_UART2_INTR_ENABLE);
-	
-	if(set == 1)
-	{
-		reg |= (UART_TX_STOP_END_EN);
-	}
-	else
-	{
-		reg &= ~(UART_TX_STOP_END_EN);
-	}
-	
-	if(UART1_PORT == uport)
-		REG_WRITE(REG_UART1_INTR_ENABLE, reg);
-	else 
-		REG_WRITE(REG_UART2_INTR_ENABLE, reg);
+    if (UART1_PORT == uport)
+        reg = REG_READ(REG_UART1_INTR_ENABLE);
+    else
+        reg = REG_READ(REG_UART2_INTR_ENABLE);
+
+    if (set == 1) {
+        reg |= (UART_TX_STOP_END_EN);
+    } else {
+        reg &= ~(UART_TX_STOP_END_EN);
+    }
+
+    if (UART1_PORT == uport)
+        REG_WRITE(REG_UART1_INTR_ENABLE, reg);
+    else
+        REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
 
-void uart_set_tx_fifo_needwr_int(UINT8 uport, UINT8 set)
-{
-	UINT32 reg;
+void uart_set_tx_fifo_needwr_int(UINT8 uport, UINT8 set) {
+    UINT32 reg;
 
-	if(UART1_PORT == uport)
-		reg = REG_READ(REG_UART1_INTR_ENABLE);
-	else
-		reg = REG_READ(REG_UART2_INTR_ENABLE);
-	
-	if(set == 1)
-	{
-		reg |= (TX_FIFO_NEED_WRITE_EN);
-	}
-	else
-	{
-		reg &= ~(TX_FIFO_NEED_WRITE_EN);
-	}
-	
-	if(UART1_PORT == uport){
+    if (UART1_PORT == uport)
+        reg = REG_READ(REG_UART1_INTR_ENABLE);
+    else
+        reg = REG_READ(REG_UART2_INTR_ENABLE);
+
+    if (set == 1) {
+        reg |= (TX_FIFO_NEED_WRITE_EN);
+    } else {
+        reg &= ~(TX_FIFO_NEED_WRITE_EN);
+    }
+
+    if (UART1_PORT == uport) {
         //rt_kprintf("set_tx_fifo:%d\r\n", set);
-		REG_WRITE(REG_UART1_INTR_ENABLE, reg);
-	}
-	else
-		REG_WRITE(REG_UART2_INTR_ENABLE, reg);
+        REG_WRITE(REG_UART1_INTR_ENABLE, reg);
+    } else
+        REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
-
-
-
 
 #if CFG_UART_DEBUG_COMMAND_LINE
 /*******************************************************************/
-void uart1_isr(void)
-{
-
+void uart1_isr(void) {
     UINT32 status;
     UINT32 intr_en;
     UINT32 intr_status;
@@ -464,67 +395,166 @@ void uart1_isr(void)
     REG_WRITE(REG_UART1_INTR_STATUS, intr_status);
     status = intr_status & intr_en;
 
-    if(status & (RX_FIFO_NEED_READ_STA | UART_RX_STOP_END_STA))
-    {
+    if (status & (RX_FIFO_NEED_READ_STA | UART_RX_STOP_END_STA)) {
 #if ATE_APP_FUN
-		if(get_ate_mode_state())
-		{
-        	uart_read_fifo_frame(UART1_PORT, uart[UART1_PORT].rx);
-		}
+        if (get_ate_mode_state()) {
+            uart_read_fifo_frame(UART1_PORT, uart[UART1_PORT].rx);
+        }
 #endif
 
-        if (uart_receive_callback[0].callback != 0)
-        {
-            void *param = uart_receive_callback[0].param;
+        if (uart_receive_callback[0].callback != 0) {
+            void* param = uart_receive_callback[0].param;
 
             uart_receive_callback[0].callback(UART1_PORT, param);
-        }
-        else
-        {
-        	uart_read_byte(UART1_PORT); /*drop data for rtt*/
+        } else {
+            uart_read_byte(UART1_PORT); /*drop data for rtt*/
         }
     }
-	
-    if(status & TX_FIFO_NEED_WRITE_STA)
-    {
-        if (uart_txfifo_needwr_callback[0].callback != 0)
-        {
-            void *param = uart_txfifo_needwr_callback[0].param;
+
+    if (status & TX_FIFO_NEED_WRITE_STA) {
+        if (uart_txfifo_needwr_callback[0].callback != 0) {
+            void* param = uart_txfifo_needwr_callback[0].param;
 
             uart_txfifo_needwr_callback[0].callback(UART1_PORT, param);
-        } 
+        }
     }
-	
-    if(status & RX_FIFO_OVER_FLOW_STA)
-    {
+
+    if (status & RX_FIFO_OVER_FLOW_STA) {
     }
-	
-    if(status & UART_RX_PARITY_ERR_STA)
-    {
+
+    if (status & UART_RX_PARITY_ERR_STA) {
         uart_fifo_flush(UART1_PORT);
     }
-	
-    if(status & UART_RX_STOP_ERR_STA)
-    {
+
+    if (status & UART_RX_STOP_ERR_STA) {
     }
-	
-    if(status & UART_TX_STOP_END_STA)
-    {
-        if (uart_tx_end_callback[0].callback != 0)
-        {
-            void *param = uart_tx_end_callback[0].param;
+
+    if (status & UART_TX_STOP_END_STA) {
+        if (uart_tx_end_callback[0].callback != 0) {
+            void* param = uart_tx_end_callback[0].param;
 
             uart_tx_end_callback[0].callback(UART1_PORT, param);
         }
     }
-    
-	if(status & UART_RXD_WAKEUP_STA)
-    {
+
+    if (status & UART_RXD_WAKEUP_STA) {
     }
 }
 
-void uart1_init(void)
-{
+void uart1_exit(void) {
+    UINT32 param;
+
+    /*irq enable, Be careful: it is best that irq enable at close routine*/
+    param = IRQ_UART1_BIT;
+    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
+
+    uart_hw_uninit(UART1_PORT);
+
+    ddev_unregister_dev(UART1_DEV_NAME);
+
+    uart_sw_uninit(UART1_PORT);
+}
+
+UINT32 uart1_open(UINT32 op_flag) {
+    return UART_SUCCESS;
+}
+
+UINT32 uart1_close(void) {
+    return UART_SUCCESS;
+}
+
+UINT32 uart1_read(char* user_buf, UINT32 count, UINT32 op_flag) {
+    return kfifo_get(uart[UART1_PORT].rx, (UINT8*)user_buf, count);
+}
+
+UINT32 uart1_write(char* user_buf, UINT32 count, UINT32 op_flag) {
+    return kfifo_put(uart[UART1_PORT].tx, (UINT8*)user_buf, count);
+}
+
+UINT32 uart1_ctrl(UINT32 cmd, void* parm) {
+    UINT32 ret;
+    peri_busy_count_add();
+
+    ret = UART_SUCCESS;
+    switch (cmd) {
+        case CMD_SEND_BACKGROUND:
+            //     uart_send_backgroud();
+            break;
+
+        case CMD_UART_RESET:
+            uart_reset(UART1_PORT);
+            break;
+
+        case CMD_RX_COUNT:
+            ret = kfifo_data_size(uart[UART1_PORT].rx);
+            break;
+
+        case CMD_RX_PEEK: {
+            UART_PEEK_RX_PTR peek;
+
+            peek = (UART_PEEK_RX_PTR)parm;
+
+            if (!((URX_PEEK_SIG != peek->sig) || (NULLPTR == peek->ptr) || (0 == peek->len))) {
+                ret = kfifo_out_peek(uart[UART1_PORT].rx, peek->ptr, peek->len);
+            }
+
+            break;
+        }
+        case CMD_UART_INIT:
+            uart_hw_set_change(UART1_PORT, parm);
+            break;
+        case CMD_UART_SET_RX_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
+
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_rx_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_rx_callback_set(UART1_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_UART_SET_TX_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
+
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_tx_end_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_tx_end_callback_set(UART1_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_UART_SET_TX_FIFO_NEEDWR_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
+
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_tx_fifo_needwr_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_tx_fifo_needwr_callback_set(UART1_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_SET_STOP_END:
+            uart_set_tx_stop_end_int(UART1_PORT, *(UINT8*)parm);
+            break;
+
+        case CMD_SET_TX_FIFO_NEEDWR_INT:
+            uart_set_tx_fifo_needwr_int(UART1_PORT, *(UINT8*)parm);
+            break;
+        default:
+            break;
+    }
+
+    peri_busy_count_dec();
+
+    return ret;
+}
+#endif  // (!CFG_UART_DEBUG_COMMAND_LINE)
+
+#if CFG_UART_DEBUG_COMMAND_LINE    
+void uart1_init(void) {
     UINT32 ret;
     UINT32 param;
     UINT32 intr_status;
@@ -550,169 +580,30 @@ void uart1_init(void)
     param = IRQ_UART1_BIT;
     sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
 }
+#endif
 
-void uart1_exit(void)
-{
-    UINT32 param;
-
-    /*irq enable, Be careful: it is best that irq enable at close routine*/
-    param = IRQ_UART1_BIT;
-    sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
-
-    uart_hw_uninit(UART1_PORT);
-
-    ddev_unregister_dev(UART1_DEV_NAME);
-
-    uart_sw_uninit(UART1_PORT);
-}
-
-UINT32 uart1_open(UINT32 op_flag)
-{
-    return UART_SUCCESS;
-}
-
-UINT32 uart1_close(void)
-{
-    return UART_SUCCESS;
-}
-
-UINT32 uart1_read(char *user_buf, UINT32 count, UINT32 op_flag)
-{
-    return kfifo_get(uart[UART1_PORT].rx, (UINT8 *)user_buf, count);
-}
-
-UINT32 uart1_write(char *user_buf, UINT32 count, UINT32 op_flag)
-{
-    return kfifo_put(uart[UART1_PORT].tx, (UINT8 *)user_buf, count);
-}
-
-UINT32 uart1_ctrl(UINT32 cmd, void *parm)
-{
-    UINT32 ret;
-    peri_busy_count_add();
-
-    ret = UART_SUCCESS;
-    switch(cmd)
-    {
-    case CMD_SEND_BACKGROUND:
-        //     uart_send_backgroud();
-        break;
-
-    case CMD_UART_RESET:
-        uart_reset(UART1_PORT);
-        break;
-
-    case CMD_RX_COUNT:
-        ret = kfifo_data_size(uart[UART1_PORT].rx);
-        break;
-
-    case CMD_RX_PEEK:
-    {
-        UART_PEEK_RX_PTR peek;
-
-        peek = (UART_PEEK_RX_PTR)parm;
-
-        if(!((URX_PEEK_SIG != peek->sig)
-                || (NULLPTR == peek->ptr)
-                || (0 == peek->len)))
-        {
-            ret = kfifo_out_peek(uart[UART1_PORT].rx, peek->ptr, peek->len);
-        }
-
-        break;
-    }
-    case CMD_UART_INIT:
-        uart_hw_set_change(UART1_PORT, parm);
-        break;
-    case CMD_UART_SET_RX_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
-
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_rx_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_rx_callback_set(UART1_PORT, NULL, NULL);
-        }
-        break;
-    case CMD_UART_SET_TX_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
-
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_tx_end_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_tx_end_callback_set(UART1_PORT, NULL, NULL);
-        }        
-        break;
-    case CMD_UART_SET_TX_FIFO_NEEDWR_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
-
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_tx_fifo_needwr_callback_set(UART1_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_tx_fifo_needwr_callback_set(UART1_PORT, NULL, NULL);
-        }        
-        break;            
-	case CMD_SET_STOP_END:
-		uart_set_tx_stop_end_int(UART1_PORT, *(UINT8 *)parm);
-		break;
-        
-	case CMD_SET_TX_FIFO_NEEDWR_INT:
-		uart_set_tx_fifo_needwr_int(UART1_PORT, *(UINT8 *)parm);
-		break;
-    default:
-        break;
-    }
-
-    peri_busy_count_dec();
-
-    return ret;
-}
-#endif // (!CFG_UART_DEBUG_COMMAND_LINE)
-
-void uart_reset(UINT8 uport)
-{
-    if(UART1_PORT == uport)
-    {
+void uart_reset(UINT8 uport) {
+    if (UART1_PORT == uport) {
         uart1_exit();
         uart1_init();
-    }
-    else
-    {
+    } else {
         uart2_exit();
         uart2_init();
     }
 }
 
-UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count)
-{
+UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count) {
     UINT32 len;
     UINT32 ret;
     UINT32 val;
 
     len = 0;
 
-    while(1)
-    {
-        ret = kfifo_get(tx_ptr, (UINT8 *)&val, 1);
-        if(0 == ret)
-        {
+    while (1) {
+        ret = kfifo_get(tx_ptr, (UINT8*)&val, 1);
+        if (0 == ret) {
             break;
         }
-
 
 #if __CC_ARM
         uart_send_byte(uport, (UINT8)val);
@@ -721,8 +612,7 @@ UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count)
 #endif
 
         len += ret;
-        if(len >= count)
-        {
+        if (len >= count) {
             break;
         }
     }
@@ -730,136 +620,115 @@ UINT32 uart_write_fifo_frame(UINT8 uport, KFIFO_PTR tx_ptr, UINT32 count)
     return len;
 }
 
-void uart_send_backgroud(void)
-{
+void uart_send_backgroud(void) {
     /* send the buf at backgroud context*/
     uart_write_fifo_frame(UART2_PORT, uart[UART2_PORT].tx, DEBUG_PRT_MAX_CNT);
 }
 
-UINT32 uart2_open(UINT32 op_flag)
-{
+UINT32 uart2_open(UINT32 op_flag) {
     return UART_SUCCESS;
 }
 
-UINT32 uart2_close(void)
-{
+UINT32 uart2_close(void) {
     return UART_SUCCESS;
 }
 
-UINT32 uart2_read(char *user_buf, UINT32 count, UINT32 op_flag)
-{
-    return kfifo_get(uart[UART2_PORT].rx, (UINT8 *)user_buf, count);
+UINT32 uart2_read(char* user_buf, UINT32 count, UINT32 op_flag) {
+    return kfifo_get(uart[UART2_PORT].rx, (UINT8*)user_buf, count);
 }
 
-UINT32 uart2_write(char *user_buf, UINT32 count, UINT32 op_flag)
-{
-    return kfifo_put(uart[UART2_PORT].tx, (UINT8 *)user_buf, count);
+UINT32 uart2_write(char* user_buf, UINT32 count, UINT32 op_flag) {
+    return kfifo_put(uart[UART2_PORT].tx, (UINT8*)user_buf, count);
 }
 
-UINT32 uart2_ctrl(UINT32 cmd, void *parm)
-{
+UINT32 uart2_ctrl(UINT32 cmd, void* parm) {
     UINT32 ret;
-	
+
     peri_busy_count_add();
-        
+
     ret = UART_SUCCESS;
-    switch(cmd)
-    {
-    case CMD_SEND_BACKGROUND:
-        uart_send_backgroud();
-        break;
+    switch (cmd) {
+        case CMD_SEND_BACKGROUND:
+            uart_send_backgroud();
+            break;
 
-    case CMD_UART_RESET:
-        uart_reset(UART2_PORT);
-        break;
+        case CMD_UART_RESET:
+            uart_reset(UART2_PORT);
+            break;
 
-    case CMD_RX_COUNT:
-        ret = kfifo_data_size(uart[UART2_PORT].rx);
-        break;
+        case CMD_RX_COUNT:
+            ret = kfifo_data_size(uart[UART2_PORT].rx);
+            break;
 
-    case CMD_RX_PEEK:
-    {
-        UART_PEEK_RX_PTR peek;
+        case CMD_RX_PEEK: {
+            UART_PEEK_RX_PTR peek;
 
-        peek = (UART_PEEK_RX_PTR)parm;
+            peek = (UART_PEEK_RX_PTR)parm;
 
-        if(!((URX_PEEK_SIG != peek->sig)
-                || (NULLPTR == peek->ptr)
-                || (0 == peek->len)))
-        {
-            ret = kfifo_out_peek(uart[UART2_PORT].rx, peek->ptr, peek->len);
+            if (!((URX_PEEK_SIG != peek->sig) || (NULLPTR == peek->ptr) || (0 == peek->len))) {
+                ret = kfifo_out_peek(uart[UART2_PORT].rx, peek->ptr, peek->len);
+            }
+
+            break;
         }
+        case CMD_UART_INIT:
+            uart_hw_set_change(UART2_PORT, parm);
+            break;
+        case CMD_UART_SET_RX_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
 
-        break;
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_rx_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_rx_callback_set(UART2_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_UART_SET_TX_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
+
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_tx_end_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_tx_end_callback_set(UART2_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_UART_SET_TX_FIFO_NEEDWR_CALLBACK:
+            if (parm) {
+                struct uart_callback_des* uart_callback;
+
+                uart_callback = (struct uart_callback_des*)parm;
+
+                uart_tx_fifo_needwr_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
+            } else {
+                uart_tx_fifo_needwr_callback_set(UART2_PORT, NULL, NULL);
+            }
+            break;
+        case CMD_SET_STOP_END:
+            uart_set_tx_stop_end_int(UART2_PORT, *(UINT8*)parm);
+            break;
+
+        case CMD_SET_TX_FIFO_NEEDWR_INT:
+            uart_set_tx_fifo_needwr_int(UART2_PORT, *(UINT8*)parm);
+            break;
+        default:
+            break;
     }
-    case CMD_UART_INIT:
-        uart_hw_set_change(UART2_PORT, parm);
-        break;
-    case CMD_UART_SET_RX_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
 
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_rx_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_rx_callback_set(UART2_PORT, NULL, NULL);
-        }
-        break;
-    case CMD_UART_SET_TX_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
-
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_tx_end_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_tx_end_callback_set(UART2_PORT, NULL, NULL);
-        }        
-        break;
-    case CMD_UART_SET_TX_FIFO_NEEDWR_CALLBACK:
-        if (parm)
-        {
-            struct uart_callback_des *uart_callback;
-
-            uart_callback = (struct uart_callback_des *)parm;
-
-            uart_tx_fifo_needwr_callback_set(UART2_PORT, uart_callback->callback, uart_callback->param);
-        }
-        else
-        {
-            uart_tx_fifo_needwr_callback_set(UART2_PORT, NULL, NULL);
-        }        
-        break;            
-	case CMD_SET_STOP_END:
-		uart_set_tx_stop_end_int(UART2_PORT, *(UINT8 *)parm);
-		break;
-        
-	case CMD_SET_TX_FIFO_NEEDWR_INT:
-		uart_set_tx_fifo_needwr_int(UART2_PORT, *(UINT8 *)parm);
-		break;
-    default:
-        break;
-    }
-    
     peri_busy_count_dec();
 
     return ret;
 }
 
-void uart_fifo_flush(UINT8 uport)
-{
+void uart_fifo_flush(UINT8 uport) {
     UINT32 val;
     UINT32 reg;
     UINT32 reg_addr;
 
-    if(UART1_PORT == uport)
+    if (UART1_PORT == uport)
         reg_addr = REG_UART1_CONFIG;
     else
         reg_addr = REG_UART2_CONFIG;
@@ -872,20 +741,16 @@ void uart_fifo_flush(UINT8 uport)
     REG_WRITE(reg_addr, val);
 }
 
-void uart_hw_uninit(UINT8 uport)
-{
+void uart_hw_uninit(UINT8 uport) {
     UINT32 i;
     UINT32 reg;
     UINT32 rx_count;
     UINT32 intr_ena_reg_addr, conf_reg_addr, fifostatus_reg_addr;
-    if(UART1_PORT == uport)
-    {
+    if (UART1_PORT == uport) {
         intr_ena_reg_addr = REG_UART1_INTR_ENABLE;
         conf_reg_addr = REG_UART1_CONFIG;
         fifostatus_reg_addr = REG_UART1_FIFO_STATUS;
-    }
-    else
-    {
+    } else {
         intr_ena_reg_addr = REG_UART2_INTR_ENABLE;
         conf_reg_addr = REG_UART2_CONFIG;
         fifostatus_reg_addr = REG_UART2_FIFO_STATUS;
@@ -906,14 +771,14 @@ void uart_hw_uninit(UINT8 uport)
     /* double discard fifo data*/
     reg = REG_READ(fifostatus_reg_addr);
     rx_count = (reg >> RX_FIFO_COUNT_POSI) & RX_FIFO_COUNT_MASK;
-    for(i = 0; i < rx_count; i ++)
-    {
+    for (i = 0; i < rx_count; i++) {
         UART_READ_BYTE_DISCARD(uport);
     }
 }
 
-void uart2_init(void)
-{
+
+
+void uart2_init(void) {
     UINT32 ret;
     UINT32 param;
     UINT32 intr_status;
@@ -950,8 +815,7 @@ void uart2_init(void)
 #endif
 }
 
-void uart2_exit(void)
-{
+void uart2_exit(void) {
     UINT32 param;
 
     /*irq enable, Be careful: it is best that irq enable at close routine*/
@@ -965,17 +829,14 @@ void uart2_exit(void)
     uart_sw_uninit(UART2_PORT);
 }
 
-void uart_wait_tx_over()
-{
-    while (UART2_TX_FIFO_EMPTY_GET() == 0)
-    {
-    }	
+void uart_wait_tx_over() {
+    while (UART2_TX_FIFO_EMPTY_GET() == 0) {
+    }
 
-    while (UART1_TX_FIFO_EMPTY_GET() == 0)
-    {
-    }	
+    while (UART1_TX_FIFO_EMPTY_GET() == 0) {
+    }
 }
-#endif // KEIL_SIMULATOR
+#endif  // KEIL_SIMULATOR
 
 #if 0
 INT32 os_null_printf(const char *fmt, ...)
@@ -984,8 +845,7 @@ INT32 os_null_printf(const char *fmt, ...)
 }
 #endif
 
-int uart_read_byte(int uport)
-{
+int uart_read_byte(int uport) {
     int val = -1;
     UINT32 fifo_status_reg;
 
@@ -1000,72 +860,55 @@ int uart_read_byte(int uport)
     return val;
 }
 
-int uart_write_byte(int uport, char c)
-{
+int uart_write_byte(int uport, char c) {
     if (UART1_PORT == uport)
-        while(!UART1_TX_WRITE_READY);
+        while (!UART1_TX_WRITE_READY)
+            ;
     else
-        while(!UART2_TX_WRITE_READY);
+        while (!UART2_TX_WRITE_READY)
+            ;
 
     UART_WRITE_BYTE(uport, c);
 
     return (1);
 }
 
-int uart_rx_callback_set(int uport, uart_callback callback, void *param)
-{
-    if (uport == UART1_PORT)
-    {
+int uart_rx_callback_set(int uport, uart_callback callback, void* param) {
+    if (uport == UART1_PORT) {
         uart_receive_callback[0].callback = callback;
         uart_receive_callback[0].param = param;
-    }
-    else if (uport == UART2_PORT)
-    {
+    } else if (uport == UART2_PORT) {
         uart_receive_callback[1].callback = callback;
         uart_receive_callback[1].param = param;
-    }
-    else
-    {
+    } else {
         return -1;
     }
 
     return 0;
 }
 
-int uart_tx_fifo_needwr_callback_set(int uport, uart_callback callback, void *param)
-{
-    if (uport == UART1_PORT)
-    {
+int uart_tx_fifo_needwr_callback_set(int uport, uart_callback callback, void* param) {
+    if (uport == UART1_PORT) {
         uart_txfifo_needwr_callback[0].callback = callback;
         uart_txfifo_needwr_callback[0].param = param;
-    }
-    else if (uport == UART2_PORT)
-    {
+    } else if (uport == UART2_PORT) {
         uart_txfifo_needwr_callback[1].callback = callback;
         uart_txfifo_needwr_callback[1].param = param;
-    }
-    else
-    {
+    } else {
         return -1;
     }
 
     return 0;
 }
 
-int uart_tx_end_callback_set(int uport, uart_callback callback, void *param)
-{
-    if (uport == UART1_PORT)
-    {
+int uart_tx_end_callback_set(int uport, uart_callback callback, void* param) {
+    if (uport == UART1_PORT) {
         uart_tx_end_callback[0].callback = callback;
         uart_tx_end_callback[0].param = param;
-    }
-    else if (uport == UART2_PORT)
-    {
+    } else if (uport == UART2_PORT) {
         uart_tx_end_callback[1].callback = callback;
         uart_tx_end_callback[1].param = param;
-    }
-    else
-    {
+    } else {
         return -1;
     }
 
