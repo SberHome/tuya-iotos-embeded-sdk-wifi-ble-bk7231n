@@ -2,8 +2,11 @@
 #define _ATE_APP_H_
 
 #include "sys_config.h"
+#include <stdint.h>
 
 #define ATE_APP_FUN                 CFG_ENABLE_ATE_FEATURE
+
+uint32_t get_ate_mode_state(void);
 
 #if ATE_APP_FUN
 #include "gpio_pub.h"
@@ -26,7 +29,7 @@ void ate_gpio_init(void);
 uint32_t ate_mode_check(void);
 
 void ate_app_init(void);
-uint32_t get_ate_mode_state(void);
+
 void ate_start(void);
 
 #endif /*ATE_APP_FUN */
