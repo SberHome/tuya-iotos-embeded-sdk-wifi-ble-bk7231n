@@ -230,7 +230,7 @@
 #define NO_HC128
 #define NO_RABBIT
 #define HAVE_HASHDRBG
-#define HAVE_SUPPORTED_CURVES
+//#define HAVE_SUPPORTED_CURVES
 #define NO_PSK
 #define NO_PWDBASED
 #define USE_FAST_MATH
