@@ -369,8 +369,7 @@ void uart_send_backgroud(void) {
 }
 
 
-#if CFG_USE_UART1
-/*******************************************************************/
+
 void uart1_isr(void) {
     UINT32 status;
     UINT32 intr_en;
@@ -427,6 +426,8 @@ void uart1_isr(void) {
     }
 }
 
+#if CFG_USE_UART1
+/*******************************************************************/
 void uart1_exit(void) {
     UINT32 param;
 
