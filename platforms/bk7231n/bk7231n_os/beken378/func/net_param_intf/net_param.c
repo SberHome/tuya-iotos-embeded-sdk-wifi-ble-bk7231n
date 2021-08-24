@@ -62,6 +62,12 @@ static UINT32 search_info_item(NET_INFO_ITEM type, UINT32 start_addr) {
 }
 
 #if CFG_ENABLE_ATE_FEATURE
+/////////////////////for test purpose/////////////////
+UINT32 test_get_whole_tbl(UINT8* ptr) {
+    UINT32 len;
+    return search_info_tbl(ptr, &len);
+}
+#endif  // CFG_ENABLE_ATE_FEATURE
 
 static UINT32 info_item_len(NET_INFO_ITEM item) {
     UINT32 len = 0;
@@ -91,6 +97,7 @@ static UINT32 info_item_len(NET_INFO_ITEM item) {
     }
     return len;
 }
+
 
 UINT32 save_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) {
     UINT32 addr_offset, cfg_tbl_len, item_len, tmp;
@@ -195,13 +202,6 @@ UINT32 save_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2)
 
     return 1;
 }
-/////////////////////for test purpose/////////////////
-UINT32 test_get_whole_tbl(UINT8* ptr) {
-    UINT32 len;
-    return search_info_tbl(ptr, &len);
-}
-
-#endif  // CFG_ENABLE_ATE_FEATURE
 
 UINT32 get_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) {
     UINT32 status, addr_start, len;

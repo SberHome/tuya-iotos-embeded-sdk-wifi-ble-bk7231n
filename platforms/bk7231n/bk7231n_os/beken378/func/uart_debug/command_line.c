@@ -771,6 +771,17 @@ int bkreg_run_command(const char *content, int cnt)
 }
 #endif // CFG_SUPPORT_BKREG
 #else
+
+int cmd_usage(const cmd_tbl_t *cmdtp)
+{
+    return 0;
+}
+
+cmd_tbl_t *cmd_find_tbl(const char *cmd, cmd_tbl_t *table, int table_len)
+{
+    return 0;
+}
+
 int bkreg_run_command(const char *content, int cnt)
 {
 	return 0;
