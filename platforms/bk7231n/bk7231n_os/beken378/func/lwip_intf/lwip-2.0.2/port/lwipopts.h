@@ -33,6 +33,7 @@
 #define __LWIPOPTS_H__
 
 
+
 /**
  * Loopback demo related options.
  */
@@ -421,10 +422,16 @@ The STM32F107 allows computing and verifying the IP, UDP, TCP and ICMP checksums
 #define IP_FRAG                         0
 
 #define MEM_LIBC_MALLOC                (0)
+#include "mem_pub.h"
+#define mem_clib_free os_free
+#define mem_clib_malloc os_malloc
+#define mem_clib_calloc os_calloc
 
 #define DEFAULT_UDP_RECVMBOX_SIZE       3 //each udp socket max buffer 3 packets.
 
-#define MEMP_MEM_MALLOC (0)
+#define MEMP_MEM_MALLOC                (0)
+
+
 #define TCP_MSL (TCP_TMR_INTERVAL)
 
 #define LWIP_COMPAT_MUTEX_ALLOWED       (1)
