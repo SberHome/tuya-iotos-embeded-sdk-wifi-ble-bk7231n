@@ -7,7 +7,8 @@
 
 /* uart2 for debug, and generally, uart1 is used for communication.
    what is more, uart1 maybe is not bound out*/
-#define CFG_USE_UART1                              1
+#define CFG_USE_UART1                              0
+#define CFG_USE_UART2                              0
 #define CFG_JTAG_ENABLE                            0					//edit tuya_cheyisong 2020-2-28
 #define OSMALLOC_STATISTICAL                       0
 
@@ -186,4 +187,8 @@
 #define  CFG_USE_SPI_DMA						         1
 #define  CFG_USE_SPI_MASTER						      1
 #define  CFG_USE_SPI_SLAVE						         1
+
+
+#define CFG_GENERAL_DMA                             1
+#define CFG_USE_IRDA                               1    // should be 1. why?
 #endif // _SYS_CONFIG_H_
