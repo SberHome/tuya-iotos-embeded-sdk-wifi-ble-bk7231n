@@ -1671,6 +1671,10 @@ RESET_SOURCE_STATUS sctrl_get_deep_sleep_wake_soure(void)
 
     return waked_source;
 }
+#else
+RESET_SOURCE_STATUS sctrl_get_deep_sleep_wake_soure(void){
+    return 0;
+}
 #endif
 
 #if (CFG_SOC_NAME != SOC_BK7231)
