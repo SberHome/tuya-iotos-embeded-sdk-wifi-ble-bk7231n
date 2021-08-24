@@ -4737,7 +4737,7 @@ void bk7011_get_tx_tssi_thred(INT32 *tx_tssi_thred_b, INT32 *tx_tssi_thred_g)
     *tx_tssi_thred_g = gcali_context.gtx_tssi_thred_g;
 }
 
-INT32 bk7011_cal_tx_filter_corner()
+static INT32 bk7011_cal_tx_filter_corner()
 {
     int i;
     float float_1 = 1100.00;
