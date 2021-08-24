@@ -2967,7 +2967,7 @@ static INT32 bk7011_set_tx_pa(INT32 val1, INT32 val2, INT32 val3, INT32 val4)
     return 0;
 }
 
-INT32 bk7011_cal_tx_output_power(INT32 tx_power_cal_mode)
+static INT32 bk7011_cal_tx_output_power(INT32 tx_power_cal_mode)
 {
     INT32 gold_index = 0;
     INT32 tssilow = 0;
