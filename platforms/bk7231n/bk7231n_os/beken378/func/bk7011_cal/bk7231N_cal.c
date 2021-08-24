@@ -2,6 +2,7 @@
 #if (CFG_SOC_NAME == SOC_BK7231N)
 
 #include "arm_arch.h"
+#include "net_param_pub.h"
 
 #include "target_util_pub.h"
 #include "mem_pub.h"
