@@ -26,6 +26,7 @@
 
 #ifndef WOLF_CRYPT_SETTINGS_H
 #define WOLF_CRYPT_SETTINGS_H
+#include <errno.h>
 
 #ifdef __cplusplus
     extern "C" {
@@ -215,16 +216,17 @@
 #endif
 
 #if defined(WOLFSSL_BEKEN)
+#define WOLFSSL_LWIP    // we have LwIP
 #define FREERTOS
 #define SIZEOF_LONG_LONG 8
 #define WOLFSSL_HAVE_MIN
 #define WOLFSSL_HAVE_MAX
 #define WOLFSSL_NO_CURRDIR
 #define TFM_TIMING_RESISTANT
+//#define TFM_ECC256
 #define ECC_TIMING_RESISTANT
 #define NO_DSA
 #define NO_RSA
-#define TFM_ECC256
 #define ECC_SHAMIR
 #define NO_RC4
 #define NO_HC128
@@ -239,7 +241,7 @@
 #define NO_WOLFSSL_DIR
 #define WOLFSSL_NO_ASM
 #define WOLFSSL_NO_SOCK
-#define NO_CERTS
+//#define NO_CERTS
 #define NO_WRITEV
 #define NO_ERROR_STRINGS
 #define WOLFSSL_SMALL_STACK
