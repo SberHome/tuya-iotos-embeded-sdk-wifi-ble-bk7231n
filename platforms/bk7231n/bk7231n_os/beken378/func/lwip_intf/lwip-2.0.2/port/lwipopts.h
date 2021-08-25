@@ -54,7 +54,7 @@
 
 #define LWIP_DEBUG                      0
 #define LWIP_DEBUG_TRACE                0
-#define SOCKETS_DEBUG                   LWIP_DBG_ON // | LWIP_DBG_MASK_LEVEL
+#define SOCKETS_DEBUG                   LWIP_DBG_OFF // | LWIP_DBG_MASK_LEVEL
 
 #define IP_DEBUG                        LWIP_DBG_OFF
 #define ETHARP_DEBUG                    LWIP_DBG_OFF
