@@ -216,6 +216,8 @@
 #endif
 
 #if defined(WOLFSSL_BEKEN)
+#define DEBUG_WOLFSSL
+#define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
 #define WOLFSSL_LWIP    // we have LwIP
 #define FREERTOS
 #define SIZEOF_LONG_LONG 8
