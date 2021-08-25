@@ -245,7 +245,7 @@
 #define WOLFSSL_SMALL_STACK
 //#define WOLFSSL_SMALL_STACK_CACHE
 #define HAVE_COMP_KEY
-#define WOLFSSL_KEY_GEN
+//#define WOLFSSL_KEY_GEN   // RSA key generation
 #define SQRTMOD_USE_MOD_EXP
 #define FP_MAX_BITS	768
 
