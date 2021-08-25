@@ -32,6 +32,7 @@
 #include "tls_rtos.h"
 
 #define MBEDTLS_SSL_DYNAMIC_CONTENT_LEN
+#define _SOCKLEN_T_DECLARED
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE 1
@@ -144,8 +145,8 @@ extern void tls_mbedtls_mem_free(void *ptr);
 // #define MBEDTLS_SSL_CBC_RECORD_SPLITTING
 // #define MBEDTLS_SSL_RENEGOTIATION
 #define MBEDTLS_SSL_MAX_FRAGMENT_LENGTH
-#define MBEDTLS_SSL_PROTO_TLS1
-#define MBEDTLS_SSL_PROTO_TLS1_1
+//#define MBEDTLS_SSL_PROTO_TLS1
+//#define MBEDTLS_SSL_PROTO_TLS1_1
 #define MBEDTLS_SSL_PROTO_TLS1_2
 // #define MBEDTLS_SSL_ALPN
 // #define MBEDTLS_SSL_PROTO_DTLS
