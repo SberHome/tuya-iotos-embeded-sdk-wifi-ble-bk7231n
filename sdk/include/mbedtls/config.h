@@ -31,6 +31,9 @@
 
 #include "tuya_iot_config.h"
 
+
+#define _SOCKLEN_T_DECLARED
+
 #if defined(TLS_MODE) && (TLS_MODE==TLS_DISABLE)
 #include "tuya_tls_config_disable.h"
 #endif
