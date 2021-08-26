@@ -27,6 +27,7 @@
 #ifndef WOLF_CRYPT_SETTINGS_H
 #define WOLF_CRYPT_SETTINGS_H
 #include <errno.h>
+#include "sockets.h"
 
 #ifdef __cplusplus
     extern "C" {
@@ -218,7 +219,7 @@
 #if defined(WOLFSSL_BEKEN)
 #define DEBUG_WOLFSSL
 #define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
-#define WOLFSSL_LWIP    // we have LwIP
+//#define WOLFSSL_LWIP    // we have LwIP
 #define FREERTOS
 #define SIZEOF_LONG_LONG 8
 #define WOLFSSL_HAVE_MIN
@@ -228,7 +229,7 @@
 //#define TFM_ECC256
 #define ECC_TIMING_RESISTANT
 #define NO_DSA
-#define NO_RSA
+//#define NO_RSA
 #define ECC_SHAMIR
 #define NO_RC4
 #define NO_HC128
