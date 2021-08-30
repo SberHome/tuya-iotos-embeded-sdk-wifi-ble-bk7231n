@@ -217,7 +217,7 @@
 #endif
 
 #if defined(WOLFSSL_BEKEN)
-//#define WOLFSSL_TLS13
+#define WOLFSSL_TLS13
 #define DEBUG_WOLFSSL
 #define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
 #define WOLFSSL_LWIP    // we have LwIP
@@ -258,7 +258,7 @@
 
 #define WC_RSA_BLINDING
 //#define BUILDING_WOLFSSL
-//#define HAVE_FFDHE_2048
+#define HAVE_FFDHE_2048
 #define HAVE_FFDHE
 //#define _POSIX_THREADS
 //#define HAVE_THREAD_LS
