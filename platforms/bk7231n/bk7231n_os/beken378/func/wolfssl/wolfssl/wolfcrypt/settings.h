@@ -217,8 +217,13 @@
 #endif
 
 #if defined(WOLFSSL_BEKEN)
+#define NO_OLD_TLS
+#define WOLFSSL_NO_TLS12
 #define WOLFSSL_TLS13
-#define DEBUG_WOLFSSL
+#define HAVE_FFDHE_2048
+#define HAVE_FFDHE
+
+//#define DEBUG_WOLFSSL
 #define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
 #define WOLFSSL_LWIP    // we have LwIP
 #define FREERTOS
@@ -229,13 +234,15 @@
 #define TFM_TIMING_RESISTANT
 //#define TFM_ECC256
 #define ECC_TIMING_RESISTANT
-//#define NO_DSA
+#define NO_DSA
 //#define NO_RSA
-#define ECC_SHAMIR
+#define WC_RSA_BLINDING
+#define WC_RSA_PSS
+//#define ECC_SHAMIR
 #define NO_RC4
 #define NO_HC128
 #define NO_RABBIT
-#define HAVE_HASHDRBG
+//#define HAVE_HASHDRBG
 #define HAVE_SUPPORTED_CURVES
 #define HAVE_DH
 #define NO_PSK
@@ -255,15 +262,11 @@
 //#define WOLFSSL_KEY_GEN   // RSA key generation
 #define SQRTMOD_USE_MOD_EXP
 //#define FP_MAX_BITS	768
-
-#define WC_RSA_BLINDING
 //#define BUILDING_WOLFSSL
-#define HAVE_FFDHE_2048
-#define HAVE_FFDHE
 //#define _POSIX_THREADS
 //#define HAVE_THREAD_LS
 #define HAVE_AESGCM
-#define WOLFSSL_SHA512
+//#define WOLFSSL_SHA512
 //#define WOLFSSL_SHA384
 //#define WOLFSSL_SHA224
 //#define WOLFSSL_SHA3
@@ -272,10 +275,10 @@
 //#define HAVE_ONE_TIME_AUTH
 #define HAVE_CHACHA
 #define HAVE_TLS_EXTENSIONS
-#define WC_RSA_PSS
+
 #define HAVE_HKDF
-#define HAVE_CURVE25519
-#define HAVE_ED25519
+//#define HAVE_CURVE25519
+//#define HAVE_ED25519
 //#define HAVE_EXTENDED_MASTER
 //#define WOLFSSL_X86_64_BUILD
 
@@ -284,8 +287,8 @@
 //#define ECC_USER_CURVES
 //#define ECC192
 //#define ECC224
-#define ECC256
-#define ECC384
+//#define ECC256
+//#define ECC384
 //#define ECC521
 #endif
 
