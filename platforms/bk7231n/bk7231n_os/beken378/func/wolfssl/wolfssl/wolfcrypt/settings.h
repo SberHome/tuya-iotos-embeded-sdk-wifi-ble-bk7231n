@@ -236,7 +236,8 @@
 #define NO_HC128
 #define NO_RABBIT
 #define HAVE_HASHDRBG
-//#define HAVE_SUPPORTED_CURVES
+#define HAVE_SUPPORTED_CURVES
+#define HAVE_DH
 #define NO_PSK
 #define NO_PWDBASED
 #define USE_FAST_MATH
@@ -253,11 +254,12 @@
 #define HAVE_COMP_KEY
 //#define WOLFSSL_KEY_GEN   // RSA key generation
 #define SQRTMOD_USE_MOD_EXP
-#define FP_MAX_BITS	768
+//#define FP_MAX_BITS	768
 
 #define WC_RSA_BLINDING
 //#define BUILDING_WOLFSSL
-#define HAVE_FFDHE_2048
+//#define HAVE_FFDHE_2048
+#define HAVE_FFDHE
 //#define _POSIX_THREADS
 //#define HAVE_THREAD_LS
 #define HAVE_AESGCM
