@@ -35,6 +35,7 @@ typedef struct ble_message {
 uint8_t ble_get_sys_mode(void);
 void ble_send_msg(UINT32 data);
 UINT32 ble_ctrl( UINT32 cmd, void *param );
+void ble_entry();
 
 #endif
 
