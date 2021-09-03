@@ -5,7 +5,7 @@
 #include "rw_pub.h"
 
 
-#define APP_SCNRSP_DATA         "\x09\xFF\x00\x60\x52\x57\x2D\x42\x4C\x45"
+#define APP_SCNRSP_DATA         "\x09\xFF\x00\x60\x52\x57\x2D\x42\x4C\x45" // MANUFACTURER DATA LEN=9, TYPE =0xff, ID = 0x6000 "RW-BLE"
 #define APP_SCNRSP_DATA_LEN     (10)
 
 adv_info_t adv_info = {
@@ -83,7 +83,7 @@ void appm_start_advertising_cmd(void)
     }
 }
 
-/* Éè±¸·¢Æð¹ã²¥º¯Êý*/
+/* ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ã²¥ï¿½ï¿½ï¿½ï¿½*/
 ble_err_t appm_start_advertising(void)
 {
     ble_err_t status = ERR_SUCCESS;
@@ -123,7 +123,7 @@ ble_err_t appm_start_advertising(void)
     // else ignore the request
 }
 
-/* Éè±¸Ö÷¶¯Í£Ö¹¹ã²¥º¯Êý*/
+/* ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Í£Ö¹ï¿½ã²¥ï¿½ï¿½ï¿½ï¿½*/
 ble_err_t appm_stop_advertising(void)
 {
 	ble_err_t status = ERR_SUCCESS;
@@ -157,7 +157,7 @@ void appm_delete_advertising(void)
 	ble_appm_delete_advertising(get_app_ble_adv_actv_idx());
 }
 
-/* Éè±¸·¢Æð¶¨Ïò¹ã²¥º¯Êý*/
+/* ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã²¥ï¿½ï¿½ï¿½ï¿½*/
 void appm_start_direct_dvertising(void)
 {
     appm_start_advertising();	
@@ -223,7 +223,7 @@ void appm_start_direct_dvertising(void)
 #endif
 }
 
-/*Éè±¸Ö÷¶¯¶Ï¿ªÁ¬½Óº¯Êý*/
+/*ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½Óºï¿½ï¿½ï¿½*/
 void appm_disconnect(unsigned char reason)
 {
 	///if (kernel_state_get(TASK_BLE_APP) == APPM_CONNECTED)
@@ -695,7 +695,8 @@ static void ble_actiove_created_ind_handler(struct ble_activity_created_ind *p_p
 	{
 		case BLE_ACTV_TYPE_ADV:
 			if(get_app_ble_adv_state() == APP_ADV_STATE_CREATING){
-				// Store the advertising activity index
+				
+// Store the advertising activity index
 				set_app_ble_adv_actv_idx( p_param->actv_idx );
 				bk_printf("adv_actv_idx:%d,tx_pwr:%d\r\n",p_param->actv_idx,p_param->tx_pwr);
 			}
