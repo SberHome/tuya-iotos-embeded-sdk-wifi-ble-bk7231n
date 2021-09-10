@@ -373,7 +373,7 @@ typedef tskTCB TCB_t;
 static variables must be declared volatile. */
 
 PRIVILEGED_DATA TCB_t * volatile pxCurrentTCB = NULL;
-
+char* get_task_name() {return pxCurrentTCB->pcTaskName;}
 /* Lists for ready and blocked tasks. --------------------*/
 PRIVILEGED_DATA STATIC List_t pxReadyTasksLists[ configMAX_PRIORITIES ];/*< Prioritised ready tasks. */
 PRIVILEGED_DATA STATIC List_t xDelayedTaskList1;						/*< Delayed tasks. */
