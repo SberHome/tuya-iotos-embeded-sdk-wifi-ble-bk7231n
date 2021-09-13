@@ -218,7 +218,7 @@
 
 #if defined(WOLFSSL_BEKEN)
 #define NO_OLD_TLS
-#define WOLFSSL_NO_TLS12
+//#define WOLFSSL_NO_TLS12
 #define WOLFSSL_TLS13
 #define HAVE_FFDHE_2048
 #define HAVE_FFDHE
