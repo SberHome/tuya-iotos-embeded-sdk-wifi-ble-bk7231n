@@ -218,7 +218,7 @@
 
 #if defined(WOLFSSL_BEKEN)
 #define NO_OLD_TLS
-//#define WOLFSSL_NO_TLS12
+#define WOLFSSL_NO_TLS12
 #define WOLFSSL_TLS13
 #define HAVE_FFDHE_2048
 #define HAVE_FFDHE
@@ -247,7 +247,7 @@
 #define HAVE_DH
 #define NO_PSK
 #define NO_PWDBASED
-#define USE_FAST_MATH
+
 #define WC_NO_ASYNC_THREADING
 #define NO_DES3
 #define NO_WOLFSSL_DIR
@@ -256,7 +256,7 @@
 //#define NO_CERTS
 #define NO_WRITEV
 #define NO_ERROR_STRINGS
-#define WOLFSSL_SMALL_STACK
+
 //#define WOLFSSL_SMALL_STACK_CACHE
 #define HAVE_COMP_KEY
 //#define WOLFSSL_KEY_GEN   // RSA key generation
@@ -275,6 +275,10 @@
 //#define HAVE_ONE_TIME_AUTH
 #define HAVE_CHACHA
 #define HAVE_TLS_EXTENSIONS
+
+#define WOLFSSL_SMALL_STACK
+//#define WOLFSSL_STATIC_MEMORY
+#define USE_FAST_MATH
 
 #define HAVE_HKDF
 //#define HAVE_CURVE25519
