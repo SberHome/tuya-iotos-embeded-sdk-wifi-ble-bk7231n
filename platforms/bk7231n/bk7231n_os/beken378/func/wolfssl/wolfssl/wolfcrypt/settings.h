@@ -217,16 +217,17 @@
 #endif
 
 #if defined(WOLFSSL_BEKEN)
+#define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
+#define WOLFSSL_LWIP    // we have LwIP
+#define FREERTOS
+//#define DEBUG_WOLFSSL
+
 #define NO_OLD_TLS
 #define WOLFSSL_NO_TLS12
 #define WOLFSSL_TLS13
 #define HAVE_FFDHE_2048
 #define HAVE_FFDHE
 
-//#define DEBUG_WOLFSSL
-#define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
-#define WOLFSSL_LWIP    // we have LwIP
-#define FREERTOS
 #define SIZEOF_LONG_LONG 8
 #define WOLFSSL_HAVE_MIN
 #define WOLFSSL_HAVE_MAX
