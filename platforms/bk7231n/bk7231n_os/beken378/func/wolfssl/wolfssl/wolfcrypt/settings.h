@@ -220,7 +220,7 @@
 #define WOLFSSL_USER_LOG(msg) os_printf(msg); os_printf("\n")
 #define WOLFSSL_LWIP    // we have LwIP
 #define FREERTOS
-//#define DEBUG_WOLFSSL
+#define DEBUG_WOLFSSL
 
 #define NO_OLD_TLS
 #define WOLFSSL_NO_TLS12
