@@ -817,7 +817,7 @@ void __attribute__((weak)) user_main_entry(void)
 					   THD_INIT_PRIORITY,
 					   "app",
 					   (beken_thread_function_t)init_app_thread,
-					   app_stack_size,
+					   app_stack_size * 2,
 					   (beken_thread_arg_t)0);
 }
 

@@ -1,6 +1,6 @@
 /* pwdbased.c
  *
- * Copyright (C) 2006-2019 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -85,7 +85,7 @@ int wc_PBKDF1_ex(byte* key, int keyLen, byte* iv, int ivLen,
         return MEMORY_E;
 #endif
 
-    err = wc_HashInit(hash, hashT);
+    err = wc_HashInit_ex(hash, hashT, heap, INVALID_DEVID);
     if (err != 0) {
     #ifdef WOLFSSL_SMALL_STACK
         XFREE(hash, heap, DYNAMIC_TYPE_HASHCTX);
@@ -124,6 +124,8 @@ int wc_PBKDF1_ex(byte* key, int keyLen, byte* iv, int ivLen,
             err = wc_HashFinal(hash, hashT, digest);
             if (err != 0) break;
         }
+
+        if (err != 0) break;
 
         if (keyLeft) {
             store = min(keyLeft, diestLen);
@@ -171,8 +173,8 @@ int wc_PBKDF1(byte* output, const byte* passwd, int pLen, const byte* salt,
 
 #ifdef HAVE_PBKDF2
 
-int wc_PBKDF2(byte* output, const byte* passwd, int pLen, const byte* salt,
-           int sLen, int iterations, int kLen, int hashType)
+int wc_PBKDF2_ex(byte* output, const byte* passwd, int pLen, const byte* salt,
+           int sLen, int iterations, int kLen, int hashType, void* heap, int devId)
 {
     word32 i = 1;
     int    hLen;
@@ -199,17 +201,17 @@ int wc_PBKDF2(byte* output, const byte* passwd, int pLen, const byte* salt,
         return BAD_FUNC_ARG;
 
 #ifdef WOLFSSL_SMALL_STACK
-    buffer = (byte*)XMALLOC(WC_MAX_DIGEST_SIZE, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    buffer = (byte*)XMALLOC(WC_MAX_DIGEST_SIZE, heap, DYNAMIC_TYPE_TMP_BUFFER);
     if (buffer == NULL)
         return MEMORY_E;
-    hmac = (Hmac*)XMALLOC(sizeof(Hmac), NULL, DYNAMIC_TYPE_HMAC);
+    hmac = (Hmac*)XMALLOC(sizeof(Hmac), heap, DYNAMIC_TYPE_HMAC);
     if (hmac == NULL) {
-        XFREE(buffer, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+        XFREE(buffer, heap, DYNAMIC_TYPE_TMP_BUFFER);
         return MEMORY_E;
     }
 #endif
 
-    ret = wc_HmacInit(hmac, NULL, INVALID_DEVID);
+    ret = wc_HmacInit(hmac, heap, devId);
     if (ret == 0) {
         /* use int hashType here, since HMAC FIPS uses the old unique value */
         ret = wc_HmacSetKey(hmac, hashType, passwd, pLen);
@@ -263,11 +265,18 @@ int wc_PBKDF2(byte* output, const byte* passwd, int pLen, const byte* salt,
     }
 
 #ifdef WOLFSSL_SMALL_STACK
-    XFREE(buffer, NULL, DYNAMIC_TYPE_TMP_BUFFER);
-    XFREE(hmac, NULL, DYNAMIC_TYPE_HMAC);
+    XFREE(buffer, heap, DYNAMIC_TYPE_TMP_BUFFER);
+    XFREE(hmac, heap, DYNAMIC_TYPE_HMAC);
 #endif
 
     return ret;
+}
+
+int wc_PBKDF2(byte* output, const byte* passwd, int pLen, const byte* salt,
+           int sLen, int iterations, int kLen, int hashType)
+{
+    return wc_PBKDF2_ex(output, passwd, pLen, salt, sLen, iterations, kLen,
+        hashType, NULL, INVALID_DEVID);
 }
 
 #endif /* HAVE_PBKDF2 */
@@ -369,7 +378,7 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
 
     (void)heap;
 
-    if (output == NULL || passLen < 0 || saltLen < 0 || kLen < 0) {
+    if (output == NULL || passLen <= 0 || saltLen <= 0 || kLen < 0) {
         return BAD_FUNC_ARG;
     }
 
@@ -380,11 +389,15 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
     ret = wc_HashGetDigestSize(hashT);
     if (ret < 0)
         return ret;
+    if (ret == 0)
+        return BAD_STATE_E;
     u = ret;
 
     ret = wc_HashGetBlockSize(hashT);
     if (ret < 0)
         return ret;
+    if (ret == 0)
+        return BAD_STATE_E;
     v = ret;
 
 #ifdef WOLFSSL_SMALL_STACK
@@ -404,10 +417,10 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
 
     dLen = v;
     sLen = v * ((saltLen + v - 1) / v);
-    if (passLen)
-        pLen = v * ((passLen + v - 1) / v);
-    else
-        pLen = 0;
+
+    /* with passLen checked at the top of the function for >= 0 then passLen
+     * must be 1 or greater here and is always 'true' */
+    pLen = v * ((passLen + v - 1) / v);
     iLen = sLen + pLen;
 
     totalLen = dLen + sLen + pLen;
@@ -477,7 +490,7 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
             else {
                 if (outSz > (int)v) {
                     /* take off MSB */
-                    byte  tmp[129];
+                    byte  tmp[WC_MAX_BLOCK_SIZE + 1];
                     ret = mp_to_unsigned_bin(&res, tmp);
                     XMEMCPY(I + i, tmp + 1, v);
                 }
@@ -492,6 +505,11 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
             mp_clear(&i1);
             mp_clear(&res);
             if (ret < 0) break;
+        }
+
+        if (ret < 0) {
+            mp_clear(&B1);
+            break;
         }
 
         currentLen = min(kLen, (int)u);
@@ -691,7 +709,7 @@ static void scryptROMix(byte* x, byte* v, byte* y, int r, word32 n)
  * parallel   The number of parallel mix operations to perform.
  *            (Note: this implementation does not use threads.)
  * dkLen      The length of the derived key in bytes.
- * returns BAD_FUNC_ARG when: parallel not 1, blockSize is too large for cost.
+ * returns BAD_FUNC_ARG when: blockSize is too large for cost.
  */
 int wc_scrypt(byte* output, const byte* passwd, int passLen,
               const byte* salt, int saltLen, int cost, int blockSize,
@@ -708,22 +726,28 @@ int wc_scrypt(byte* output, const byte* passwd, int passLen,
     if (blockSize > 8)
         return BAD_FUNC_ARG;
 
-    if (cost < 1 || cost >= 128 * blockSize / 8)
+    if (cost < 1 || cost >= 128 * blockSize / 8 || parallel < 1 || dkLen < 1)
         return BAD_FUNC_ARG;
 
     bSz = 128 * blockSize;
     blocksSz = bSz * parallel;
     blocks = (byte*)XMALLOC(blocksSz, NULL, DYNAMIC_TYPE_TMP_BUFFER);
-    if (blocks == NULL)
+    if (blocks == NULL) {
+        ret = MEMORY_E;
         goto end;
+    }
     /* Temporary for scryptROMix. */
     v = (byte*)XMALLOC((1 << cost) * bSz, NULL, DYNAMIC_TYPE_TMP_BUFFER);
-    if (v == NULL)
+    if (v == NULL) {
+        ret = MEMORY_E;
         goto end;
+    }
     /* Temporary for scryptBlockMix. */
     y = (byte*)XMALLOC(blockSize * 128, NULL, DYNAMIC_TYPE_TMP_BUFFER);
-    if (y == NULL)
+    if (y == NULL) {
+        ret = MEMORY_E;
         goto end;
+    }
 
     /* Step 1. */
     ret = wc_PBKDF2(blocks, passwd, passLen, salt, saltLen, 1, blocksSz,
@@ -747,6 +771,41 @@ end:
         XFREE(y, NULL, DYNAMIC_TYPE_TMP_BUFFER);
 
     return ret;
+}
+
+/* Generates an key derived from a password and salt using a memory hard
+ * algorithm.
+ * Implements RFC 7914: scrypt PBKDF.
+ *
+ * output      Derived key.
+ * passwd      Password to derive key from.
+ * passLen     Length of the password.
+ * salt        Key specific data.
+ * saltLen     Length of the salt data.
+ * iterations  Number of iterations to perform. Range: 1 << (1..(128*r/8-1))
+ * blockSize   Number of 128 byte octets in a working block.
+ * parallel    Number of parallel mix operations to perform.
+ *             (Note: this implementation does not use threads.)
+ * dkLen       Length of the derived key in bytes.
+ * returns BAD_FUNC_ARG when: iterations is not a power of 2 or blockSize is too
+ *                            large for iterations.
+ */
+int wc_scrypt_ex(byte* output, const byte* passwd, int passLen,
+                 const byte* salt, int saltLen, word32 iterations,
+                 int blockSize, int parallel, int dkLen)
+{
+    int cost;
+
+    /* Iterations must be a power of 2. */
+    if ((iterations & (iterations - 1)) != 0)
+        return BAD_FUNC_ARG;
+
+    for (cost = -1; iterations != 0; cost++) {
+        iterations >>= 1;
+    }
+
+    return wc_scrypt(output, passwd, passLen, salt, saltLen, cost, blockSize,
+                     parallel, dkLen);
 }
 #endif /* HAVE_SCRYPT */
 

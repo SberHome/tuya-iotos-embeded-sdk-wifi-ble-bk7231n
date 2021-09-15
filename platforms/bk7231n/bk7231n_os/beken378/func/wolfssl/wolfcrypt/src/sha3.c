@@ -1,6 +1,6 @@
 /* sha3.c
  *
- * Copyright (C) 2006-2019 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -79,7 +79,7 @@ static const word64 hash_keccak_r[24] =
     0x0000000080000001UL, 0x8000000080008008UL
 };
 
-/* Indeces used in swap and rotate operation. */
+/* Indices used in swap and rotate operation. */
 #define K_I_0   10
 #define K_I_1    7
 #define K_I_2   11
@@ -292,7 +292,7 @@ static const word64 hash_keccak_r[24] =
     0x0000000080000001UL, 0x8000000080008008UL
 };
 
-/* Indeces used in swap and rotate operation. */
+/* Indices used in swap and rotate operation. */
 #define KI_0     6
 #define KI_1    12
 #define KI_2    18
@@ -538,6 +538,18 @@ static void BlockSha3(word64 *s)
 }
 #endif /* WOLFSSL_SHA3_SMALL */
 
+static WC_INLINE word64 Load64Unaligned(const unsigned char *a)
+{
+    return ((word64)a[0] <<  0) |
+           ((word64)a[1] <<  8) |
+           ((word64)a[2] << 16) |
+           ((word64)a[3] << 24) |
+           ((word64)a[4] << 32) |
+           ((word64)a[5] << 40) |
+           ((word64)a[6] << 48) |
+           ((word64)a[7] << 56);
+}
+
 /* Convert the array of bytes, in little-endian order, to a 64-bit integer.
  *
  * a  Array of bytes.
@@ -545,7 +557,7 @@ static void BlockSha3(word64 *s)
  */
 static word64 Load64BitBigEndian(const byte* a)
 {
-#ifdef BIG_ENDIAN_ORDER
+#if defined(BIG_ENDIAN_ORDER) || (WOLFSSL_GENERAL_ALIGNMENT == 1)
     word64 n = 0;
     int i;
 
@@ -553,8 +565,24 @@ static word64 Load64BitBigEndian(const byte* a)
         n |= (word64)a[i] << (8 * i);
 
     return n;
+#elif ((WOLFSSL_GENERAL_ALIGNMENT > 0) && (WOLFSSL_GENERAL_ALIGNMENT == 4))
+    word64 n;
+
+    n  =          *(word32*) a;
+    n |= ((word64)*(word32*)(a + 4)) << 32;
+
+    return n;
+#elif ((WOLFSSL_GENERAL_ALIGNMENT > 0) && (WOLFSSL_GENERAL_ALIGNMENT == 2))
+    word64 n;
+
+    n  =          *(word16*) a;
+    n |= ((word64)*(word16*)(a + 2)) << 16;
+    n |= ((word64)*(word16*)(a + 4)) << 32;
+    n |= ((word64)*(word16*)(a + 6)) << 48;
+
+    return n;
 #else
-    return *(word64*)a;
+    return *(const word64*)a;
 #endif
 }
 
@@ -570,6 +598,9 @@ static int InitSha3(wc_Sha3* sha3)
     for (i = 0; i < 25; i++)
         sha3->s[i] = 0;
     sha3->i = 0;
+#if defined(WOLFSSL_HASH_FLAGS) || defined(WOLF_CRYPTO_CB)
+    sha3->flags = 0;
+#endif
 
     return 0;
 }
@@ -613,7 +644,7 @@ static int Sha3Update(wc_Sha3* sha3, const byte* data, word32 len, byte p)
     while (len >= ((word32)(p * 8)))
     {
         for (i = 0; i < p; i++)
-            sha3->s[i] ^= Load64BitBigEndian(data + 8 * i);
+            sha3->s[i] ^= Load64Unaligned(data + 8 * i);
         BlockSha3(sha3->s);
         len -= p * 8;
         data += p * 8;
@@ -633,25 +664,38 @@ static int Sha3Update(wc_Sha3* sha3, const byte* data, word32 len, byte p)
  * len   Number of bytes in output.
  * returns 0 on success.
  */
-static int Sha3Final(wc_Sha3* sha3, byte* hash, byte p, byte l)
+static int Sha3Final(wc_Sha3* sha3, byte padChar, byte* hash, byte p, word32 l)
 {
+    word32 rate = p * 8;
+    word32 j;
     byte i;
-    byte *s8 = (byte *)sha3->s;
 
-    sha3->t[p * 8 - 1]  = 0x00;
-    sha3->t[  sha3->i]  = 0x06;
-    sha3->t[p * 8 - 1] |= 0x80;
-    for (i=sha3->i + 1; i < p * 8 - 1; i++)
+    sha3->t[rate - 1]  = 0x00;
+#ifdef WOLFSSL_HASH_FLAGS
+    if (p == WC_SHA3_256_COUNT && sha3->flags & WC_HASH_SHA3_KECCAK256)
+        padChar = 0x01;
+#endif
+    sha3->t[sha3->i ]  = padChar;
+    sha3->t[rate - 1] |= 0x80;
+    for (i=sha3->i + 1; i < rate - 1; i++)
         sha3->t[i] = 0;
     for (i = 0; i < p; i++)
         sha3->s[i] ^= Load64BitBigEndian(sha3->t + 8 * i);
-    BlockSha3(sha3->s);
-#if defined(BIG_ENDIAN_ORDER)
-    ByteReverseWords64(sha3->s, sha3->s, ((l+7)/8)*8);
-#endif
-    for (i = 0; i < l; i++)
-        hash[i] = s8[i];
-
+    for (j = 0; l - j >= rate; j += rate) {
+        BlockSha3(sha3->s);
+    #if defined(BIG_ENDIAN_ORDER)
+        ByteReverseWords64((word64*)(hash + j), sha3->s, rate);
+    #else
+        XMEMCPY(hash + j, sha3->s, rate);
+    #endif
+    }
+    if (j != l) {
+        BlockSha3(sha3->s);
+    #if defined(BIG_ENDIAN_ORDER)
+        ByteReverseWords64(sha3->s, sha3->s, rate);
+    #endif
+        XMEMCPY(hash + j, sha3->s, l - j);
+    }
     return 0;
 }
 
@@ -698,6 +742,11 @@ static int wc_Sha3Update(wc_Sha3* sha3, const byte* data, word32 len, byte p)
 
     if (sha3 == NULL || (data == NULL && len > 0)) {
         return BAD_FUNC_ARG;
+    }
+
+    if (data == NULL && len == 0) {
+        /* valid, but do nothing */
+        return 0;
     }
 
 #if defined(WOLFSSL_ASYNC_CRYPT) && defined(WC_ASYNC_ENABLE_SHA3)
@@ -750,7 +799,7 @@ static int wc_Sha3Final(wc_Sha3* sha3, byte* hash, byte p, byte len)
     }
 #endif /* WOLFSSL_ASYNC_CRYPT */
 
-    ret = Sha3Final(sha3, hash, p, len);
+    ret = Sha3Final(sha3, 0x06, hash, p, (word32)len);
     if (ret != 0)
         return ret;
 
@@ -1128,6 +1177,85 @@ int wc_Sha3_GetFlags(wc_Sha3* sha3, word32* flags)
         *flags = sha3->flags;
     }
     return 0;
+}
+#endif
+
+#ifdef WOLFSSL_SHAKE256
+/* Initialize the state for a Shake256 hash operation.
+ *
+ * shake  wc_Shake object holding state.
+ * heap   Heap reference for dynamic memory allocation. (Used in async ops.)
+ * devId  Device identifier for asynchronous operation.
+ * returns 0 on success.
+ */
+int wc_InitShake256(wc_Shake* shake, void* heap, int devId)
+{
+    return wc_InitSha3(shake, heap, devId);
+}
+
+/* Update the SHAKE256 hash state with message data.
+ *
+ * shake  wc_Shake object holding state.
+ * data  Message data to be hashed.
+ * len   Length of the message data.
+ * returns 0 on success.
+ */
+int wc_Shake256_Update(wc_Shake* shake, const byte* data, word32 len)
+{
+    if (shake == NULL || (data == NULL && len > 0)) {
+         return BAD_FUNC_ARG;
+    }
+
+    if (data == NULL && len == 0) {
+        /* valid, but do nothing */
+        return 0;
+    }
+
+    return Sha3Update(shake, data, len, WC_SHA3_256_COUNT);
+}
+
+/* Calculate the SHAKE256 hash based on all the message data seen.
+ * The state is initialized ready for a new message to hash.
+ *
+ * shake  wc_Shake object holding state.
+ * hash  Buffer to hold the hash result. Must be at least 64 bytes.
+ * returns 0 on success.
+ */
+int wc_Shake256_Final(wc_Shake* shake, byte* hash, word32 hashLen)
+{
+    int ret;
+
+    if (shake == NULL || hash == NULL) {
+        return BAD_FUNC_ARG;
+    }
+
+    ret = Sha3Final(shake, 0x1f, hash, WC_SHA3_256_COUNT, hashLen);
+    if (ret != 0)
+        return ret;
+
+    return InitSha3(shake);  /* reset state */
+}
+
+/* Dispose of any dynamically allocated data from the SHAKE256 operation.
+ * (Required for async ops.)
+ *
+ * shake  wc_Shake object holding state.
+ * returns 0 on success.
+ */
+void wc_Shake256_Free(wc_Shake* shake)
+{
+    wc_Sha3Free(shake);
+}
+
+/* Copy the state of the SHA3-512 operation.
+ *
+ * src  wc_Shake object holding state top copy.
+ * dst  wc_Shake object to copy into.
+ * returns 0 on success.
+ */
+int wc_Shake256_Copy(wc_Shake* src, wc_Shake* dst)
+{
+    return wc_Sha3Copy(src, dst);
 }
 #endif
 

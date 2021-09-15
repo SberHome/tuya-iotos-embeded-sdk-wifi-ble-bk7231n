@@ -1,6 +1,6 @@
 /* memory.c
  *
- * Copyright (C) 2006-2019 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -127,6 +127,7 @@ void* wolfSSL_Malloc(size_t size)
 #endif
 {
     void* res = 0;
+
     if (malloc_function) {
     #ifdef WOLFSSL_DEBUG_MEMORY
         res = malloc_function(size, func, line);
@@ -136,6 +137,13 @@ void* wolfSSL_Malloc(size_t size)
     }
     else {
     #ifndef WOLFSSL_NO_MALLOC
+        #ifdef WOLFSSL_TRAP_MALLOC_SZ
+        if (size > WOLFSSL_TRAP_MALLOC_SZ) {
+            WOLFSSL_MSG("Malloc too big!");
+            return NULL;
+        }
+        #endif
+    
         res = malloc(size);
     #else
         WOLFSSL_MSG("No malloc available");
@@ -236,6 +244,7 @@ void* wolfSSL_Realloc(void *ptr, size_t size)
 #endif /* WOLFSSL_STATIC_MEMORY */
 
 #ifdef WOLFSSL_STATIC_MEMORY
+
 struct wc_Memory {
     byte*  buffer;
     struct wc_Memory* next;
@@ -310,7 +319,7 @@ int wolfSSL_init_memory_heap(WOLFSSL_HEAP* heap)
 }
 
 int wc_LoadStaticMemory(WOLFSSL_HEAP_HINT** pHint,
-    unsigned char* buf, unsigned int sz, int flag, int max)
+    unsigned char* buf, unsigned int sz, int flag, int maxSz)
 {
     int ret;
     WOLFSSL_HEAP*      heap;
@@ -360,16 +369,16 @@ int wc_LoadStaticMemory(WOLFSSL_HEAP_HINT** pHint,
 
     /* determine what max applies too */
     if ((flag & WOLFMEM_IO_POOL) || (flag & WOLFMEM_IO_POOL_FIXED)) {
-        heap->maxIO = max;
+        heap->maxIO = maxSz;
     }
     else { /* general memory used in handshakes */
-        heap->maxHa = max;
+        heap->maxHa = maxSz;
     }
 
     heap->flag |= flag;
     *pHint = hint;
 
-    (void)max;
+    (void)maxSz;
 
     return 0;
 }
@@ -390,7 +399,7 @@ int wolfSSL_load_static_memory(byte* buffer, word32 sz, int flag,
     }
 
     /* align pt */
-    while ((wolfssl_word)pt % WOLFSSL_STATIC_ALIGN && pt < (buffer + sz)) {
+    while ((wc_ptr_t)pt % WOLFSSL_STATIC_ALIGN && pt < (buffer + sz)) {
         *pt = 0x00;
         pt++;
         ava--;
@@ -400,7 +409,7 @@ int wolfSSL_load_static_memory(byte* buffer, word32 sz, int flag,
     printf("Allocated %d bytes for static memory @ %p\n", ava, pt);
 #endif
 
-    /* devide into chunks of memory and add them to available list */
+    /* divide into chunks of memory and add them to available list */
     while (ava >= (heap->sizeList[0] + padSz + memSz)) {
         int i;
         /* creating only IO buffers from memory passed in, max TLS is 16k */
@@ -473,7 +482,7 @@ int wolfSSL_StaticBufferSz(byte* buffer, word32 sz, int flag)
     }
 
     /* align pt */
-    while ((wolfssl_word)pt % WOLFSSL_STATIC_ALIGN && pt < (buffer + sz)) {
+    while ((wc_ptr_t)pt % WOLFSSL_STATIC_ALIGN && pt < (buffer + sz)) {
         pt++;
         ava--;
     }
@@ -661,7 +670,7 @@ void* wolfSSL_Malloc(size_t size, void* heap, int type)
             /* general static memory */
             if (pt == NULL) {
                 for (i = 0; i < WOLFMEM_MAX_BUCKETS; i++) {
-                    if ((word32)size < mem->sizeList[i]) {
+                    if ((word32)size <= mem->sizeList[i]) {
                         if (mem->ava[i] != NULL) {
                             pt = mem->ava[i];
                             mem->ava[i] = pt->next;
@@ -714,8 +723,8 @@ void* wolfSSL_Malloc(size_t size, void* heap, int type)
     }
 
     #ifdef WOLFSSL_MALLOC_CHECK
-        if ((wolfssl_word)res % WOLFSSL_STATIC_ALIGN) {
-            WOLFSSL_MSG("ERROR memory is not alligned");
+        if ((wc_ptr_t)res % WOLFSSL_STATIC_ALIGN) {
+            WOLFSSL_MSG("ERROR memory is not aligned");
             res = NULL;
         }
     #endif
@@ -896,7 +905,7 @@ void* wolfSSL_Realloc(void *ptr, size_t size, void* heap, int type)
         else {
         /* general memory */
             for (i = 0; i < WOLFMEM_MAX_BUCKETS; i++) {
-                if ((word32)size < mem->sizeList[i]) {
+                if ((word32)size <= mem->sizeList[i]) {
                     if (mem->ava[i] != NULL) {
                         pt = mem->ava[i];
                         mem->ava[i] = pt->next;
@@ -933,8 +942,8 @@ void* wolfSSL_Realloc(void *ptr, size_t size, void* heap, int type)
     }
 
     #ifdef WOLFSSL_MALLOC_CHECK
-        if ((wolfssl_word)res % WOLFSSL_STATIC_ALIGN) {
-            WOLFSSL_MSG("ERROR memory is not alligned");
+        if ((wc_ptr_t)res % WOLFSSL_STATIC_ALIGN) {
+            WOLFSSL_MSG("ERROR memory is not aligned");
             res = NULL;
         }
     #endif
@@ -1029,7 +1038,7 @@ void XFREE(void *p, void* heap, int type)
 void *xmalloc(size_t n, void* heap, int type, const char* func,
               const char* file, unsigned int line)
 {
-    void*   p;
+    void*   p = NULL;
     word32* p32;
 
     if (malloc_function)
@@ -1037,11 +1046,13 @@ void *xmalloc(size_t n, void* heap, int type, const char* func,
     else
         p32 = malloc(n + sizeof(word32) * 4);
 
-    p32[0] = (word32)n;
-    p = (void*)(p32 + 4);
+    if (p32 != NULL) {
+        p32[0] = (word32)n;
+        p = (void*)(p32 + 4);
 
-    fprintf(stderr, "Alloc: %p -> %u (%d) at %s:%s:%d\n", p, (word32)n, type,
-                                                              func, file, line);
+        fprintf(stderr, "Alloc: %p -> %u (%d) at %s:%s:%u\n", p, (word32)n,
+                                                        type, func, file, line);
+    }
 
     (void)heap;
 
@@ -1070,10 +1081,10 @@ void *xrealloc(void *p, size_t n, void* heap, int type, const char* func,
         p32[0] = (word32)n;
         newp = (void*)(p32 + 4);
 
-        fprintf(stderr, "Alloc: %p -> %u (%d) at %s:%s:%d\n", newp, (word32)n,
+        fprintf(stderr, "Alloc: %p -> %u (%d) at %s:%s:%u\n", newp, (word32)n,
                                                         type, func, file, line);
         if (p != NULL) {
-            fprintf(stderr, "Free: %p -> %u (%d) at %s:%s:%d\n", p, oldLen,
+            fprintf(stderr, "Free: %p -> %u (%d) at %s:%s:%u\n", p, oldLen,
                                                         type, func, file, line);
         }
     }
@@ -1090,7 +1101,7 @@ void xfree(void *p, void* heap, int type, const char* func, const char* file,
     if (p != NULL) {
         p32 -= 4;
 
-        fprintf(stderr, "Free: %p -> %u (%d) at %s:%s:%d\n", p, p32[0], type,
+        fprintf(stderr, "Free: %p -> %u (%d) at %s:%s:%u\n", p, p32[0], type,
                                                               func, file, line);
 
         if (free_function)
@@ -1109,7 +1120,7 @@ void __attribute__((no_instrument_function))
      __cyg_profile_func_enter(void *func,  void *caller)
 {
     register void* sp asm("sp");
-    fprintf(stderr, "ENTER: %016lx %p\n", (size_t)func, sp);
+    fprintf(stderr, "ENTER: %016lx %p\n", (unsigned long)(wc_ptr_t)func, sp);
     (void)caller;
 }
 
@@ -1117,7 +1128,7 @@ void __attribute__((no_instrument_function))
      __cyg_profile_func_exit(void *func, void *caller)
 {
     register void* sp asm("sp");
-    fprintf(stderr, "EXIT: %016lx %p\n", (size_t)func, sp);
+    fprintf(stderr, "EXIT: %016lx %p\n", (unsigned long)(wc_ptr_t)func, sp);
     (void)caller;
 }
 #endif

@@ -1,6 +1,6 @@
 /* cpuid.h
  *
- * Copyright (C) 2006-2019 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -32,8 +32,10 @@
     extern "C" {
 #endif
 
-#if defined(WOLFSSL_X86_64_BUILD) || defined(USE_INTEL_SPEEDUP) || \
-    defined(WOLFSSL_AESNI)
+#if (defined(WOLFSSL_X86_64_BUILD) || defined(USE_INTEL_SPEEDUP) || \
+    defined(WOLFSSL_AESNI) || defined(WOLFSSL_SP_X86_64_ASM)) && \
+    !defined(WOLFSSL_NO_ASM)
+
     #define CPUID_AVX1   0x0001
     #define CPUID_AVX2   0x0002
     #define CPUID_RDRAND 0x0004
@@ -41,6 +43,7 @@
     #define CPUID_BMI2   0x0010   /* MULX, RORX */
     #define CPUID_AESNI  0x0020
     #define CPUID_ADX    0x0040   /* ADCX, ADOX */
+    #define CPUID_MOVBE  0x0080   /* Move and byte swap */
 
     #define IS_INTEL_AVX1(f)    ((f) & CPUID_AVX1)
     #define IS_INTEL_AVX2(f)    ((f) & CPUID_AVX2)
@@ -49,9 +52,16 @@
     #define IS_INTEL_BMI2(f)    ((f) & CPUID_BMI2)
     #define IS_INTEL_AESNI(f)   ((f) & CPUID_AESNI)
     #define IS_INTEL_ADX(f)     ((f) & CPUID_ADX)
+    #define IS_INTEL_MOVBE(f)   ((f) & CPUID_MOVBE)
 
     void cpuid_set_flags(void);
     word32 cpuid_get_flags(void);
+
+    /* Public APIs to modify flags. */
+    WOLFSSL_API void cpuid_select_flags(word32 flags);
+    WOLFSSL_API void cpuid_set_flag(word32 flag);
+    WOLFSSL_API void cpuid_clear_flag(word32 flag);
+
 #endif
 
 #ifdef __cplusplus
