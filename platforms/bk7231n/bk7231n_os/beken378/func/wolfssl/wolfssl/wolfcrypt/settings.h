@@ -284,7 +284,7 @@
 //#define NO_RABBIT
 //#define HAVE_HASHDRBG
 
-#define NO_PSK
+//#define NO_PSK
 #define NO_PWDBASED
 
 #define WC_NO_ASYNC_THREADING

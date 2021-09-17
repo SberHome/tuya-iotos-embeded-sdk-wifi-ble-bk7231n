@@ -141,8 +141,8 @@ extern "C" {
 #undef  HAVE_EXTENDED_MASTER
 #define HAVE_EXTENDED_MASTER
 
-#undef  NO_PSK
-#define NO_PSK
+//#undef  NO_PSK
+//#define NO_PSK
 
 #undef  NO_MD4
 #define NO_MD4
