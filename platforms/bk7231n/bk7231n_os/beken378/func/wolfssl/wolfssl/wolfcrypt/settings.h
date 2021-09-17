@@ -354,6 +354,12 @@
 //#define SESSION_CERTS
 #define SMALL_SESSION_CACHE 
 
+#define WOLFSSL_SP // enable Single Precision math support
+#define WOLFSSL_SP_ASM
+#define WOLFSSL_HAVE_SP_RSA
+#define WOLFSSL_HAVE_SP_DH
+#define WOLFSSL_HAVE_SP_ECC
+
 /*
     Turns on the use of trusted peer certificates. This
     allows for loading in a peer certificate to match with a connection rather than
