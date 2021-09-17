@@ -726,7 +726,6 @@ int wc_RNG_TestSeed(const byte* seed, word32 seedSz)
 static int _InitRng(WC_RNG* rng, byte* nonce, word32 nonceSz,
                     void* heap, int devId)
 {
-    WOLFSSL_ENTER("_InitRng");
     int ret = 0;
 #ifdef HAVE_HASHDRBG
     word32 seedSz = SEED_SZ + SEED_BLOCK_SZ;
@@ -899,7 +898,6 @@ int wc_InitRng(WC_RNG* rng)
 
 int wc_InitRng_ex(WC_RNG* rng, void* heap, int devId)
 {
-    WOLFSSL_ENTER("wc_InitRng_ex");
     return _InitRng(rng, NULL, 0, heap, devId);
 }
 
