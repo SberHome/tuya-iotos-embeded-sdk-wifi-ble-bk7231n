@@ -170,8 +170,8 @@ extern "C" {
 #undef  NO_DES3
 #define NO_DES3
 
-#undef  HAVE___UINT128_T
-#define HAVE___UINT128_T 1
+//#undef  HAVE___UINT128_T
+//#define HAVE___UINT128_T 1
 
 
 #ifdef __cplusplus
