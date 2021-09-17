@@ -5700,7 +5700,8 @@ int ProcessBuffer(WOLFSSL_CTX* ctx, const unsigned char* buff,
             return BAD_FUNC_ARG;
         }
         /* add trusted peer cert. der is freed within */
-        ret = AddTrustedPeer(ctx->cm, &der, !ctx->verifyNone);
+        //ret = AddTrustedPeer(ctx->cm, &der, !ctx->verifyNone);
+        ret = AddTrustedPeer(ctx->cm, &der, verify);
         if (ret != WOLFSSL_SUCCESS) {
             WOLFSSL_MSG("Error adding trusted peer");
         }
