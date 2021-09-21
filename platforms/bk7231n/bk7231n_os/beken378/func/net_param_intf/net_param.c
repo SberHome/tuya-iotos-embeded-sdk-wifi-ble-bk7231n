@@ -214,8 +214,10 @@ UINT32 get_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) 
 #endif
     UINT32 ret = 0;
 
-    if (!search_info_tbl(NULL, &len))
+    if (!search_info_tbl(NULL, &len)) {
+        os_printf("Cannot find partition info table\n");
         return ret;
+    }
 
 #if CFG_SUPPORT_ALIOS
     pt = hal_flash_get_info(HAL_PARTITION_PARAMETER_4);
@@ -223,8 +225,11 @@ UINT32 get_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) 
     pt = bk_flash_get_info(BK_PARTITION_NET_PARAM);
 #endif
     addr_start = search_info_item(item, pt->partition_start_addr);
-    if (!addr_start)
+    
+    if (!addr_start) {
+        os_printf("Cannot find partiton item start\n");
         return ret;
+    }
 
     flash_handle = ddev_open(FLASH_DEV_NAME, &status, 0);
     ddev_read(flash_handle, (char*)&head, sizeof(INFO_ITEM_ST), addr_start);
