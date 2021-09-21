@@ -227,7 +227,6 @@ UINT32 get_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) 
     addr_start = search_info_item(item, pt->partition_start_addr);
     
     if (!addr_start) {
-        os_printf("Cannot find partiton item start\n");
         return ret;
     }
 
