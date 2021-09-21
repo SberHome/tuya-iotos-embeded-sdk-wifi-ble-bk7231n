@@ -226,7 +226,7 @@
 
 #include <wolfssl/wolfcrypt/visibility.h>
 
-
+#define WOLFSSL_USER_SETTINGS
 #ifdef WOLFSSL_USER_SETTINGS
     #include "user_settings.h"
 #endif
@@ -244,131 +244,6 @@
     #undef WC_RSA_BLINDING
 #endif
 
-#include "uart_pub.h"
-#include "rtos_pub.h"
-#define WOLFSSL_BEKEN
-#if defined(WOLFSSL_BEKEN)
-#define FREERTOS
-#define WOLFSSL_USER_LOG(msg) do { os_printf ("%-6d: ", rtos_get_time()); os_printf(msg); os_printf("\n");} while(0);
-#define WOLFSSL_LWIP    // we have LwIP
-#define WOLFSSL_HAVE_MIN
-#define WOLFSSL_HAVE_MAX
-#define WOLFSSL_NO_CURRDIR
-#define WOLFSSL_NO_TLS12
-#define WOLFSSL_TLS13
-#define SIZEOF_LONG_LONG 8
-#define HAVE_HKDF   // required for TLS13
-
-#define DEBUG_WOLFSSL
-//#define WOLFSSL_DEBUG_TLS // enables additional debugging print outs during a TLS connection
-//#define NO_ASN_TIME // у нас нет RTC, нет смысла проверять дату сертификата. Так же заодон отключает session_resume =(
-
-#define HAVE_TLS_EXTENSIONS
-#define HAVE_SUPPORTED_CURVES // needs HAVE_TLS_EXTENSIONS
-
-#define NO_OLD_TLS
-
-//#define HAVE_DH         // Для TLS1.3 можно отключить
-//#define NO_DH
-//#define HAVE_FFDHE        // Finite Fields DHE, можно отключить, если использовать HAVE_ED25519
-//#define HAVE_FFDHE_2048
-//#define HAVE_FFDHE_8192
-
-#define NO_DSA
-#define NO_RSA              // Можно отключить, если использовать сертификат без RSA, например на ED_25519
-#define WC_RSA_BLINDING
-#define WC_RSA_PSS
-//#define ECC_SHAMIR
-//#define NO_RC4
-//#define NO_HC128
-//#define NO_RABBIT
-//#define HAVE_HASHDRBG
-
-//#define NO_PSK
-#define NO_PWDBASED
-
-#define WC_NO_ASYNC_THREADING
-#define NO_DES3
-#define NO_WOLFSSL_DIR
-#define WOLFSSL_NO_ASM
-//#define NO_CERTS
-#define NO_WRITEV
-#define NO_ERROR_STRINGS
-
-//#define WOLFSSL_SMALL_STACK_CACHE
-#define HAVE_COMP_KEY
-//#define WOLFSSL_KEY_GEN   // RSA key generation
-#define SQRTMOD_USE_MOD_EXP
-//#define FP_MAX_BITS	768
-//#define BUILDING_WOLFSSL
-//#define _POSIX_THREADS
-//#define HAVE_THREAD_LS
-#define HAVE_AESGCM
-//#define HAVE_AESCCM
-#define WOLFSSL_SHA512
-#define WOLFSSL_SHA384
-//#define WOLFSSL_SHA224
-//#define WOLFSSL_SHA3
-//#define WOLFSSL_BASE64_ENCODE
-#define HAVE_POLY1305
-#define HAVE_ONE_TIME_AUTH
-#define HAVE_CHACHA
-
-
-//#define WOLFSSL_SMALL_STACK
-//#define WOLFSSL_STATIC_MEMORY
-#define USE_FAST_MATH
-
-//#define HAVE_ED448
-//#define CURVE448_SMALL
-//#define WOLFSSL_SHAKE256
-
-//#define HAVE_EXTENDED_MASTER
-//#define WOLFSSL_X86_64_BUILD
-
-//#define FP_ECC  // enables ECC Fixed Point Cache, which speeds up repeated operations against same private key.
-
-// Настройки кривых ECC для обмена ключами
-#define HAVE_ED25519          // ED25519 подписи
-#define HAVE_CURVE25519       // ECC кривая X25519, 256 бит. Должна быть самой быстрой
-#define ECC_MIN_KEY_SZ 112
-//#define ECC_TIMING_RESISTANT    // Значительно ускоряет хендшейк, если убрать
-//#define HAVE_ECC                // разрешаем ECC
-//#define ECC_USER_CURVES         // Если разрешить, то можно выбирать конктретные кривые ниже
-//#define HAVE_ECC112
-//#define HAVE_ECC160             // secp160r1 curve
-//#define HAVE_ECC224             // P-224 curve
-#define NO_ECC256               // P-256 curve ECC256 всегда включена
-//#define HAVE_ECC384             // P-384 curve
-//#define HAVE_ECC521
-
-//#define TFM_ECC192  // FAST math
-//#define TFM_ECC224
-//#define TFM_ECC256
-//#define TFM_ECC384
-//#define TFM_ECC521
-#define TFM_TIMING_RESISTANT
-//#define TFM_ECC256
-
-//HAVE_SESSION_TICKET
-//#define SESSION_CERTS
-#define SMALL_SESSION_CACHE 
-
-#define WOLFSSL_SP // enable Single Precision math support
-#define WOLFSSL_SP_ASM
-#define WOLFSSL_HAVE_SP_RSA
-#define WOLFSSL_HAVE_SP_DH
-#define WOLFSSL_HAVE_SP_ECC
-
-/*
-    Turns on the use of trusted peer certificates. This
-    allows for loading in a peer certificate to match with a connection rather than
-    using a CA. When turned on if a trusted peer certificate is matched than the peer
-    cert chain is not loaded and the peer is considered verified. Using CAs is
-    preferred.
-*/
-#define WOLFSSL_TRUST_PEER_CERT 
-#endif
 
 
 #if defined(_WIN32) && !defined(_M_X64) && \
