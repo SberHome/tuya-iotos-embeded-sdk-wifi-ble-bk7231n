@@ -14,3 +14,4 @@ platforms/bk7231n/bk7231n_os/tools/generate/*.bin
 !platforms/bk7231n/bk7231n_os/tools/generate/bk7231n_bootloader.bin
 !platforms/bk7231n/bk7231n_os/tools/generate/bk7231n_bootloader_enc.bin
 !platforms/bk7231n/bk7231n_os/tools/generate/package.bin
+/platforms/bk7231n/bk7231n_os/tools/generate/package_tool/windows/blinky_1.0.0_enc_uart_2M.1220.bin
