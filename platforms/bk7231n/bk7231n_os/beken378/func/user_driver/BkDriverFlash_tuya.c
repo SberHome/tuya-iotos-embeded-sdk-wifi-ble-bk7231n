@@ -30,9 +30,12 @@
 #include "BkDriverFlash.h"
 #include "flash_pub.h"
 #include "drv_model_pub.h"
-#include "error.h"
+#include "rtos_error.h"
 #include "uart_pub.h"
 #include "mem_pub.h"
+
+static beken_mutex_t hal_flash_mutex;
+
 /* Logic partition on flash devices */
 const bk_logic_partition_t bk7231_partitions[BK_PARTITION_MAX] =
 {
@@ -41,7 +44,7 @@ const bk_logic_partition_t bk7231_partitions[BK_PARTITION_MAX] =
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "Bootloader",
         .partition_start_addr      = 0x00000000,
-        .partition_length          = 0x0F000,
+        .partition_length          = 0x11000,//68KB
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
     },
     [BK_PARTITION_APPLICATION] =
@@ -49,26 +52,22 @@ const bk_logic_partition_t bk7231_partitions[BK_PARTITION_MAX] =
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "Application",
         .partition_start_addr      = 0x11000,
-        .partition_length          = 0x143000,
+        .partition_length          = 0x121000,//1156KB
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
     },
-    [BK_PARTITION_OTA] =
+    [BK_PARTITION_OTA] = 
     {
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "ota",
-        .partition_start_addr      = 0x132000,
-        .partition_length          = 0xAE000, //696KB
+        .partition_start_addr      = 0x12A000,
+        .partition_length          = 0xA6000, //664KB
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
     },
     [BK_PARTITION_RF_FIRMWARE] =
     {
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "RF Firmware",
-#if (CFG_SOC_NAME == SOC_BK7221U)
-        .partition_start_addr      = 0x1e0000,// bootloader unused space for rf cal+mac related info.
-#else
-        .partition_start_addr      = 0x1e0000,// for rf related info
-#endif
+        .partition_start_addr      = 0x1D0000,// for rf related info
         .partition_length          = 0x1000,
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
     },
@@ -76,14 +75,10 @@ const bk_logic_partition_t bk7231_partitions[BK_PARTITION_MAX] =
     {
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "NET info",
-#if (CFG_SOC_NAME == SOC_BK7221U)
-        .partition_start_addr      = 0x1FF000,// for net related info
-#else
-        .partition_start_addr      = 0x1e1000,// for net related info
-#endif
+        .partition_start_addr      = 0x1D1000,// for net related info
         .partition_length          = 0x1000,
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
-    },
+    }
 };
 
 static void BkFlashPartitionAssert( bk_partition_t inPartition )
@@ -265,7 +260,7 @@ OSStatus test_flash_write(volatile uint32_t start_addr, uint32_t len)
 	for(;addr<tmp;addr+=256)
 	{
 		os_printf("write addr(size:256):%d\r\n",addr);
-		ddev_write(flash_hdl, (char*)buf, 256, addr);
+    	ddev_write(flash_hdl, (char*)buf, 256, addr);
 	}
 	
 	return kNoErr;
@@ -313,7 +308,7 @@ OSStatus test_flash_read(volatile uint32_t start_addr, uint32_t len)
 	for(;addr<tmp;addr+=256)
 	{
 		os_memset(buf,0,256);
-		ddev_read(flash_hdl, (char*)buf, 256, addr);
+    	ddev_read(flash_hdl, (char*)buf, 256, addr);
 		os_printf("read addr:%x\r\n",addr);
 		for(i=0;i<16;i++)
 		{
@@ -336,7 +331,6 @@ OSStatus test_flash_read_time(volatile uint32_t start_addr, uint32_t len)
 	u8 buf[256];
 	uint32_t addr = start_addr;
 	uint32_t length = len;
-	
 	tmp = addr+length;
 	
     flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
@@ -347,20 +341,18 @@ OSStatus test_flash_read_time(volatile uint32_t start_addr, uint32_t len)
     }
     beken_time_get_time((beken_time_t *)&time_start);
     os_printf("read time start:%d\r\n", time_start);
-	
 	for(;addr<tmp;addr+=256)
 	{
 		os_memset(buf,0,256);
-		ddev_read(flash_hdl, (char*)buf, 256, addr);
+    	ddev_read(flash_hdl, (char*)buf, 256, addr);
 	}
     beken_time_get_time((beken_time_t *)&time_end);
     os_printf("read time end:%d\r\n", time_end);
+
     os_printf("cost time:%d\r\n", time_end - time_start);
 	
 	return kNoErr;
 }
-
-static beken_mutex_t hal_flash_mutex;
 
 int hal_flash_lock(void)
 {
