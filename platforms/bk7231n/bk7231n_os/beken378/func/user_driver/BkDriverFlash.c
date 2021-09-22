@@ -30,7 +30,7 @@
 #include "BkDriverFlash.h"
 #include "flash_pub.h"
 #include "drv_model_pub.h"
-#include "error.h"
+#include "rtos_error.h"
 #include "uart_pub.h"
 #include "mem_pub.h"
 /* Logic partition on flash devices */
