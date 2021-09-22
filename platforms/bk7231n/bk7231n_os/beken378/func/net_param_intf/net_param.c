@@ -215,7 +215,6 @@ UINT32 get_info_item(NET_INFO_ITEM item, UINT8* ptr0, UINT8* ptr1, UINT8* ptr2) 
     UINT32 ret = 0;
 
     if (!search_info_tbl(NULL, &len)) {
-        os_printf("Cannot find partition info table\n");
         return ret;
     }
 
