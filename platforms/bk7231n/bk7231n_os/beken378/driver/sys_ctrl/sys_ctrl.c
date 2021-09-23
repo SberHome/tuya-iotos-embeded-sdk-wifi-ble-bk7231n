@@ -24,10 +24,10 @@
 #include "bk7011_cal_pub.h"
 #include "phy_trident.h"
 
-#ifndef SYSCTRL_DEBUG
-#define SYSCTRL_DEBUG 0
+#ifndef SYS_CTRL_DEBUG
+#define SYS_CTRL_DEBUG 0
 #endif
-#define debug_print(...)  do { if (SYSCTRL_DEBUG) os_printf("[SCTRL]"__VA_ARGS__); } while (0);
+#define print_dbg(...)  do { if (SYS_CTRL_DEBUG) os_printf("[SYS_CTRL]"__VA_ARGS__); } while (0)
 
 #define DPLL_DIV                0x0
 #define DCO_CALIB_26M           0x1
@@ -133,13 +133,13 @@ void sctrl_cali_dpll(UINT8 flag)
 
 static void sctrl_dpll_isr(void)
 {
-    debug_print("BIAS Cali\n");
+    print_dbg("BIAS Cali\n");
     bk7011_cal_bias();
 
     sddev_control(GPIO_DEV_NAME, CMD_GPIO_CLR_DPLL_UNLOOK_INT, NULL);    
     sctrl_cali_dpll(0);
 
-    debug_print("DPLL Unlock\n");
+    print_dbg("DPLL Unlock\n");
 }
 
 void sctrl_dpll_int_open(void)
@@ -287,7 +287,7 @@ void sctrl_sta_ps_init(void)
     #if PS_WAKEUP_MOTHOD_RW
     intc_service_register(FIQ_MAC_WAKEUP, PRI_FIQ_MAC_WAKEUP, power_save_wakeup_isr);
     nxmac_enable_lp_clk_switch_setf(0x01);
-    debug_print("sctrl_sta_ps_init\n");
+    print_dbg("sctrl_sta_ps_init\n");
     #endif
 
     sctrl_flash_select_dco();
@@ -474,23 +474,23 @@ void sctrl_ps_dump()
 {
     UINT32 i;
 	
-    debug_print("reg dump\n");
-    debug_print("sys\n0x%8x:0x%8x\n", SCTRL_CONTROL, REG_READ(SCTRL_CONTROL));
-    debug_print("0x%8x:0x%8x\n", SCTRL_MODEM_CORE_RESET_PHY_HCLK, REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
-    debug_print("0x%8x:0x%8x\n", SCTRL_BLOCK_EN_CFG, REG_READ(SCTRL_BLOCK_EN_CFG));
-    debug_print("0x%8x:0x%8x\n", SCTRL_ROSC_CAL, REG_READ(SCTRL_ROSC_CAL));
-    debug_print("0x%8x:0x%8x\n", SCTRL_ANALOG_CTRL2, sctrl_analog_get(SCTRL_ANALOG_CTRL2));
-    debug_print("0x%8x:0x%8x\n", ICU_INTERRUPT_ENABLE, REG_READ(ICU_INTERRUPT_ENABLE));
-    debug_print("0x%8x:0x%8x\n", ICU_PERI_CLK_PWD, REG_READ(ICU_PERI_CLK_PWD));
-    debug_print("0x%8x:0x%8x\n", SCTRL_SLEEP, REG_READ(SCTRL_SLEEP));
-    debug_print("0x%8x:0x%8x\n", ICU_ARM_WAKEUP_EN, REG_READ(ICU_ARM_WAKEUP_EN));
-    debug_print("mac\n0x%8x:0x%8x\n", NXMAC_TIMERS_INT_UN_MASK_ADDR, nxmac_timers_int_un_mask_get());
-    debug_print("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_1_ADDR, nxmac_doze_cntrl_1_get());
-    debug_print("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_2_ADDR, nxmac_doze_cntrl_2_get());
-    debug_print("0x%8x:0x%8x\n", NXMAC_BCN_CNTRL_1_ADDR, nxmac_bcn_cntrl_1_get());
-    debug_print("saves dump\n");
+    print_dbg("reg dump\n");
+    print_dbg("sys\n0x%8x:0x%8x\n", SCTRL_CONTROL, REG_READ(SCTRL_CONTROL));
+    print_dbg("0x%8x:0x%8x\n", SCTRL_MODEM_CORE_RESET_PHY_HCLK, REG_READ(SCTRL_MODEM_CORE_RESET_PHY_HCLK));
+    print_dbg("0x%8x:0x%8x\n", SCTRL_BLOCK_EN_CFG, REG_READ(SCTRL_BLOCK_EN_CFG));
+    print_dbg("0x%8x:0x%8x\n", SCTRL_ROSC_CAL, REG_READ(SCTRL_ROSC_CAL));
+    print_dbg("0x%8x:0x%8x\n", SCTRL_ANALOG_CTRL2, sctrl_analog_get(SCTRL_ANALOG_CTRL2));
+    print_dbg("0x%8x:0x%8x\n", ICU_INTERRUPT_ENABLE, REG_READ(ICU_INTERRUPT_ENABLE));
+    print_dbg("0x%8x:0x%8x\n", ICU_PERI_CLK_PWD, REG_READ(ICU_PERI_CLK_PWD));
+    print_dbg("0x%8x:0x%8x\n", SCTRL_SLEEP, REG_READ(SCTRL_SLEEP));
+    print_dbg("0x%8x:0x%8x\n", ICU_ARM_WAKEUP_EN, REG_READ(ICU_ARM_WAKEUP_EN));
+    print_dbg("mac\n0x%8x:0x%8x\n", NXMAC_TIMERS_INT_UN_MASK_ADDR, nxmac_timers_int_un_mask_get());
+    print_dbg("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_1_ADDR, nxmac_doze_cntrl_1_get());
+    print_dbg("0x%8x:0x%8x\n", NXMAC_DOZE_CNTRL_2_ADDR, nxmac_doze_cntrl_2_get());
+    print_dbg("0x%8x:0x%8x\n", NXMAC_BCN_CNTRL_1_ADDR, nxmac_bcn_cntrl_1_get());
+    print_dbg("saves dump\n");
     for(i = 0; i < (3 * (sizeof(SCTRL_PS_SAVE_VALUES) / 4)); i++)
-        debug_print(" %d 0x%x\n", i, *((UINT32 *)(&ps_saves) + i));   
+        print_dbg(" %d 0x%x\n", i, *((UINT32 *)(&ps_saves) + i));   
 }
 
 static void sctrl_hw_sleep(UINT32 peri_clk)
@@ -790,7 +790,7 @@ void sctrl_sta_rf_wakeup(void)
         if(sctrl_mcu_ps_info.hw_sleep == 1)
         {
             //if rf add mcu up meanwhile
-            debug_print("err, hw not up\n");
+            print_dbg("err, hw not up\n");
         }
 
         /* MAC AHB slave clock enable*/
@@ -816,7 +816,13 @@ void sctrl_sta_rf_wakeup(void)
 #if CFG_USE_MCU_PS
 UINT8 sctrl_if_mcu_can_sleep(void)
 {
-    return ((power_save_if_rf_sleep()) 
+    print_dbg("ENTER %s\n", __FUNCTION__);
+    print_dbg("power_save_if_rf_sleep(): %d\n", power_save_if_rf_sleep());
+    print_dbg("if_ble_sleep(): %d\n", if_ble_sleep());
+    print_dbg("sctrl_if_rf_sleep(): %d\n", sctrl_if_rf_sleep());
+    print_dbg("sctrl_mcu_ps_info.hw_sleep: %d\n", sctrl_mcu_ps_info.hw_sleep);
+
+    UINT8 ret = (power_save_if_rf_sleep()) 
 #if CFG_USE_BLE_PS
     	&& if_ble_sleep()
 #else
@@ -825,7 +831,10 @@ UINT8 sctrl_if_mcu_can_sleep(void)
 #endif
 #endif
     	&& sctrl_if_rf_sleep()
-        && (sctrl_mcu_ps_info.hw_sleep == 0));
+        && (sctrl_mcu_ps_info.hw_sleep == 0);
+
+    print_dbg("LEAVE %s, return: %d\n", __FUNCTION__, ret);
+    return ret;
 }
 
 void sctrl_mcu_sleep(UINT32 peri_clk)
@@ -1090,7 +1099,7 @@ void sctrl_mdm_reset(void)
     volatile INT32 i;
     GLOBAL_INT_DECLARATION();
 
-    debug_print("sctrl_mdm_reset\n");
+    print_dbg("sctrl_mdm_reset\n");
 
     // Disable the interrupts
     GLOBAL_INT_DISABLE();
@@ -1300,7 +1309,7 @@ void sctrl_exit_rtos_idle_sleep(void)
         REG_WRITE(0x00802800+i*4, 0x0);
     }
     
-    debug_print("idle wake up!\n");    
+    print_dbg("idle wake up!\n");    
 }
 
 #endif
@@ -1864,7 +1873,7 @@ UINT32 sctrl_ctrl(UINT32 cmd, void *param)
 
     case CMD_SCTRL_MCLK_LIMIT_FREQ_BIT_SET:
         limit_freq_status |= (*(UINT32 *)param);
-        debug_print("l:%x %x\n",limit_freq_status,(*(UINT32 *)param));
+        print_dbg("l:%x %x\n",limit_freq_status,(*(UINT32 *)param));
         if(limit_freq_status)
         {
             reg = REG_READ(SCTRL_CONTROL);
@@ -1881,7 +1890,7 @@ UINT32 sctrl_ctrl(UINT32 cmd, void *param)
 
     case CMD_SCTRL_MCLK_LIMIT_FREQ_BIT_CLR:
         limit_freq_status &= ~(*(UINT32 *)param);
-        debug_print("f:%x %x\n",limit_freq_status,(*(UINT32 *)param));
+        print_dbg("f:%x %x\n",limit_freq_status,(*(UINT32 *)param));
         if(0 == limit_freq_status)
         {
             #if (USE_DCO_CLK_POWON )
