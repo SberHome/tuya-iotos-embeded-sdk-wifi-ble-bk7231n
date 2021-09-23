@@ -14,6 +14,17 @@
 #include "bk_timer_pub.h"
 #include "drv_model_pub.h"
 
+
+#ifndef MCU_PS_DEBUG
+#define MCU_PS_DEBUG 0
+#endif
+#define print_dbg(...)                     \
+    do {                                   \
+        if (MCU_PS_DEBUG)                     \
+            os_printf("[MCU_PS]"__VA_ARGS__); \
+    } while (0)
+
+
 #if CFG_USE_MCU_PS
 static MCU_PS_INFO mcu_ps_info =
 {
@@ -99,11 +110,18 @@ void mcu_ps_disable(void )
 
 UINT32 mcu_power_save(UINT32 sleep_tick)
 {
+    print_dbg("ENTER %s\n",__FUNCTION__);
+    print_dbg("sleep_tick: %d\n", sleep_tick);
     UINT32 sleep_ms, sleep_pwm_t, param, uart_miss_us = 0, miss_ticks = 0;
     UINT32 wkup_type, wastage = 0;
     GLOBAL_INT_DECLARATION();
     GLOBAL_INT_DISABLE();
 
+    uint32_t peri_busy_count = peri_busy_count_get();
+    uint32_t mcu_prevent = mcu_prevent_get();
+    bool txl_sleep = txl_sleep_check();
+    print_dbg("peri_busy_count: %d, mcu_prevent_get: %d, txl_sleep: %d\n", peri_busy_count, mcu_prevent, txl_sleep);
+    print_dbg("mcu_ps_info.mcu_ps_on: %d\n", mcu_ps_info.mcu_ps_on);
     if(mcu_ps_info.mcu_ps_on == 1
             && (peri_busy_count_get() == 0)
             && (mcu_prevent_get() == 0)
@@ -119,6 +137,7 @@ UINT32 mcu_power_save(UINT32 sleep_tick)
             sleep_ms = BK_TICKS_TO_MS(sleep_tick);
             if(sleep_ms <= 2)
             {
+                print_dbg("break: sleep_ms <= 2\n");
                 break;
             }
             sleep_ms = sleep_ms - FCLK_DURATION_MS;//early wkup
@@ -126,6 +145,7 @@ UINT32 mcu_power_save(UINT32 sleep_tick)
             sleep_pwm_t = (sleep_ms * 32);
             if((int32)sleep_pwm_t <= 64)
             {
+                print_dbg("break: sleep_pwm_t <= 64\n");
                 break;
             }
 #if (CFG_SOC_NAME == SOC_BK7231)
@@ -135,9 +155,10 @@ UINT32 mcu_power_save(UINT32 sleep_tick)
 #endif
                 if(sleep_pwm_t < 64)
                     sleep_pwm_t = 64;
-
+            
             if(sctrl_if_mcu_can_sleep())
             {
+                print_dbg("mcu_can_sleep\n");
 #if (CHIP_U_MCU_WKUP_USE_TIMER && ((CFG_SOC_NAME == SOC_BK7231U) || (SOC_BK7231N == CFG_SOC_NAME)))
                 extern void ps_timer3_enable(UINT32 period);
                 ps_timer3_enable(sleep_pwm_t);
@@ -217,6 +238,7 @@ UINT32 mcu_power_save(UINT32 sleep_tick)
     mcu_ps_cal_increase_tick(& miss_ticks);
     GLOBAL_INT_RESTORE();
     ASSERT(miss_ticks >= 0);
+    print_dbg("LEAVE %s, return: %d\n",__FUNCTION__, miss_ticks);
     return miss_ticks;
 }
 
