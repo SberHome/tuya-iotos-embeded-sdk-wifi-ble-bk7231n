@@ -27,7 +27,7 @@
 #ifndef POWER_SAVE_DEBUG
 #define POWER_SAVE_DEBUG 0
 #endif
-#define debug_print(...)  do { if (POWER_SAVE_DEBUG) os_printf("[PWRSV]"__VA_ARGS__); } while (0);
+#define print_dbg(...)  do { if (POWER_SAVE_DEBUG) os_printf("[POWER_SAVE]"__VA_ARGS__); } while (0)
 
 volatile static PS_MODE_STATUS    bk_ps_mode = PS_NO_PS_MODE;
 UINT32 last_rw_time = 0;
@@ -215,6 +215,7 @@ void power_save_gops_wait_idle_int_cb(void)
 extern uint8_t ble_switch_mac_sleeped;
 bool power_save_sleep(void)
 {
+    print_dbg("ENTER %s\n", __FUNCTION__);
     UINT32 ret = false;
     UINT32 reg;
     GLOBAL_INT_DECLARATION();
@@ -223,18 +224,31 @@ bool power_save_sleep(void)
     if(1 == bk_ps_info.ps_real_sleep || ble_switch_mac_sleeped)
     {
         GLOBAL_INT_RESTORE();
+        print_dbg("Can't enter PS\n");
+        print_dbg("bk_ps_info.ps_real_sleep: %d, ble_switch_mac_sleeeped: %d\n", bk_ps_info.ps_real_sleep, ble_switch_mac_sleeped);
+        print_dbg("LEAVE %s, ret: %d\n", __FUNCTION__, ret);
         return ret;
     }
 
+    
     if(! (PS_STA_DTIM_CAN_SLEEP))
     {
         GLOBAL_INT_RESTORE();
+        print_dbg("Can't enter PS\n");
+        print_dbg("power_save_if_ps_rf_dtim_enabled: %d\n", power_save_if_ps_rf_dtim_enabled());
+        print_dbg("net_if_is_up: %d\n", net_if_is_up());
+        print_dbg("g_wlan_general_param->role == CONFIG_ROLE_STA?: %d\n", g_wlan_general_param->role == CONFIG_ROLE_STA);
+        print_dbg("PS_STA_DTIM_SWITCH: %d\n", PS_STA_DTIM_SWITCH);
+        print_dbg("power_save_if_ps_can_sleep: %d\n", power_save_if_ps_can_sleep());
+        print_dbg("PS_STA_DTIM_CAN_SLEEP: %d\n", PS_STA_DTIM_CAN_SLEEP);
+        print_dbg("LEAVE %s, ret: %d\n", __FUNCTION__, ret);
         return ret;
     }
 
     if(rwnxl_get_status_in_doze())
     {
         GLOBAL_INT_RESTORE();
+        print_dbg("LEAVE %s, ret: %d\n", __FUNCTION__, ret);
         return ret;
     }
 
@@ -267,14 +281,14 @@ bool power_save_sleep(void)
 	last_rw_time = nxmac_monotonic_counter_2_lo_get();
 
 	if ( last_rw_time == 0xdead5555 ) {
-		debug_print ( "XXXXXXXXXXXXXXXXXXXXXXXX TIME DEAD\n" );
+		print_dbg ( "XXXXXXXXXXXXXXXXXXXXXXXX TIME DEAD\n" );
 	}
 
     ret = rwnxl_sleep(power_save_gops_wait_idle_int_cb, power_save_mac_idle_callback);
 
     if(false == ret)
     {
-        debug_print("can't ps\n");
+        print_dbg("Can't ps, ret: %d\n", ret);
         REG_WRITE(ICU_INTERRUPT_ENABLE, int_enable_reg_save);
         GLOBAL_INT_RESTORE();
         return ret;
@@ -286,12 +300,12 @@ bool power_save_sleep(void)
         ps_lock --;
     else
     {
-        debug_print("error ps\n");
+        print_dbg("error ps\n");
         GLOBAL_INT_RESTORE();
         return ret;
     }
 
-    debug_print("go ps\n");
+    print_dbg("go ps\n");
 #if CFG_USE_STA_PS
     power_save_sleep_status_set();
     sctrl_sta_rf_sleep();
@@ -332,6 +346,7 @@ int power_save_get_wkup_less_time()
 
 void power_save_mac_idle_callback(void)
 {
+    print_dbg("ENTER %s\n", __FUNCTION__);
     if(power_save_if_sleep_first())
     {
         power_save_wkup_time_cal(1);
@@ -344,8 +359,8 @@ void power_save_mac_idle_callback(void)
         nxmac_beacon_int_setf(0);
         delay(1);
         nxmac_beacon_int_setf(bk_ps_info.ps_beacon_int);
-        debug_print(" sleep_first %d\n", bk_ps_info.liston_mode);
-        debug_print(" dtim period:%d multi:%d\n", bk_ps_info.ps_dtim_period, bk_ps_info.ps_dtim_multi);
+        print_dbg("sleep_first %d\n", bk_ps_info.liston_mode);
+        print_dbg("dtim period:%d multi:%d\n", bk_ps_info.ps_dtim_period, bk_ps_info.ps_dtim_multi);
         bk_ps_info.sleep_first = 0;
     }
     else
@@ -363,7 +378,8 @@ void power_save_mac_idle_callback(void)
 
     }
 
-    bk_ps_info.sleep_count ++;
+    bk_ps_info.sleep_count++;
+    print_dbg("LEAVE %s\n", __FUNCTION__);
 }
 
 
@@ -477,7 +493,7 @@ void power_save_ieee_dtim_wakeup(void)
         power_save_wakeup();
 
         if(!bk_ps_info.ps_real_sleep)
-            debug_print("ps r s not 0\n");
+            print_dbg("ps r s not 0\n");
 
         bk_ps_info.ps_real_sleep = 0;
         bk_ps_info.ps_can_sleep = 1;
@@ -485,12 +501,12 @@ void power_save_ieee_dtim_wakeup(void)
 
         if(bk_ps_info.ps_arm_wakeup_way == PS_DTIM_ARM_WAKEUP_PERI)
         {
-            debug_print("w:peri wake\n");
+            print_dbg("w:peri wake\n");
 
             if(bk_ps_info.PsPeriWakeupWaitTimeMs != 0)
             {
                 ps_delay_wait_time = fclk_get_tick() + bk_ps_info.PsPeriWakeupWaitTimeMs / 2;
-                debug_print("uart wake delay %d %d\n", bk_ps_info.PsPeriWakeupWaitTimeMs, ps_delay_wait_time);
+                print_dbg("uart wake delay %d %d\n", bk_ps_info.PsPeriWakeupWaitTimeMs, ps_delay_wait_time);
             }
         }
 #endif
@@ -579,7 +595,7 @@ void power_save_me_ps_first_set_state(UINT8 state)
     VIF_INF_PTR vif_entry;
     struct ke_msg *kmsg_dst;
     struct me_set_ps_disable_req *me_ps_ptr;
-    debug_print("%s:%d \n", __FUNCTION__, __LINE__);
+    print_dbg("%s:%d \n", __FUNCTION__, __LINE__);
     param_len = sizeof(struct me_set_ps_disable_req);
 
     vif_entry = (VIF_INF_PTR)rwm_mgmt_is_vif_first_used();
@@ -592,7 +608,7 @@ void power_save_me_ps_first_set_state(UINT8 state)
 
             if(0 == kmsg_dst)
             {
-                debug_print("%s:%d malloc fail\n", __FUNCTION__, __LINE__);
+                print_dbg("%s:%d malloc fail\n", __FUNCTION__, __LINE__);
                 return ;
             }
             
@@ -618,7 +634,7 @@ void power_save_me_ps_first_set_state(UINT8 state)
 
 void power_save_me_ps_set_state(UINT8 state , UINT8 vif_idx)
 {
-    debug_print("%s:%d \n", __FUNCTION__, __LINE__);
+    print_dbg("%s:%d \n", __FUNCTION__, __LINE__);
     {
         struct me_set_ps_disable_req *me_ps_ptr = KE_MSG_ALLOC(ME_SET_PS_DISABLE_REQ, TASK_ME, TASK_NONE,
                 me_set_ps_disable_req);
@@ -637,7 +653,7 @@ void power_save_sm_set_bcmc(UINT8 bcmc , UINT8 vif_idx)
     req->dont_listen_bc_mc = bcmc;
     req->listen_interval = 0;
     req->vif_index = vif_idx;
-    debug_print("%s %d %d %d\n", __FUNCTION__, req->dont_listen_bc_mc,
+    print_dbg("%s %d %d %d\n", __FUNCTION__, req->dont_listen_bc_mc,
               req->listen_interval, req->vif_index);
     // Set the PS options for this VIF
     ke_msg_send(req);
@@ -654,7 +670,7 @@ UINT8 power_save_sm_set_all_bcmc(UINT8 bcmc )
 
         if(vif_entry->active && vif_entry->type != VIF_STA)
         {
-            debug_print("%s:%d %d is %d not STA!!!!\n", __FUNCTION__, __LINE__, i, vif_entry->type);
+            print_dbg("%s:%d %d is %d not STA!!!!\n", __FUNCTION__, __LINE__, i, vif_entry->type);
             return 0;
         }
     }
@@ -687,7 +703,7 @@ UINT8 power_save_me_ps_set_all_state(UINT8 state )
 
             if(vif_entry->active && vif_entry->type != VIF_STA)
             {
-                debug_print("%s:%d %d is %d not STA!!!!\n", __FUNCTION__, __LINE__, i, vif_entry->type);
+                print_dbg("%s:%d %d is %d not STA!!!!\n", __FUNCTION__, __LINE__, i, vif_entry->type);
                 return 0;
             }
         }
@@ -764,7 +780,7 @@ void power_save_keep_timer_init(void)
 #endif
         ASSERT(kNoErr == err);
     }
-    debug_print("ps_keep_timer init\n");
+    print_dbg("ps_keep_timer init\n");
 
     if(ps_keep_timer_period > 0)
     {
@@ -798,7 +814,7 @@ void power_save_dtim_ps_init(void)
     bk_ps_info.sleep_count = 0;
     bk_ps_info.sleep_first = 1;
 	
-    debug_print("power_save_dtim_ps_init\n");
+    print_dbg("power_save_dtim_ps_init\n");
     bk_ps_info.ps_can_sleep = 1;
     ps_td_last_tick = 0;
 }
@@ -823,7 +839,7 @@ int power_save_dtim_enable_handler(void)
 
     if((bk_ps_mode == PS_DTIM_PS_OPENING) && (mhdr_get_station_status() >=  RW_EVT_STA_CONNECTED))
     {
-        debug_print("enter %d ps,p:%d m:%d int:%d l:%d!\n", bk_ps_info.liston_mode,
+        print_dbg("enter %d ps,p:%d m:%d int:%d l:%d!\n", bk_ps_info.liston_mode,
                   bk_ps_info.ps_dtim_period, bk_ps_info.ps_dtim_multi,
                   bk_ps_info.ps_beacon_int, bk_ps_info.liston_int);
         power_save_set_uart_linger_time(0);
@@ -836,7 +852,7 @@ int power_save_dtim_enable_handler(void)
     }
     else
     {
-            debug_print("%s:%d %d %d--\n", __FUNCTION__, __LINE__,bk_ps_mode,mhdr_get_station_status());
+            print_dbg("%s:%d %d %d--\n", __FUNCTION__, __LINE__,bk_ps_mode,mhdr_get_station_status());
     }
 
 #if CFG_ROLE_LAUNCH
@@ -853,13 +869,13 @@ int power_save_dtim_enable(void)
 {
     if( ! net_if_is_up())
     {
-        debug_print("net %d not ip up\n",mhdr_get_station_status());
+        print_dbg("net %d not ip up\n",mhdr_get_station_status());
         return -1;
     }
 
     if(g_wlan_general_param->role != CONFIG_ROLE_STA)
     {
-        debug_print("can't dtim,role %d not only sta!\n", g_wlan_general_param->role);
+        print_dbg("can't dtim,role %d not only sta!\n", g_wlan_general_param->role);
         return -1;
     }
 
@@ -868,13 +884,13 @@ int power_save_dtim_enable(void)
 
     if(bk_ps_mode != PS_NO_PS_MODE)
     {
-        debug_print("can't dtim ps,ps in mode %d!\n", bk_ps_mode);
+        print_dbg("can't dtim ps,ps in mode %d!\n", bk_ps_mode);
         GLOBAL_INT_RESTORE();
         return -1;
     }
 
     {
-        debug_print("first enable sleep \n");
+        print_dbg("first enable sleep \n");
         power_save_me_ps_first_set_state(PS_MODE_ON_DYN);
     }
 
@@ -897,7 +913,7 @@ int power_save_dtim_disable_handler(void)
 
         if(bk_ps_info.ps_real_sleep == 1)
         {
-            debug_print("%s:%d err----\n", __FUNCTION__, __LINE__);
+            print_dbg("%s:%d err----\n", __FUNCTION__, __LINE__);
         }
 
         rwnxl_set_nxmac_timer_value();
@@ -906,7 +922,7 @@ int power_save_dtim_disable_handler(void)
         if(power_save_wkup_event_get() & NEED_REBOOT_BIT)
         {
             sddev_control(WDT_DEV_NAME, WCMD_POWER_DOWN, NULL);
-            debug_print("pswdt reboot\n");
+            print_dbg("pswdt reboot\n");
             bk_misc_update_set_type(RESET_SOURCE_REBOOT);
             sddev_control(WDT_DEV_NAME, WCMD_SET_PERIOD, &wdt_val);
             sddev_control(WDT_DEV_NAME, WCMD_POWER_UP, NULL);
@@ -929,7 +945,7 @@ int power_save_dtim_disable_handler(void)
     }
     else
         {
-            debug_print("%s:%d %d %d--\n", __FUNCTION__, __LINE__,bk_ps_mode,mhdr_get_station_status());
+            print_dbg("%s:%d %d %d--\n", __FUNCTION__, __LINE__,bk_ps_mode,mhdr_get_station_status());
     }
 
 #if CFG_ROLE_LAUNCH
@@ -937,7 +953,7 @@ int power_save_dtim_disable_handler(void)
 #endif
 
     GLOBAL_INT_RESTORE();
-    debug_print("exit dtim ps!\n");
+    print_dbg("exit dtim ps!\n");
     return 0;
 }
 
@@ -950,7 +966,7 @@ int power_save_dtim_disable(void)
     {
         GLOBAL_INT_RESTORE();
         power_save_me_ps_set_all_state(true);
-        debug_print("start exit!\n");
+        print_dbg("start exit!\n");
         return 0;
     }
     else
@@ -1007,7 +1023,7 @@ void power_save_rf_dtim_manual_do_wakeup(void)
         reg &= ~(CO_BIT(FIQ_MAC_WAKEUP));
         REG_WRITE(ICU_INTERRUPT_ENABLE, reg);
         power_save_ieee_dtim_wakeup();
-        debug_print("m_r_u\n");
+        print_dbg("m_r_u\n");
     }
 
     GLOBAL_INT_RESTORE();
@@ -1053,7 +1069,7 @@ void power_save_set_dtim_period(UINT8 period)
 {
     if(bk_ps_info.ps_dtim_period != period)
     {
-        debug_print("new dtim period:%d\n", period);
+        print_dbg("new dtim period:%d\n", period);
     }
 
     bk_ps_info.ps_dtim_period = period;
@@ -1271,7 +1287,7 @@ void power_save_keep_timer_real_handler()
     {
     if(ps_keep_timer_flag && (power_save_beacon_state_get() != STA_GET_TRUE))
     {
-        debug_print("@%d\n",__LINE__);
+        print_dbg("@%d\n",__LINE__);
         ps_fake_data_rx_check();
         ps_keep_timer_flag = 0;
         bmsg_ps_sender(PS_BMSG_IOCTL_RF_KP_SET);
@@ -1286,7 +1302,7 @@ void power_save_keep_timer_real_handler()
             power_save_clr_all_vif_prevent_sleep((UINT32)(PS_VIF_WAITING_BCN));
             ps_bcn_loss_max_count ++;
 
-            debug_print("@%d\n",__LINE__);
+            print_dbg("@%d\n",__LINE__);
             ps_run_td_timer(0);
         }
         else
@@ -1348,7 +1364,7 @@ void * power_save_rf_ps_wkup_semlist_create(void)
 
     if(!sem_list)
     {
-        debug_print("semlist_wait NULL\n");
+        print_dbg("semlist_wait NULL\n");
         return 0;
     }
     
@@ -1450,7 +1466,7 @@ void power_save_beacon_state_update(void)
         
         if(0 == ps_keep_timer_flag)
         {
-            debug_print("@%d\n",__LINE__);
+            print_dbg("@%d\n",__LINE__);
             ps_run_td_timer(0);
         }
     }
@@ -1477,7 +1493,7 @@ void power_save_bcn_callback(uint8_t *data, int len, hal_wifi_link_info_t *info)
 
     if(bcn->bcnint != bk_ps_info.ps_beacon_int)
     {
-        debug_print("bcn interval changed %x %x\n", bcn->bcnint, bk_ps_info.ps_beacon_int);
+        print_dbg("bcn interval changed %x %x\n", bcn->bcnint, bk_ps_info.ps_beacon_int);
         mm_send_connection_loss_ind(vif_entry);
     }
 
@@ -1583,11 +1599,11 @@ UINT8 power_save_set_dtim_multi(UINT8 multi)
 
     if(bk_ps_info.ps_dtim_multi > 0 && bk_ps_info.ps_dtim_multi < 100)
     {
-        debug_print("set listen dtim:%d\n", bk_ps_info.ps_dtim_multi);
+        print_dbg("set listen dtim:%d\n", bk_ps_info.ps_dtim_multi);
     }
     else
     {
-        debug_print("set listen dtim:%d err,use default 1\n", bk_ps_info.ps_dtim_multi);
+        print_dbg("set listen dtim:%d err,use default 1\n", bk_ps_info.ps_dtim_multi);
         bk_ps_info.ps_dtim_multi = 1;
     }
 
@@ -1602,8 +1618,8 @@ UINT16 power_save_forbid_trace(PS_FORBID_STATUS forbid)
 
     if(bk_forbid_code != forbid || (bk_forbid_count % 100 == 0))
     {
-        debug_print("front c:%d\n\n", bk_forbid_count);
-        debug_print("ps_cd:%d\n", forbid);
+        print_dbg("front c:%d\n", bk_forbid_count);
+        print_dbg("ps_cd:%d\n", forbid);
         bk_forbid_count = 0;
     }
 
@@ -1615,34 +1631,34 @@ void power_save_dump(void)
 {
     UINT32 i;
     extern UINT32 txl_cntrl_pck_get(void );
-    debug_print("rf:%x\n", bk_ps_mode);
-    debug_print("info dump\n");
+    print_dbg("rf:%x\n", bk_ps_mode);
+    print_dbg("info dump\n");
 
     for(i = 0; i < sizeof(bk_ps_info); i++)
-        debug_print(" %d 0x%x\n", i, *((UINT8 *)(&bk_ps_info) + i));
+        print_dbg(" %d 0x%x\n", i, *((UINT8 *)(&bk_ps_info) + i));
 
-    debug_print("globel dump\n");
-    debug_print("%d %d %d %d %d %d\n",
+    print_dbg("globel dump\n");
+    print_dbg("%d %d %d %d %d %d\n",
               bk_ps_mode,
               mhdr_get_station_status(),
               g_wlan_general_param->role,
               bk_ps_info.waited_beacon,
               bk_ps_info.ps_can_sleep,
               ps_lock);
-    debug_print("env dump\n");
-    debug_print("%d %d %d %d\n",
+    print_dbg("env dump\n");
+    print_dbg("%d %d %d %d\n",
               ps_env.ps_on,
               me_env.ps_on,
               beacon_len,
               txl_cntrl_pck_get());
 #if CFG_USE_MCU_PS
-    debug_print("mcu dump\n");
-    debug_print("%d %d\n",
+    print_dbg("mcu dump\n");
+    print_dbg("%d %d\n",
               peri_busy_count_get(),
               mcu_prevent_get());
 #endif
 
-    debug_print("%d %d %d %d %d %d\n",
+    print_dbg("%d %d %d %d %d %d\n",
               bk_ps_info.pwm_less_time, bk_ps_info.pwm_clkmux,
               bk_ps_info.ps_dtim_period, bk_ps_info.ps_dtim_count,
               bk_ps_info.ps_dtim_multi, bk_forbid_code);
